@@ -36,6 +36,16 @@ class LanguageFactory extends Factory
         ]);
     }
 
+    public function vietnamese(): static
+    {
+        return $this->state([
+            'code' => 'vi',
+            'name' => 'Vietnamese',
+            'native_name' => 'Tiếng Việt',
+            'is_default' => false,
+        ]);
+    }
+
     public function inactive(): static
     {
         return $this->state(['is_active' => false]);

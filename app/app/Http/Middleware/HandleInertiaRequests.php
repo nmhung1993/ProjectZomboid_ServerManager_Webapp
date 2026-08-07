@@ -76,6 +76,11 @@ class HandleInertiaRequests extends Middleware
                     array_unshift($locales, ['code' => 'en', 'name' => 'English', 'native_name' => 'English']);
                 }
 
+                // Ensure Vietnamese is always available even if not in the languages table
+                if (! collect($locales)->contains('code', 'vi')) {
+                    $locales[] = ['code' => 'vi', 'name' => 'Vietnamese', 'native_name' => 'Tiếng Việt'];
+                }
+
                 return $locales;
             }),
         ];
