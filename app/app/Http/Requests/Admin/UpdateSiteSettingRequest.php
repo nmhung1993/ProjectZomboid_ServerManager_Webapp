@@ -38,7 +38,7 @@ class UpdateSiteSettingRequest extends FormRequest
             'theme_colors.destructive' => ['sometimes', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'theme_colors.sidebar_primary' => ['sometimes', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'default_locale' => ['sometimes', 'string', 'max:10', Rule::in(
-                array_merge(['en'], Language::query()->where('is_active', true)->pluck('code')->all()),
+                array_merge(['en', 'vi'], Language::query()->where('is_active', true)->pluck('code')->all()),
             )],
         ];
     }
