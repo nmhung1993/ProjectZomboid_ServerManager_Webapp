@@ -34,15 +34,11 @@ Schedule::command('zomboid:process-money-deposits')->everyMinute();
 
 Schedule::command('zomboid:generate-map-tiles')
     ->everyThirtyMinutes()
-    ->when(fn () => ! is_dir(config('zomboid.map.tiles_path').'/html/map_data/base/layer0_files'))
-    ->runInBackground();
-
-Schedule::command('zomboid:download-item-icons')
-    ->hourly()
     ->when(function () {
-        $catalog = config('zomboid.lua_bridge.items_catalog');
+        $levelZeroPath = config('zomboid.map.tiles_path').'/html/map_data/base/layer0_files/0';
 
-        return file_exists($catalog) && ! glob(public_path('images/items/*.png'));
+        return empty(glob($levelZeroPath.'/*.jpg'))
+            && empty(glob($levelZeroPath.'/*.webp'));
     })
     ->runInBackground();
 

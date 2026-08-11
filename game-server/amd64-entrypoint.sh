@@ -6,13 +6,19 @@
 # ZomboidManager is loaded as a proper PZ mod (added to Mods= line by
 # configure-server.sh). This ensures both server and client Lua files are
 # distributed to connecting players. DoLuaChecksum=false prevents checksum
-# errors. Source files are mounted at /home/steam/Zomboid/mods/ZomboidManager/.
+# errors. The image seeds the bundled source into the persistent data volume.
 
 # --- Root-only init: fix volume permissions ---
 # The renegademaster image has no 'steam' user — it runs as root natively.
 # Just ensure volume directories are writable (for shared lua-bridge volume).
 if [ "$(id -u)" = "0" ]; then
     echo "[entrypoint] Fixing volume permissions..."
+    if [ -d /opt/zomboid-manager ]; then
+        echo "[entrypoint] Seeding bundled ZomboidManager mod..."
+        rm -rf /home/steam/Zomboid/mods/ZomboidManager
+        mkdir -p /home/steam/Zomboid/mods
+        cp -a /opt/zomboid-manager /home/steam/Zomboid/mods/ZomboidManager
+    fi
     chmod -R 1777 /home/steam/Zomboid/Lua 2>/dev/null || true
     chmod 777 /home/steam/Zomboid/Server 2>/dev/null || true
     chmod 777 /home/steam/Zomboid/db 2>/dev/null || true

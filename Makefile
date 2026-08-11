@@ -105,7 +105,7 @@ up: db-check
 down:
 	$(COMPOSE) down
 
-VOLUMES := pz-postgres pz-app-vendor pz-app-node-modules pz-app-build \
+VOLUMES := pz-postgres pz-app-storage \
 	pz-server-files pz-data pz-redis pz-backups pz-lua-bridge pz-map-tiles \
 	pz-caddy-data pz-caddy-config
 
@@ -127,10 +127,6 @@ nuke:
 		echo "$$REMAINING" | xargs docker volume rm 2>/dev/null || true; \
 	fi
 	@rm -f .env app/.env .firewall.conf
-	@rm -f caddy/Caddyfile caddy/certs/cert.pem caddy/certs/key.pem
-	@for dir in app/bootstrap/cache app/storage/logs app/storage/framework/cache app/storage/framework/sessions app/storage/framework/views; do \
-		chown -R $$(id -u):$$(id -g) $$dir 2>/dev/null || sudo chown -R $$(id -u):$$(id -g) $$dir 2>/dev/null || true; \
-	done
 	@echo "Nuke complete. All volumes and config removed."
 
 build:
@@ -236,9 +232,8 @@ workshop-package:
 	bash scripts/workshop-package.sh
 
 # ── Update from git ─────────────────────────────────────────────────
-# Pulls the latest code, rebuilds, runs migrations, rebuilds frontend
-# assets, and restarts game-server so it picks up entrypoint script
-# changes. Refuses to run if the working tree is dirty.
+# Pulls the latest code, rebuilds immutable images, runs migrations, and
+# restarts game-server. Refuses to run if the working tree is dirty.
 update:
 	@echo ""
 	@echo "════════ Zomboid Manager — Update ════════"
@@ -289,13 +284,6 @@ update:
 		echo "Check 'make logs' for details."; \
 		exit 1; \
 	fi
-	@echo "→ Installing PHP dependencies (composer.lock) ..."
-	$(COMPOSE) exec -T app composer install --no-interaction --no-progress --prefer-dist
-	@echo ""
-	@echo "→ Building frontend assets ..."
-	$(COMPOSE) exec -T app npm install --no-audit --no-fund --silent
-	$(COMPOSE) exec -T app npm run build
-	@echo ""
 	@echo "→ Running database migrations ..."
 	$(COMPOSE) exec -T app php artisan migrate --force --no-interaction
 	@echo ""

@@ -56,7 +56,7 @@ generate_secret() {
     openssl rand -base64 "$1" | tr -dc 'A-Za-z0-9' | head -c "$2"
 }
 
-GENERATE_SELF_SIGNED=false
+USE_INTERNAL_TLS=false
 
 # ── Detect architecture ──────────────────────────────────────────────────────
 ARCH=$(uname -m)
@@ -200,7 +200,7 @@ else
         echo ""
         echo "  How will you access the panel?"
         echo "  1) Domain name  (e.g., zomboid.example.com — auto Let's Encrypt)"
-        echo "  2) IP address    (public or LAN — self-signed cert)"
+        echo "  2) IP address    (public or LAN — Caddy internal CA)"
         echo -ne "  ${DIM}[2]${NC}: "
         read -r access_choice || true
         access_choice="${access_choice:-2}"
@@ -328,9 +328,9 @@ else
 
                 echo -e "  ${GREEN}✓ Using ${SITE_HOST}${NC}"
                 APP_URL="https://${SITE_HOST}"
-                CADDY_SITE=":443"
-                CADDY_TLS=$'\ttls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem'
-                GENERATE_SELF_SIGNED=true
+                CADDY_SITE="${SITE_HOST}"
+                CADDY_TLS=$'\ttls internal'
+                USE_INTERNAL_TLS=true
                 break
                 ;;
         esac
@@ -486,53 +486,16 @@ APP_SECRET=$(openssl rand -base64 32)
 REDIS_PASS=$(generate_secret 18 20)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Generate self-signed certificate (IP mode only)
+# Caddy certificate storage
 # ══════════════════════════════════════════════════════════════════════════════
-mkdir -p caddy/certs
-if [ "$GENERATE_SELF_SIGNED" = "true" ]; then
-    # Remove stale certs from previous runs (may be root-owned from Docker)
-    rm -f caddy/certs/cert.pem caddy/certs/key.pem 2>/dev/null || \
-        sudo rm -f caddy/certs/cert.pem caddy/certs/key.pem 2>/dev/null || true
-
-    echo "Generating self-signed certificate for ${SITE_HOST}..."
-    CERT_OK=false
-    CERT_ERR=""
-
-    # Try with -addext (OpenSSL 1.1.1+) first, fall back without it
-    if CERT_ERR=$(openssl req -x509 -newkey rsa:2048 \
-        -keyout caddy/certs/key.pem -out caddy/certs/cert.pem \
-        -days 3650 -nodes \
-        -subj "/CN=${SITE_HOST}" \
-        -addext "subjectAltName=IP:${SITE_HOST}" 2>&1); then
-        CERT_OK=true
-    elif CERT_ERR=$(openssl req -x509 -newkey rsa:2048 \
-        -keyout caddy/certs/key.pem -out caddy/certs/cert.pem \
-        -days 3650 -nodes \
-        -subj "/CN=${SITE_HOST}" 2>&1); then
-        CERT_OK=true
-        echo -e "  ${YELLOW}Note: Certificate generated without SAN extension (older OpenSSL).${NC}"
-    fi
-
-    if [ "$CERT_OK" = "false" ]; then
-        echo -e "  ${RED}Failed to generate self-signed certificate.${NC}"
-        # Show only meaningful error lines (skip RSA progress noise)
-        echo "$CERT_ERR" | grep -v '^[.+*-]*$' | grep -v '^-----$' | tail -3 >&2
-        echo -e "  ${DIM}You can generate one manually:${NC}"
-        echo -e "  ${DIM}  openssl req -x509 -newkey rsa:2048 -keyout caddy/certs/key.pem -out caddy/certs/cert.pem -days 3650 -nodes -subj '/CN=${SITE_HOST}'${NC}"
-        exit 1
-    fi
-else
-    # Clean up certs from a previous IP-mode run (may be root-owned from Docker)
-    rm -f caddy/certs/cert.pem caddy/certs/key.pem 2>/dev/null || \
-        sudo rm -f caddy/certs/cert.pem caddy/certs/key.pem 2>/dev/null || true
-fi
+echo "Caddy will manage certificates in the pz-caddy-data named volume."
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Generate Caddyfile
 # ══════════════════════════════════════════════════════════════════════════════
 echo "Creating caddy/Caddyfile..."
-if [ "$GENERATE_SELF_SIGNED" = "true" ]; then
-    # IP mode: listen on all interfaces, use generated cert, add HTTP→HTTPS redirect
+if [ "$USE_INTERNAL_TLS" = "true" ]; then
+    # IP mode: listen on all interfaces and use Caddy's volume-backed internal CA.
     cat > caddy/Caddyfile <<CADDYEOF
 {
 	# Managed by setup.sh — edit freely or re-run make init
@@ -642,28 +605,6 @@ fi
 echo ""
 echo -e "${BOLD}Starting services...${NC}"
 make down 2>/dev/null || true
-
-# Fix ownership on directories that may be root-owned from a previous Docker run
-# The container runs as non-root and needs write access to these.
-for dir in app/bootstrap/cache app/storage app/storage/logs app/storage/framework/cache app/storage/framework/sessions app/storage/framework/views; do
-    if [ -d "$dir" ]; then
-        chown -R "$(id -u):$(id -g)" "$dir" 2>/dev/null || \
-            sudo chown -R "$(id -u):$(id -g)" "$dir" 2>/dev/null || true
-    fi
-done
-
-# Remove build/cache volumes that may have stale state from a previous run
-# (game data, DB, and backups are intentionally preserved)
-for vol in pz-caddy-data pz-caddy-config pz-app-vendor pz-app-node-modules pz-app-build; do
-    docker volume rm "$vol" 2>/dev/null || true
-done
-
-# Verify no stale pz- volumes are stuck (Docker can leave ghosts after down -v)
-STALE=$(docker volume ls -q --filter name=pz-caddy --filter name=pz-app-vendor --filter name=pz-app-node --filter name=pz-app-build 2>/dev/null || true)
-if [ -n "$STALE" ]; then
-    echo -e "${YELLOW}Cleaning leftover volumes...${NC}"
-    echo "$STALE" | xargs docker volume rm 2>/dev/null || true
-fi
 
 make up
 

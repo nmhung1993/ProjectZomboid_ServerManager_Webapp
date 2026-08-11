@@ -405,8 +405,7 @@ Seven Docker services across two networks:
                 └───────────────────────────────────────────────────┘
 
 Volumes: pz-data, pz-server-files, pz-backups, pz-lua-bridge, pz-map-tiles,
-         pz-postgres (external), pz-redis, pz-app-vendor, pz-app-node-modules,
-         pz-app-build, pz-caddy-data, pz-caddy-config
+         pz-postgres, pz-redis, pz-app-storage, pz-caddy-data, pz-caddy-config
 ```
 
 - **game-server** — PZ dedicated server via SteamCMD. Auto-detects ARM64/AMD64 and selects the correct image.
@@ -475,7 +474,7 @@ Navigate to the URL shown at the end of setup and log in with the displayed cred
 ### Troubleshooting
 
 - **Can't reach the public URL?** The panel is always accessible at `http://localhost:8000` on the server itself. If the public URL doesn't work, check `make info` for your configured ports, run `make admin-expose` to open the firewall, and verify router port forwarding.
-- **Browser shows a certificate warning?** Expected with IP-address mode (self-signed cert). Click through to proceed.
+- **Browser shows a certificate warning?** Expected with IP-address mode (Caddy internal CA). Trust Caddy's root certificate or click through to proceed.
 - **Want to change access mode?** Re-run `make init` — it will detect existing config and offer to reconfigure.
 
 ## Documentation

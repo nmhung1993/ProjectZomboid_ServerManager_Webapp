@@ -7,7 +7,7 @@ class MapConfigBuilder
     /**
      * Build map configuration.
      *
-     * @return array{tileUrl: string, tileSize: int, minZoom: int, maxZoom: int, defaultZoom: int, center: array{x: int, y: int}, dzi: array|null}
+     * @return array{tileUrl: string|null, tileSize: int, minZoom: int, maxZoom: int, defaultZoom: int, center: array{x: int, y: int}, dzi: array|null}
      */
     public function build(): array
     {
@@ -32,38 +32,17 @@ class MapConfigBuilder
             ];
         }
 
-        // Fall back to proxy tiles from map.projectzomboid.com
-        // The public proxy layer currently provides only a limited zoom range,
-        // so we clamp UI zoom to prevent broken placeholder tiles on zoom-in.
-        $proxyMaxZoom = (int) config('zomboid.map.proxy_max_zoom', $minZoom);
-        $effectiveMaxZoom = min($maxZoom, $proxyMaxZoom);
-        $effectiveMinZoom = min($minZoom, $effectiveMaxZoom);
-
-        $proxyDzi = config('zomboid.map.proxy_dzi');
-        $w = $proxyDzi['width'];
-        $h = $proxyDzi['height'];
-        $sqr = $proxyDzi['sqr'];
-        $maxNativeZoom = (int) ceil(log(max($w, $h), 2));
-
         return [
-            'tileUrl' => $tileUrl,
-            'tileSize' => config('zomboid.map.proxy_tile_size'),
-            'minZoom' => $effectiveMinZoom,
-            'maxZoom' => $effectiveMaxZoom,
-            'defaultZoom' => max($effectiveMinZoom, min($defaultZoom, $effectiveMaxZoom)),
+            'tileUrl' => null,
+            'tileSize' => config('zomboid.map.tile_size'),
+            'minZoom' => $minZoom,
+            'maxZoom' => $maxZoom,
+            'defaultZoom' => max($minZoom, min($defaultZoom, $maxZoom)),
             'center' => [
                 'x' => config('zomboid.map.center_x'),
                 'y' => config('zomboid.map.center_y'),
             ],
-            'dzi' => [
-                'width' => $w,
-                'height' => $h,
-                'x0' => $proxyDzi['x0'],
-                'y0' => $proxyDzi['y0'],
-                'sqr' => $sqr,
-                'maxNativeZoom' => $maxNativeZoom,
-                'isometric' => true,
-            ],
+            'dzi' => null,
         ];
     }
 
@@ -95,8 +74,10 @@ class MapConfigBuilder
 
         $mapInfo = json_decode(file_get_contents($infoPath), true);
 
-        $w = (int) $mapInfo['w'];
-        $h = (int) $mapInfo['h'];
+        $skip = (int) ($mapInfo['skip'] ?? 0);
+        $levelScale = 2 ** $skip;
+        $w = (int) $mapInfo['w'] * $levelScale;
+        $h = (int) $mapInfo['h'] * $levelScale;
         $sqr = (int) ($mapInfo['sqr'] ?? 1);
 
         return [

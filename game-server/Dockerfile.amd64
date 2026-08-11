@@ -1,0 +1,7 @@
+FROM renegademaster/zomboid-dedicated-server:latest
+
+COPY amd64-entrypoint.sh /home/steam/amd64-entrypoint.sh
+COPY configure-server.sh /home/steam/configure-server.sh
+COPY mods/ZomboidManager /opt/zomboid-manager
+
+RUN chmod +x /home/steam/amd64-entrypoint.sh /home/steam/configure-server.sh

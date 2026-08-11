@@ -1,7 +1,9 @@
 services:
   game-server:
-    # Pin to a specific version tag when available to prevent supply chain attacks
-    image: ghcr.io/joyfui/project-zomboid-server-docker-arm64:latest
+    build:
+      context: ./game-server
+      dockerfile: Dockerfile.arm64
+    image: zomboid-manager-game-server:arm64
     user: "0:0"
     stdin_open: true
     tty: true
@@ -38,9 +40,6 @@ services:
       PZ_STEAM_BRANCH: ${PZ_STEAM_BRANCH:-public}
     volumes:
       - zomboid-server:/home/steam/pzserver
-      - ./game-server/configure-server.sh:/home/steam/configure-server.sh:ro
-      - ./game-server/entrypoint.sh:/home/steam/entrypoint.sh:ro
-      - ./game-server/mods/ZomboidManager:/home/steam/Zomboid/mods/ZomboidManager:ro
     healthcheck:
       # Check RCON TCP port in /proc/net — proves game server is fully loaded
       # (grep reads kernel's /proc directly, works without FEX emulation)

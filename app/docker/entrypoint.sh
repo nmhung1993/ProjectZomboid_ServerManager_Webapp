@@ -11,8 +11,8 @@ for var in DB_PASSWORD PZ_RCON_PASSWORD ADMIN_PASSWORD PZ_ADMIN_PASSWORD; do
 done
 
 # ── Storage permissions ──────────────────────────────────────────────
-# Bind mounts override Dockerfile permissions — fix at runtime
-# Only target directories and runtime files, skip .gitignore to avoid git noise
+# Named volumes may be created with root ownership; normalize runtime paths.
+# Only target directories and runtime files, skip .gitignore to avoid git noise.
 find /var/www/html/storage /var/www/html/bootstrap/cache -not -name '.gitignore' \( -type d -o -type f \) -exec chown www-data:www-data {} + 2>/dev/null || true
 find /var/www/html/storage /var/www/html/bootstrap/cache -type d -exec chmod 775 {} + 2>/dev/null || true
 find /var/www/html/storage /var/www/html/bootstrap/cache -type f -not -name '.gitignore' -exec chmod 664 {} + 2>/dev/null || true
@@ -63,7 +63,7 @@ if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:" ]; then
 fi
 
 # ── Package discovery ──────────────────────────────────────────────
-# Host bind-mount may contain stale bootstrap/cache from dev deps — purge and regenerate
+# Purge generated package metadata and rebuild it for the current image.
 rm -f /var/www/html/bootstrap/cache/packages.php /var/www/html/bootstrap/cache/services.php
 php artisan package:discover --no-interaction 2>/dev/null || true
 
@@ -108,18 +108,6 @@ if echo "$@" | grep -q "supervisord"; then
         echo "[entrypoint] Map tiles not found — generating in background..."
         php artisan zomboid:generate-map-tiles \
             >> /var/www/html/storage/logs/map-tiles.log 2>&1 &
-    fi
-
-    # Item icons — download in background if catalog exists but icons are missing
-    ICON_DIR="/var/www/html/public/images/items"
-    CATALOG="${LUA_BRIDGE_DIR}/items_catalog.json"
-    if [ -f "$CATALOG" ]; then
-        ICON_COUNT=$(find "$ICON_DIR" -name '*.png' 2>/dev/null | head -1 | wc -l)
-        if [ "$ICON_COUNT" -eq 0 ]; then
-            echo "[entrypoint] Item icons not found — downloading in background..."
-            php artisan zomboid:download-item-icons \
-                >> /var/www/html/storage/logs/item-icons.log 2>&1 &
-        fi
     fi
 
     # Start Vite dev server only in non-production environments

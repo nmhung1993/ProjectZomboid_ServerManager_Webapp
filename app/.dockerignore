@@ -12,6 +12,10 @@ storage/framework/testing
 # On Windows hosts the host-side link is often a broken junction that BuildKit
 # rejects with "invalid file request public/storage" and aborts the build.
 public/storage
+public/build
+resources/js/actions
+resources/js/routes
+resources/js/wayfinder
 tests/
 .git/
 .idea/

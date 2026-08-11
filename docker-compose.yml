@@ -32,12 +32,8 @@ services:
     ports:
       - "${APP_PORT:-8000}:8000"
       - "${APP_PROXY_PORT:-8082}:8000"
-      - "5173:5173"
     volumes:
-      - ./app:/var/www/html
-      - app-vendor:/var/www/html/vendor
-      - app-node-modules:/var/www/html/node_modules
-      - app-build:/var/www/html/public/build
+      - app-storage:/var/www/html/storage
       - zomboid-data:/pz-data
       - zomboid-server:/pz-server:ro
       - backup-data:/backups
@@ -65,6 +61,7 @@ services:
       - SETUID
       - SETGID
       - DAC_OVERRIDE
+      - FOWNER
     networks:
       - zomboid-net
       - backend-net
@@ -85,8 +82,7 @@ services:
         condition: service_healthy
     command: php artisan queue:work redis --tries=3 --timeout=600 --sleep=3
     volumes:
-      - ./app:/var/www/html
-      - app-vendor:/var/www/html/vendor
+      - app-storage:/var/www/html/storage
       - zomboid-data:/pz-data
       - zomboid-server:/pz-server:ro
       - backup-data:/backups
@@ -114,6 +110,7 @@ services:
       - SETUID
       - SETGID
       - DAC_OVERRIDE
+      - FOWNER
     networks:
       - zomboid-net
       - backend-net
@@ -122,14 +119,16 @@ services:
   # PostgreSQL — Primary database
   # ---------------------------------------------------------------------------
   db:
-    image: postgres:16-alpine
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    image: zomboid-manager-db:postgres16
     container_name: pz-db
     restart: unless-stopped
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./db/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
     environment:
       POSTGRES_DB: ${DB_DATABASE:-zomboid}
       POSTGRES_USER: ${DB_USERNAME:-zomboid}
@@ -183,15 +182,16 @@ services:
   # Caddy — Reverse proxy with automatic TLS
   # ---------------------------------------------------------------------------
   caddy:
-    image: caddy:2.11.2-alpine
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    image: zomboid-manager-caddy:2.11.2
     container_name: pz-caddy
     restart: unless-stopped
     ports:
       - "${CADDY_HTTP_PORT:-80}:80"
       - "${CADDY_HTTPS_PORT:-443}:443"
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy/certs:/etc/caddy/certs:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
@@ -216,19 +216,14 @@ networks:
 # Volumes
 # -----------------------------------------------------------------------------
 volumes:
-  app-vendor:
-    name: pz-app-vendor
-  app-node-modules:
-    name: pz-app-node-modules
-  app-build:
-    name: pz-app-build
+  app-storage:
+    name: pz-app-storage
   zomboid-server:
     name: pz-server-files
   zomboid-data:
     name: pz-data
   postgres-data:
     name: pz-postgres
-    external: true
   redis-data:
     name: pz-redis
   backup-data:

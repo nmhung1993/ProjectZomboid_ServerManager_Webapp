@@ -27,24 +27,14 @@ class SecurityHeaders
 
         $scriptSrc = "'self' 'nonce-{$nonce}'";
         $connectSrc = "'self'";
-        $styleSrc = "'self' 'unsafe-inline' https://fonts.bunny.net";
-        $fontSrc = "'self' https://fonts.bunny.net";
+        $styleSrc = "'self' 'unsafe-inline'";
+        $fontSrc = "'self' data:";
         // Workshop preview thumbnails come from Steam's user-content and static CDNs.
         $imgSrc = "'self' data: https://*.steamusercontent.com https://*.steamstatic.com";
 
         if ($isLocal) {
             $scriptSrc .= " 'unsafe-eval'";
             $connectSrc .= ' ws://localhost:5173 http://localhost:5173';
-        }
-
-        // Allow map tile images from the configured proxy (e.g. map.projectzomboid.com)
-        $mapProxyUrl = config('zomboid.map.proxy_url', '');
-        if ($mapProxyUrl) {
-            $scheme = parse_url($mapProxyUrl, PHP_URL_SCHEME);
-            $host = parse_url($mapProxyUrl, PHP_URL_HOST);
-            if ($scheme && $host) {
-                $imgSrc .= " {$scheme}://{$host}";
-            }
         }
 
         $csp = implode('; ', [

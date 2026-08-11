@@ -1,7 +1,9 @@
 services:
   game-server:
-    # Pin to a specific version tag when available to prevent supply chain attacks
-    image: renegademaster/zomboid-dedicated-server:latest
+    build:
+      context: ./game-server
+      dockerfile: Dockerfile.amd64
+    image: zomboid-manager-game-server:amd64
     entrypoint: ["/bin/bash", "/home/steam/amd64-entrypoint.sh"]
     # SteamCMD on newer kernels (6.x) trips Docker's default seccomp filter on
     # socket() syscalls, producing "CreateBoundSocket: error 38 (ENOSYS)" and
@@ -38,9 +40,6 @@ services:
       TZ: ${TZ:-Asia/Ho_Chi_Minh}
     volumes:
       - zomboid-server:/home/steam/ZomboidDedicatedServer
-      - ./game-server/mods/ZomboidManager:/home/steam/Zomboid/mods/ZomboidManager:ro
-      - ./game-server/amd64-entrypoint.sh:/home/steam/amd64-entrypoint.sh:ro
-      - ./game-server/configure-server.sh:/home/steam/configure-server.sh:ro
     healthcheck:
       # Check RCON TCP port in /proc/net — proves game server is fully loaded
       # (ss/netstat not available in renegademaster image)

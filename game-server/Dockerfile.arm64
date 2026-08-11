@@ -1,0 +1,7 @@
+FROM ghcr.io/joyfui/project-zomboid-server-docker-arm64:latest
+
+COPY entrypoint.sh /home/steam/entrypoint.sh
+COPY configure-server.sh /home/steam/configure-server.sh
+COPY mods/ZomboidManager /opt/zomboid-manager
+
+RUN chmod +x /home/steam/entrypoint.sh /home/steam/configure-server.sh

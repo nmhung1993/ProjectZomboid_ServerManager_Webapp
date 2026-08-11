@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 class GenerateMapTiles extends Command
 {
@@ -52,11 +53,20 @@ class GenerateMapTiles extends Command
 
         $this->info("Using pzmap2dzi: {$pzmap2dziPath}");
 
-        // Check if tiles already exist
-        if (! $this->option('force') && is_dir($tilesPath) && count(scandir($tilesPath)) > 2) {
+        // Recent pzmap2dzi builds still resolve the legacy default.txt name.
+        $this->ensureDefaultMapConfig($pzmap2dziPath);
+
+        $hasTexturePacks = is_dir($serverPath.'/media/texturepacks');
+
+        if (! $this->option('force') && $this->hasGeneratedTiles($tilesPath)) {
             $this->warn('Tiles already exist. Use --force to regenerate.');
 
             return self::SUCCESS;
+        }
+
+        if ($this->option('force')) {
+            File::deleteDirectory($tilesPath.'/html/map_data/base');
+            File::deleteDirectory($tilesPath.'/html/map_data/base_top');
         }
 
         // Create output directory
@@ -74,10 +84,23 @@ class GenerateMapTiles extends Command
             return self::FAILURE;
         }
 
-        // Step 2: Render isometric tiles
-        $this->info('Step 2/2: Rendering isometric tiles...');
-        if (! $this->runPzmap($pzmap2dziPath, $confPath, 'render base')) {
+        // Step 2: Render map tiles
+        $this->info('Step 2/2: Rendering map tiles...');
+        $renderCommand = $hasTexturePacks ? 'render base' : 'render base_top';
+        if (! $hasTexturePacks) {
+            $this->warn('No texturepacks found; generating a top-view cartographic map.');
+        }
+
+        if (! $this->runPzmap($pzmap2dziPath, $confPath, $renderCommand)) {
             return self::FAILURE;
+        }
+
+        if (! $hasTexturePacks) {
+            $topViewPath = $tilesPath.'/html/map_data/base_top';
+            $basePath = $tilesPath.'/html/map_data/base';
+            if (is_dir($topViewPath)) {
+                rename($topViewPath, $basePath);
+            }
         }
 
         $this->info('Map tiles generated successfully at: '.$tilesPath);
@@ -160,7 +183,7 @@ class GenerateMapTiles extends Command
             enable_cache: false
             cache_limit_mb: 0
             top_view_square_size: 1
-            top_view_color_mode: avg
+            top_view_color_mode: carto-zed
             use_mark: false
             plants_conf:
                 snow: false
@@ -180,6 +203,29 @@ class GenerateMapTiles extends Command
         file_put_contents($confPath, $config);
 
         return $confPath;
+    }
+
+    private function ensureDefaultMapConfig(string $pzmap2dziPath): void
+    {
+        $confDir = dirname($pzmap2dziPath).'/conf';
+        $legacyPath = $confDir.'/default.txt';
+
+        if (is_file($legacyPath)) {
+            return;
+        }
+
+        $sourcePath = $confDir.'/default_b42.txt';
+        if (is_file($sourcePath)) {
+            copy($sourcePath, $legacyPath);
+        }
+    }
+
+    private function hasGeneratedTiles(string $tilesPath): bool
+    {
+        $levelZeroPath = $tilesPath.'/html/map_data/base/layer0_files/0';
+
+        return ! empty(glob($levelZeroPath.'/*.jpg'))
+            || ! empty(glob($levelZeroPath.'/*.webp'));
     }
 
     private function detectCpuCores(): int

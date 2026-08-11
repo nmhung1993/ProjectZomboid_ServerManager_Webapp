@@ -1,9 +1,13 @@
 <?php
 
 use App\Jobs\RestartGameServer;
+use App\Jobs\SendDiscordBotNotification;
+use App\Jobs\SendDiscordWebhookNotification;
 use App\Jobs\SendServerWarning;
 use App\Models\AuditLog;
 use App\Models\AutoRestartSetting;
+use App\Models\DiscordBotSetting;
+use App\Models\DiscordWebhookSetting;
 use App\Models\ScheduledRestartTime;
 use App\Services\DockerManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -100,6 +104,34 @@ it('sends discord heads-up when within discord_reminder window', function () {
 
     expect(AuditLog::where('action', 'server.autorestart.upcoming')->exists())->toBeTrue();
     Queue::assertNothingPushed();
+});
+
+it('queues enabled discord integrations for the restart reminder', function () {
+    DiscordBotSetting::query()->create([
+        'bot_token' => 'test-token',
+        'enabled' => true,
+        'channel_id' => '123456789',
+        'role_ids' => [],
+        'enabled_events' => ['server.autorestart.upcoming'],
+    ]);
+    DiscordWebhookSetting::factory()
+        ->enabled()
+        ->withEvents(['server.autorestart.upcoming'])
+        ->create();
+
+    AutoRestartSetting::factory()->enabled()->create([
+        'timezone' => 'UTC',
+        'warning_minutes' => 5,
+        'discord_reminder_minutes' => 30,
+    ]);
+    ScheduledRestartTime::factory()->create([
+        'time' => now('UTC')->addMinutes(20)->format('H:i'),
+    ]);
+
+    $this->artisan('zomboid:auto-restart-check')->assertSuccessful();
+
+    Queue::assertPushed(SendDiscordBotNotification::class);
+    Queue::assertPushed(SendDiscordWebhookNotification::class);
 });
 
 // ── Warning window triggers restart ─────────────────────────────────

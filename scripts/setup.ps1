@@ -169,7 +169,7 @@ function Invoke-CompatibleWebRequest {
     return Invoke-WebRequest @params
 }
 
-$GENERATE_SELF_SIGNED = $false
+$USE_INTERNAL_TLS = $false
 
 # ── Architecture detection ──────────────────────────────────────────
 $procArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
@@ -304,7 +304,7 @@ if ($enablePublic.ToLower() -ne "y") {
         Write-Host ""
         Write-Host "  How will you access the panel?"
         Write-Host "  1) Domain name  (e.g., zomboid.example.com - auto Let's Encrypt)"
-        Write-Host "  2) IP address   (public or LAN - self-signed cert)"
+        Write-Host "  2) IP address   (public or LAN - Caddy internal CA)"
         $accessChoice = Read-Host "  [2]"
         if ([string]::IsNullOrEmpty($accessChoice)) { $accessChoice = "2" }
         if ($accessChoice -notin @("1", "2")) {
@@ -431,9 +431,9 @@ if ($enablePublic.ToLower() -ne "y") {
 
                 Write-Host "  Using $SITE_HOST" -ForegroundColor Green
                 $APP_URL = "https://$SITE_HOST"
-                $CADDY_SITE = ":443"
-                $CADDY_TLS = "`ttls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem"
-                $GENERATE_SELF_SIGNED = $true
+                $CADDY_SITE = $SITE_HOST
+                $CADDY_TLS = "`ttls internal"
+                $USE_INTERNAL_TLS = $true
                 $accessDone = $true
             }
         }
@@ -568,60 +568,15 @@ $APP_SECRET = New-AppKey
 $REDIS_PASS = New-Secret 20
 
 # ══════════════════════════════════════════════════════════════════════
-# Generate self-signed certificate (IP mode only)
+# Caddy certificate storage
 # ══════════════════════════════════════════════════════════════════════
-if (-not (Test-Path "caddy\certs")) { New-Item -ItemType Directory -Path "caddy\certs" -Force | Out-Null }
-
-if ($GENERATE_SELF_SIGNED) {
-    Remove-Item -Force -ErrorAction SilentlyContinue "caddy\certs\cert.pem", "caddy\certs\key.pem"
-
-    Write-Host "Generating self-signed certificate for $SITE_HOST..."
-
-    # Check if openssl is available (comes with Git for Windows, or install separately)
-    $opensslCmd = Get-Command openssl -ErrorAction SilentlyContinue
-    if (-not $opensslCmd) {
-        # Try Git's bundled OpenSSL
-        $gitCmd = Get-Command git -ErrorAction SilentlyContinue
-        if ($gitCmd) {
-            $gitDir = Split-Path (Split-Path $gitCmd.Source -Parent) -Parent
-            $opensslAlt = Join-Path $gitDir "usr\bin\openssl.exe"
-            if (Test-Path $opensslAlt) { $opensslCmd = $opensslAlt }
-        }
-    }
-
-    if ($opensslCmd) {
-        $opensslExe = if ($opensslCmd -is [string]) { $opensslCmd } else { $opensslCmd.Source }
-        try {
-            & $opensslExe req -x509 -newkey rsa:2048 `
-                -keyout "caddy\certs\key.pem" -out "caddy\certs\cert.pem" `
-                -days 3650 -nodes `
-                -subj "/CN=$SITE_HOST" `
-                -addext "subjectAltName=IP:$SITE_HOST" 2>&1 | Out-Null
-            Write-Host "  Certificate generated." -ForegroundColor Green
-        } catch {
-            # Fallback without -addext (older OpenSSL)
-            & $opensslExe req -x509 -newkey rsa:2048 `
-                -keyout "caddy\certs\key.pem" -out "caddy\certs\cert.pem" `
-                -days 3650 -nodes `
-                -subj "/CN=$SITE_HOST" 2>&1 | Out-Null
-            Write-Host "  Certificate generated (without SAN extension)." -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "  ERROR: OpenSSL not found." -ForegroundColor Red
-        Write-Host "  Install Git for Windows (includes OpenSSL):" -ForegroundColor Yellow
-        Write-Host "    https://git-scm.com/downloads/win" -ForegroundColor DarkGray
-        Write-Host "  Then re-run: .\make.ps1 init" -ForegroundColor DarkGray
-        exit 1
-    }
-} else {
-    Remove-Item -Force -ErrorAction SilentlyContinue "caddy\certs\cert.pem", "caddy\certs\key.pem"
-}
+Write-Host "Caddy will manage certificates in the pz-caddy-data named volume." -ForegroundColor DarkGray
 
 # ══════════════════════════════════════════════════════════════════════
 # Generate Caddyfile
 # ══════════════════════════════════════════════════════════════════════
 Write-Host "Creating caddy\Caddyfile..."
-if ($GENERATE_SELF_SIGNED) {
+if ($USE_INTERNAL_TLS) {
     $caddyfile = @"
 {
 `t# Managed by setup.ps1 -- edit freely or re-run .\make.ps1 init
@@ -730,18 +685,6 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Starting services..." -ForegroundColor White
 & docker @ComposeArgs down 2>$null
-
-# Remove build/cache volumes (preserve data, DB, backups)
-foreach ($vol in @("pz-caddy-data", "pz-caddy-config", "pz-app-vendor", "pz-app-node-modules", "pz-app-build")) {
-    docker volume rm $vol 2>$null | Out-Null
-}
-
-# Clean leftover stale volumes
-$stale = @(docker volume ls -q --filter name=pz-caddy --filter name=pz-app-vendor --filter name=pz-app-node --filter name=pz-app-build 2>$null)
-if ($stale) {
-    Write-Host "Cleaning leftover volumes..." -ForegroundColor Yellow
-    $stale | ForEach-Object { docker volume rm $_ 2>$null | Out-Null }
-}
 
 # Start services
 & docker @ComposeArgs up -d --build

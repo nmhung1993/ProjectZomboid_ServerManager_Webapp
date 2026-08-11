@@ -5,7 +5,13 @@ import { fetchAction } from '@/lib/fetch-action';
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +41,8 @@ type Props = {
     available_events: Record<string, EventConfig>;
 };
 
+const REMINDER_EVENT = 'server.autorestart.upcoming';
+
 export default function DiscordBot({ settings, available_events }: Props) {
     const { t } = useTranslation();
     const breadcrumbs: BreadcrumbItem[] = [
@@ -42,14 +50,18 @@ export default function DiscordBot({ settings, available_events }: Props) {
         { title: t('admin.discord_bot.title'), href: '/admin/discord_bot' },
     ];
     const [botToken, setBotToken] = useState('');
-    const [showTokenInput, setShowTokenInput] = useState(!settings.has_bot_token);
+    const [showTokenInput, setShowTokenInput] = useState(
+        !settings.has_bot_token,
+    );
     const [enabled, setEnabled] = useState(settings.enabled);
     const [serverId, setServerId] = useState(settings.server_id ?? '');
     const [channelId, setChannelId] = useState(settings.channel_id ?? '');
     const [threadId, setThreadId] = useState(settings.thread_id ?? '');
     const [roleIds, setRoleIds] = useState<string[]>(settings.role_ids);
     const [roleInput, setRoleInput] = useState('');
-    const [enabledEvents, setEnabledEvents] = useState<string[]>(settings.enabled_events);
+    const [enabledEvents, setEnabledEvents] = useState<string[]>(
+        settings.enabled_events,
+    );
     const [saving, setSaving] = useState(false);
     const [testing, setTesting] = useState(false);
 
@@ -67,7 +79,11 @@ export default function DiscordBot({ settings, available_events }: Props) {
 
     function toggleEvent(eventKey: string, checked: boolean) {
         setEnabledEvents((prev) =>
-            checked ? [...prev, eventKey] : prev.filter((e) => e !== eventKey),
+            checked
+                ? prev.includes(eventKey)
+                    ? prev
+                    : [...prev, eventKey]
+                : prev.filter((e) => e !== eventKey),
         );
     }
 
@@ -147,7 +163,9 @@ export default function DiscordBot({ settings, available_events }: Props) {
             <Head title={t('admin.discord_bot.title')} />
             <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.discord_bot.title')}</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {t('admin.discord_bot.title')}
+                    </h1>
                     <p className="text-muted-foreground">
                         {t('admin.discord_bot.description')}
                     </p>
@@ -167,7 +185,9 @@ export default function DiscordBot({ settings, available_events }: Props) {
                     <CardContent className="space-y-4">
                         {/* Bot Token */}
                         <div className="space-y-2">
-                            <Label htmlFor="bot-token">{t('admin.discord_bot.bot_token_label')}</Label>
+                            <Label htmlFor="bot-token">
+                                {t('admin.discord_bot.bot_token_label')}
+                            </Label>
                             {settings.has_bot_token && !showTokenInput ? (
                                 <div className="flex items-center gap-2">
                                     <Input
@@ -188,8 +208,12 @@ export default function DiscordBot({ settings, available_events }: Props) {
                                     id="bot-token"
                                     type="password"
                                     value={botToken}
-                                    onChange={(e) => setBotToken(e.target.value)}
-                                    placeholder={t('admin.discord_bot.bot_token_placeholder')}
+                                    onChange={(e) =>
+                                        setBotToken(e.target.value)
+                                    }
+                                    placeholder={t(
+                                        'admin.discord_bot.bot_token_placeholder',
+                                    )}
                                     autoComplete="off"
                                 />
                             )}
@@ -199,12 +223,16 @@ export default function DiscordBot({ settings, available_events }: Props) {
 
                         {/* Server ID */}
                         <div className="space-y-2">
-                            <Label htmlFor="server-id">{t('admin.discord_bot.server_id_label')}</Label>
+                            <Label htmlFor="server-id">
+                                {t('admin.discord_bot.server_id_label')}
+                            </Label>
                             <Input
                                 id="server-id"
                                 value={serverId}
                                 onChange={(e) => setServerId(e.target.value)}
-                                placeholder={t('admin.discord_bot.server_id_placeholder')}
+                                placeholder={t(
+                                    'admin.discord_bot.server_id_placeholder',
+                                )}
                             />
                             <p className="text-sm text-muted-foreground">
                                 {t('admin.discord_bot.server_id_description')}
@@ -215,12 +243,16 @@ export default function DiscordBot({ settings, available_events }: Props) {
 
                         {/* Channel ID */}
                         <div className="space-y-2">
-                            <Label htmlFor="channel-id">{t('admin.discord_bot.channel_id_label')}</Label>
+                            <Label htmlFor="channel-id">
+                                {t('admin.discord_bot.channel_id_label')}
+                            </Label>
                             <Input
                                 id="channel-id"
                                 value={channelId}
                                 onChange={(e) => setChannelId(e.target.value)}
-                                placeholder={t('admin.discord_bot.channel_id_placeholder')}
+                                placeholder={t(
+                                    'admin.discord_bot.channel_id_placeholder',
+                                )}
                             />
                             <p className="text-sm text-muted-foreground">
                                 {t('admin.discord_bot.channel_id_description')}
@@ -229,12 +261,16 @@ export default function DiscordBot({ settings, available_events }: Props) {
 
                         {/* Thread ID */}
                         <div className="space-y-2">
-                            <Label htmlFor="thread-id">{t('admin.discord_bot.thread_id_label')}</Label>
+                            <Label htmlFor="thread-id">
+                                {t('admin.discord_bot.thread_id_label')}
+                            </Label>
                             <Input
                                 id="thread-id"
                                 value={threadId}
                                 onChange={(e) => setThreadId(e.target.value)}
-                                placeholder={t('admin.discord_bot.thread_id_placeholder')}
+                                placeholder={t(
+                                    'admin.discord_bot.thread_id_placeholder',
+                                )}
                             />
                             <p className="text-sm text-muted-foreground">
                                 {t('admin.discord_bot.thread_id_description')}
@@ -243,21 +279,31 @@ export default function DiscordBot({ settings, available_events }: Props) {
 
                         {/* Role IDs */}
                         <div className="space-y-2">
-                            <Label htmlFor="role-id">{t('admin.discord_bot.role_ids_label')}</Label>
+                            <Label htmlFor="role-id">
+                                {t('admin.discord_bot.role_ids_label')}
+                            </Label>
                             <div className="flex items-center gap-2">
                                 <Input
                                     id="role-id"
                                     value={roleInput}
-                                    onChange={(e) => setRoleInput(e.target.value)}
+                                    onChange={(e) =>
+                                        setRoleInput(e.target.value)
+                                    }
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault();
                                             addRole();
                                         }
                                     }}
-                                    placeholder={t('admin.discord_bot.role_ids_placeholder')}
+                                    placeholder={t(
+                                        'admin.discord_bot.role_ids_placeholder',
+                                    )}
                                 />
-                                <Button variant="outline" size="sm" onClick={addRole}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={addRole}
+                                >
                                     {t('admin.discord_bot.add_role')}
                                 </Button>
                             </div>
@@ -271,12 +317,18 @@ export default function DiscordBot({ settings, available_events }: Props) {
                                             key={roleId}
                                             className="inline-flex items-center gap-1 rounded-md border border-border/50 bg-accent/50 px-2 py-1 text-xs font-medium"
                                         >
-                                            <span className="font-mono">{roleId}</span>
+                                            <span className="font-mono">
+                                                {roleId}
+                                            </span>
                                             <button
                                                 type="button"
-                                                onClick={() => removeRole(roleId)}
+                                                onClick={() =>
+                                                    removeRole(roleId)
+                                                }
                                                 className="text-muted-foreground hover:text-foreground"
-                                                aria-label={t('admin.discord_bot.remove_role')}
+                                                aria-label={t(
+                                                    'admin.discord_bot.remove_role',
+                                                )}
                                             >
                                                 <X className="size-3" />
                                             </button>
@@ -291,7 +343,9 @@ export default function DiscordBot({ settings, available_events }: Props) {
                         {/* Enable/Disable */}
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <Label htmlFor="bot-enabled">{t('admin.discord_bot.enable_label')}</Label>
+                                <Label htmlFor="bot-enabled">
+                                    {t('admin.discord_bot.enable_label')}
+                                </Label>
                                 <p className="text-sm text-muted-foreground">
                                     {t('admin.discord_bot.enable_description')}
                                 </p>
@@ -305,10 +359,36 @@ export default function DiscordBot({ settings, available_events }: Props) {
 
                         <Separator />
 
+                        <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="bot-reminder-enabled">
+                                    {t(
+                                        'admin.discord_bot.reminder_enable_label',
+                                    )}
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    {t(
+                                        'admin.discord_bot.reminder_enable_description',
+                                    )}
+                                </p>
+                            </div>
+                            <Switch
+                                id="bot-reminder-enabled"
+                                checked={enabledEvents.includes(REMINDER_EVENT)}
+                                onCheckedChange={(checked) =>
+                                    toggleEvent(REMINDER_EVENT, checked)
+                                }
+                            />
+                        </div>
+
+                        <Separator />
+
                         {/* Actions */}
                         <div className="flex items-center gap-2">
                             <Button onClick={save} disabled={saving}>
-                                {saving ? t('common.saving') : t('admin.discord_bot.save_settings')}
+                                {saving
+                                    ? t('common.saving')
+                                    : t('admin.discord_bot.save_settings')}
                             </Button>
                             <Button
                                 variant="outline"
@@ -316,7 +396,9 @@ export default function DiscordBot({ settings, available_events }: Props) {
                                 disabled={testing}
                             >
                                 <Send className="mr-1.5 size-4" />
-                                {testing ? t('admin.discord_bot.sending') : t('admin.discord_bot.send_test')}
+                                {testing
+                                    ? t('admin.discord_bot.sending')
+                                    : t('admin.discord_bot.send_test')}
                             </Button>
                         </div>
                     </CardContent>
@@ -327,43 +409,68 @@ export default function DiscordBot({ settings, available_events }: Props) {
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>{t('admin.discord_bot.events_title')}</CardTitle>
+                                <CardTitle>
+                                    {t('admin.discord_bot.events_title')}
+                                </CardTitle>
                                 <CardDescription>
                                     {t('admin.discord_bot.events_description')}
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" onClick={selectAll} disabled={allSelected}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={selectAll}
+                                    disabled={allSelected}
+                                >
                                     {t('admin.discord_bot.select_all')}
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={deselectAll} disabled={enabledEvents.length === 0}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={deselectAll}
+                                    disabled={enabledEvents.length === 0}
+                                >
                                     {t('admin.discord_bot.deselect_all')}
                                 </Button>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {Object.entries(groupedEvents).map(([group, events]) => (
-                            <div key={group}>
-                                <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-                                    {group}
-                                </h3>
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    {events.map(([key, config]) => (
-                                        <label
-                                            key={key}
-                                            className="flex items-center gap-3 rounded-lg border border-border/50 px-4 py-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                                        >
-                                            <Checkbox
-                                                checked={enabledEvents.includes(key)}
-                                                onCheckedChange={(checked) => toggleEvent(key, checked === true)}
-                                            />
-                                            <span className="text-sm font-medium">{config.label}</span>
-                                        </label>
-                                    ))}
+                        {Object.entries(groupedEvents).map(
+                            ([group, events]) => (
+                                <div key={group}>
+                                    <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                                        {group}
+                                    </h3>
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        {events.map(([key, config]) => (
+                                            <label
+                                                key={key}
+                                                className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/50 px-4 py-3 transition-colors hover:bg-accent/50"
+                                            >
+                                                <Checkbox
+                                                    checked={enabledEvents.includes(
+                                                        key,
+                                                    )}
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        toggleEvent(
+                                                            key,
+                                                            checked === true,
+                                                        )
+                                                    }
+                                                />
+                                                <span className="text-sm font-medium">
+                                                    {config.label}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ),
+                        )}
                     </CardContent>
                 </Card>
             </div>

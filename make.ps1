@@ -38,7 +38,7 @@ $APP_PORT       = if ($env:APP_PORT)       { $env:APP_PORT }       else { "8000"
 
 # ── Volume list for nuke ────────────────────────────────────────────
 $Volumes = @(
-    "pz-postgres", "pz-app-vendor", "pz-app-node-modules", "pz-app-build",
+    "pz-postgres", "pz-app-storage",
     "pz-server-files", "pz-data", "pz-redis", "pz-backups", "pz-lua-bridge",
     "pz-map-tiles", "pz-caddy-data", "pz-caddy-config"
 )
@@ -349,7 +349,6 @@ function Do-Nuke {
         $remaining | ForEach-Object { docker volume rm $_ 2>$null | Out-Null }
     }
     Remove-Item -Force -ErrorAction SilentlyContinue .env, app\.env, .firewall.conf
-    Remove-Item -Force -ErrorAction SilentlyContinue caddy\Caddyfile, caddy\certs\cert.pem, caddy\certs\key.pem
     Write-Host "Nuke complete. All volumes and config removed." -ForegroundColor Green
 }
 

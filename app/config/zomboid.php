@@ -58,7 +58,8 @@ return [
         'default_zoom' => 13,
         'center_x' => 12854.0,
         'center_y' => 14322.0,
-        'proxy_url' => env('PZ_MAP_PROXY_URL', 'https://map.projectzomboid.com/maps/42.20.0/base/layer0_files/{z}/{x}_{y}.jpg'),
+        // Maps are generated into the Docker named volume and served locally.
+        'proxy_url' => env('PZ_MAP_PROXY_URL', ''),
         'proxy_tile_size' => 2048,
         'proxy_max_zoom' => (int) env('PZ_MAP_PROXY_MAX_ZOOM', 22),
         'proxy_dzi' => [

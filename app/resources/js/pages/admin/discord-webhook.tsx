@@ -5,7 +5,13 @@ import { fetchAction } from '@/lib/fetch-action';
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,6 +37,8 @@ type Props = {
     available_events: Record<string, EventConfig>;
 };
 
+const REMINDER_EVENT = 'server.autorestart.upcoming';
+
 export default function DiscordWebhook({ settings, available_events }: Props) {
     const { t } = useTranslation();
     const breadcrumbs: BreadcrumbItem[] = [
@@ -40,7 +48,9 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
     const [webhookUrl, setWebhookUrl] = useState('');
     const [showUrlInput, setShowUrlInput] = useState(!settings.has_webhook_url);
     const [enabled, setEnabled] = useState(settings.enabled);
-    const [enabledEvents, setEnabledEvents] = useState<string[]>(settings.enabled_events);
+    const [enabledEvents, setEnabledEvents] = useState<string[]>(
+        settings.enabled_events,
+    );
     const [saving, setSaving] = useState(false);
     const [testing, setTesting] = useState(false);
 
@@ -58,7 +68,11 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
 
     function toggleEvent(eventKey: string, checked: boolean) {
         setEnabledEvents((prev) =>
-            checked ? [...prev, eventKey] : prev.filter((e) => e !== eventKey),
+            checked
+                ? prev.includes(eventKey)
+                    ? prev
+                    : [...prev, eventKey]
+                : prev.filter((e) => e !== eventKey),
         );
     }
 
@@ -109,7 +123,9 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
             <Head title={t('admin.discord.title')} />
             <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.discord.title')}</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {t('admin.discord.title')}
+                    </h1>
                     <p className="text-muted-foreground">
                         {t('admin.discord.description')}
                     </p>
@@ -129,11 +145,15 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
                     <CardContent className="space-y-4">
                         {/* Webhook URL */}
                         <div className="space-y-2">
-                            <Label htmlFor="webhook-url">{t('admin.discord.webhook_url_label')}</Label>
+                            <Label htmlFor="webhook-url">
+                                {t('admin.discord.webhook_url_label')}
+                            </Label>
                             {settings.has_webhook_url && !showUrlInput ? (
                                 <div className="flex items-center gap-2">
                                     <Input
-                                        value={settings.webhook_url_masked ?? ''}
+                                        value={
+                                            settings.webhook_url_masked ?? ''
+                                        }
                                         disabled
                                         className="font-mono"
                                     />
@@ -150,7 +170,9 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
                                     id="webhook-url"
                                     type="url"
                                     value={webhookUrl}
-                                    onChange={(e) => setWebhookUrl(e.target.value)}
+                                    onChange={(e) =>
+                                        setWebhookUrl(e.target.value)
+                                    }
                                     placeholder="https://discord.com/api/webhooks/..."
                                 />
                             )}
@@ -161,7 +183,9 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
                         {/* Enable/Disable */}
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <Label htmlFor="webhook-enabled">{t('admin.discord.enable_label')}</Label>
+                                <Label htmlFor="webhook-enabled">
+                                    {t('admin.discord.enable_label')}
+                                </Label>
                                 <p className="text-sm text-muted-foreground">
                                     {t('admin.discord.enable_description')}
                                 </p>
@@ -175,10 +199,34 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
 
                         <Separator />
 
+                        <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="webhook-reminder-enabled">
+                                    {t('admin.discord.reminder_enable_label')}
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    {t(
+                                        'admin.discord.reminder_enable_description',
+                                    )}
+                                </p>
+                            </div>
+                            <Switch
+                                id="webhook-reminder-enabled"
+                                checked={enabledEvents.includes(REMINDER_EVENT)}
+                                onCheckedChange={(checked) =>
+                                    toggleEvent(REMINDER_EVENT, checked)
+                                }
+                            />
+                        </div>
+
+                        <Separator />
+
                         {/* Actions */}
                         <div className="flex items-center gap-2">
                             <Button onClick={save} disabled={saving}>
-                                {saving ? t('common.saving') : t('admin.discord.save_settings')}
+                                {saving
+                                    ? t('common.saving')
+                                    : t('admin.discord.save_settings')}
                             </Button>
                             {settings.has_webhook_url && (
                                 <Button
@@ -187,7 +235,9 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
                                     disabled={testing}
                                 >
                                     <Send className="mr-1.5 size-4" />
-                                    {testing ? t('admin.discord.sending') : t('admin.discord.send_test')}
+                                    {testing
+                                        ? t('admin.discord.sending')
+                                        : t('admin.discord.send_test')}
                                 </Button>
                             )}
                         </div>
@@ -199,43 +249,68 @@ export default function DiscordWebhook({ settings, available_events }: Props) {
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>{t('admin.discord.events_title')}</CardTitle>
+                                <CardTitle>
+                                    {t('admin.discord.events_title')}
+                                </CardTitle>
                                 <CardDescription>
                                     {t('admin.discord.events_description')}
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" onClick={selectAll} disabled={allSelected}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={selectAll}
+                                    disabled={allSelected}
+                                >
                                     {t('admin.discord.select_all')}
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={deselectAll} disabled={enabledEvents.length === 0}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={deselectAll}
+                                    disabled={enabledEvents.length === 0}
+                                >
                                     {t('admin.discord.deselect_all')}
                                 </Button>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {Object.entries(groupedEvents).map(([group, events]) => (
-                            <div key={group}>
-                                <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-                                    {group}
-                                </h3>
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    {events.map(([key, config]) => (
-                                        <label
-                                            key={key}
-                                            className="flex items-center gap-3 rounded-lg border border-border/50 px-4 py-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                                        >
-                                            <Checkbox
-                                                checked={enabledEvents.includes(key)}
-                                                onCheckedChange={(checked) => toggleEvent(key, checked === true)}
-                                            />
-                                            <span className="text-sm font-medium">{config.label}</span>
-                                        </label>
-                                    ))}
+                        {Object.entries(groupedEvents).map(
+                            ([group, events]) => (
+                                <div key={group}>
+                                    <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                                        {group}
+                                    </h3>
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        {events.map(([key, config]) => (
+                                            <label
+                                                key={key}
+                                                className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/50 px-4 py-3 transition-colors hover:bg-accent/50"
+                                            >
+                                                <Checkbox
+                                                    checked={enabledEvents.includes(
+                                                        key,
+                                                    )}
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        toggleEvent(
+                                                            key,
+                                                            checked === true,
+                                                        )
+                                                    }
+                                                />
+                                                <span className="text-sm font-medium">
+                                                    {config.label}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ),
+                        )}
                     </CardContent>
                 </Card>
             </div>

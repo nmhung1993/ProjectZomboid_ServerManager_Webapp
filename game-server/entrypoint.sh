@@ -6,6 +6,12 @@
 # --- Root-only init: fix volume permissions, then re-exec as steam ---
 if [ "$(id -u)" = "0" ]; then
     echo "[entrypoint] Running as root — fixing volume ownership..."
+    if [ -d /opt/zomboid-manager ]; then
+        echo "[entrypoint] Seeding bundled ZomboidManager mod..."
+        rm -rf /home/steam/Zomboid/mods/ZomboidManager
+        mkdir -p /home/steam/Zomboid/mods
+        cp -a /opt/zomboid-manager /home/steam/Zomboid/mods/ZomboidManager
+    fi
     chown steam:steam /home/steam/Zomboid 2>/dev/null || true
     chown -R steam:steam /home/steam/Zomboid/Lua 2>/dev/null || true
     chown -R steam:steam /home/steam/Zomboid/mods 2>/dev/null || true
