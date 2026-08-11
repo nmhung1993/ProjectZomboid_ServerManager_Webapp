@@ -269,7 +269,7 @@ type StoredMapView = {
 function getMapViewStorageKey(): string {
     // Bump the key when CRS/tile scaling changes so old coordinates cannot
     // restore the map outside the generated pyramid.
-    return `pz-map:view:v3:${window.location.pathname}`;
+    return `pz-map:view:v4:${window.location.pathname}`;
 }
 
 function loadStoredMapView(): StoredMapView | null {
@@ -391,8 +391,7 @@ export default function PzMap({
             const bounds = getDziBounds(dzi);
 
             const minBoundsZoom = map.getBoundsZoom(bounds, false);
-            const overviewZoom = Math.max(0, minBoundsZoom - 1);
-            map.setMinZoom(overviewZoom);
+            map.setMinZoom(minBoundsZoom);
             let storedLatLng = storedView
                 ? L.latLng(storedView.lat, storedView.lng)
                 : null;
@@ -403,7 +402,7 @@ export default function PzMap({
 
             if (storedLatLng) {
                 const restoredZoom = Math.max(
-                    overviewZoom,
+                    minBoundsZoom,
                     Math.min(
                         storedView?.zoom ?? mapConfig.defaultZoom,
                         mapConfig.maxZoom,
@@ -411,9 +410,7 @@ export default function PzMap({
                 );
                 map.setView(storedLatLng, restoredZoom, { animate: false });
             } else {
-                map.setView(bounds.getCenter(), overviewZoom, {
-                    animate: false,
-                });
+                map.fitBounds(bounds, { animate: false });
             }
 
             // Avoid drag snap-back on custom CRS: keep free pan in interactive mode.

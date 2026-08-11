@@ -183,7 +183,8 @@ class GenerateMapTiles extends Command
             image_save_options: {}
             enable_cache: false
             cache_limit_mb: 0
-            top_view_square_size: 1
+            # Four pixels per PZ square produces native detail through zoom 17.
+            top_view_square_size: 4
             top_view_color_mode: carto-zed
             use_mark: false
             plants_conf:

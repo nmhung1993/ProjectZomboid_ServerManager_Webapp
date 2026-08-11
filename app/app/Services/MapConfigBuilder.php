@@ -26,10 +26,14 @@ class MapConfigBuilder
             $nativeMaxZoom = $localDzi['maxNativeZoom'];
             $localMinZoom = 0;
             $localMaxZoom = min($maxZoom, $nativeMaxZoom);
+            $localTileSize = (int) config('zomboid.map.tile_size');
+            if (! $localDzi['isometric']) {
+                $localTileSize *= max(1, (int) round($localDzi['sqr']));
+            }
 
             return [
                 'tileUrl' => $tileUrl,
-                'tileSize' => config('zomboid.map.tile_size'),
+                'tileSize' => $localTileSize,
                 'minZoom' => $localMinZoom,
                 'maxZoom' => $localMaxZoom,
                 'defaultZoom' => max($localMinZoom, min($defaultZoom, $localMaxZoom)),
@@ -96,7 +100,9 @@ class MapConfigBuilder
             'y0' => (float) ($mapInfo['y0'] ?? 0) / $levelScale,
             'sqr' => $rawSqr / $levelScale,
             'maxNativeZoom' => (int) ceil(log(max($w, $h), 2)),
-            'isometric' => $rawSqr > 2,
+            // Top-view supersampling uses sqr=4; isometric maps use the
+            // much larger native square size (typically 128).
+            'isometric' => $rawSqr >= 16,
         ];
     }
 }
