@@ -86,8 +86,8 @@ class SteamWorkshopClient
             'title' => $title,
             'description' => $description,
             'preview_url' => isset($file['preview_url']) ? (string) $file['preview_url'] : null,
-            'mod_ids' => $this->extractMatches('/Mod\s*ID\s*:\s*([\w.\-]+)/i', $description),
-            'map_folders' => $this->extractMatches('/Map\s*Folder\s*:\s*([\w.\-]+)/i', $description),
+            'mod_ids' => $this->extractMatches('/Mod\s*ID\s*:\s*([^\r\n]+)/i', $description),
+            'map_folders' => $this->extractMatches('/Map\s*Folder\s*:\s*([^\r\n]+)/i', $description),
         ];
     }
 

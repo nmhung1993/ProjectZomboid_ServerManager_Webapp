@@ -269,7 +269,7 @@ type StoredMapView = {
 function getMapViewStorageKey(): string {
     // Bump the key when CRS/tile scaling changes so old coordinates cannot
     // restore the map outside the generated pyramid.
-    return `pz-map:view:v4:${window.location.pathname}`;
+    return `pz-map:view:v5:${window.location.pathname}`;
 }
 
 function loadStoredMapView(): StoredMapView | null {
@@ -391,7 +391,11 @@ export default function PzMap({
             const bounds = getDziBounds(dzi);
 
             const minBoundsZoom = map.getBoundsZoom(bounds, false);
-            map.setMinZoom(minBoundsZoom);
+            const constrainedMinZoom = Math.min(
+                mapConfig.maxZoom,
+                minBoundsZoom + 2,
+            );
+            map.setMinZoom(constrainedMinZoom);
             let storedLatLng = storedView
                 ? L.latLng(storedView.lat, storedView.lng)
                 : null;
@@ -402,7 +406,7 @@ export default function PzMap({
 
             if (storedLatLng) {
                 const restoredZoom = Math.max(
-                    minBoundsZoom,
+                    constrainedMinZoom,
                     Math.min(
                         storedView?.zoom ?? mapConfig.defaultZoom,
                         mapConfig.maxZoom,
@@ -410,11 +414,14 @@ export default function PzMap({
                 );
                 map.setView(storedLatLng, restoredZoom, { animate: false });
             } else {
-                map.fitBounds(bounds, { animate: false });
+                map.setView(bounds.getCenter(), constrainedMinZoom, {
+                    animate: false,
+                });
             }
 
-            // Avoid drag snap-back on custom CRS: keep free pan in interactive mode.
-            map.options.maxBoundsViscosity = 0;
+            // Keep the viewport inside the generated map pyramid.
+            map.setMaxBounds(bounds);
+            map.options.maxBoundsViscosity = 1;
         } else if (!hasTiles) {
             // PZ coords: Leaflet uses [lat, lng] = [-y, x]
             const center = L.latLng(-mapConfig.center.y, mapConfig.center.x);

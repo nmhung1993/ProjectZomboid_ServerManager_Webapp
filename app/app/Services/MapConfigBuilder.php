@@ -23,9 +23,8 @@ class MapConfigBuilder
         if ($localDzi) {
             // The generated pyramid is authoritative. Do not expose zoom
             // levels below its bounds or above its native resolution.
-            $nativeMaxZoom = $localDzi['maxNativeZoom'];
             $localMinZoom = 0;
-            $localMaxZoom = min($maxZoom, $nativeMaxZoom);
+            $localMaxZoom = $maxZoom;
             $localTileSize = (int) config('zomboid.map.tile_size');
             if (! $localDzi['isometric']) {
                 $localTileSize *= max(1, (int) round($localDzi['sqr']));

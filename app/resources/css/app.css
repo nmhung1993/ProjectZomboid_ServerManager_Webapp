@@ -267,7 +267,7 @@ body,
 }
 
 .leaflet-container {
-    background: #1a1a2e !important;
+    background: #000 !important;
 }
 
 .pz-map.leaflet-container {

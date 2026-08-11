@@ -54,7 +54,7 @@ return [
         'tiles_path' => env('PZ_MAP_TILES_PATH', '/map-tiles'),
         'tile_size' => 256,
         'min_zoom' => 13,
-        'max_zoom' => 17,
+        'max_zoom' => 19,
         'default_zoom' => 13,
         'center_x' => 12854.0,
         'center_y' => 14322.0,

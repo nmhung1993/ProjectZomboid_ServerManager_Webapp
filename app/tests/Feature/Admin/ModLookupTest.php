@@ -65,6 +65,29 @@ it('returns multiple mod ids for a modpack', function () {
         ]);
 });
 
+it('preserves spaces in mod ids and map folders', function () {
+    Http::fake([
+        'api.steampowered.com/*' => Http::response([
+            'response' => [
+                'publishedfiledetails' => [[
+                    'result' => 1,
+                    'publishedfileid' => '3486814612',
+                    'title' => 'Fort Waterfront B42',
+                    'description' => "Mod ID: Fort Waterfront B42\nMap Folder: Fort Waterfront",
+                ]],
+            ],
+        ]),
+    ]);
+
+    $this->actingAs($this->admin)
+        ->postJson('/admin/mods/lookup', ['workshop_id' => '3486814612'])
+        ->assertOk()
+        ->assertJson([
+            'mod_ids' => ['Fort Waterfront B42'],
+            'map_folders' => ['Fort Waterfront'],
+        ]);
+});
+
 it('returns 404 when Steam reports the file is missing', function () {
     Http::fake([
         'api.steampowered.com/*' => Http::response([
