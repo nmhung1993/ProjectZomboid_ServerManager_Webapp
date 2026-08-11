@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { DziInfo, MapConfig, PlayerMarker } from '@/types/server';
 
 const TRANSPARENT_TILE_DATA_URL =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
 type MarkerAction = 'kick' | 'ban' | 'access' | 'inventory';
 
@@ -267,7 +267,9 @@ type StoredMapView = {
 };
 
 function getMapViewStorageKey(): string {
-    return `pz-map:view:${window.location.pathname}`;
+    // Bump the key when CRS/tile scaling changes so old coordinates cannot
+    // restore the map outside the generated pyramid.
+    return `pz-map:view:v3:${window.location.pathname}`;
 }
 
 function loadStoredMapView(): StoredMapView | null {
@@ -361,7 +363,8 @@ export default function PzMap({
 
         const map = L.map(containerRef.current, {
             crs,
-            minZoom: mapConfig.minZoom,
+            // Let fitBounds determine the actual minimum for the viewport.
+            minZoom: 0,
             maxZoom: mapConfig.maxZoom,
             zoomControl: interactive,
             dragging: interactive,
@@ -378,7 +381,7 @@ export default function PzMap({
         if (hasTiles && mapConfig.tileUrl && dzi) {
             createDziTileLayer(mapConfig.tileUrl, {
                 tileSize: mapConfig.tileSize,
-                minZoom: mapConfig.minZoom,
+                minZoom: 0,
                 maxZoom: mapConfig.maxZoom,
                 maxNativeZoom,
                 noWrap: true,
@@ -388,14 +391,19 @@ export default function PzMap({
             const bounds = getDziBounds(dzi);
 
             const minBoundsZoom = map.getBoundsZoom(bounds, false);
-            map.setMinZoom(minBoundsZoom);
-            const storedLatLng = storedView
+            const overviewZoom = Math.max(0, minBoundsZoom - 1);
+            map.setMinZoom(overviewZoom);
+            let storedLatLng = storedView
                 ? L.latLng(storedView.lat, storedView.lng)
                 : null;
+            // Ignore stale views from an older CRS or a different tile pyramid.
+            if (storedLatLng && !bounds.pad(0.25).contains(storedLatLng)) {
+                storedLatLng = null;
+            }
 
             if (storedLatLng) {
                 const restoredZoom = Math.max(
-                    minBoundsZoom,
+                    overviewZoom,
                     Math.min(
                         storedView?.zoom ?? mapConfig.defaultZoom,
                         mapConfig.maxZoom,
@@ -403,7 +411,9 @@ export default function PzMap({
                 );
                 map.setView(storedLatLng, restoredZoom, { animate: false });
             } else {
-                map.fitBounds(bounds, { animate: false });
+                map.setView(bounds.getCenter(), overviewZoom, {
+                    animate: false,
+                });
             }
 
             // Avoid drag snap-back on custom CRS: keep free pan in interactive mode.

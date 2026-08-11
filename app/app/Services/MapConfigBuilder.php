@@ -12,18 +12,27 @@ class MapConfigBuilder
     public function build(): array
     {
         $localDzi = $this->getLocalDziConfig();
-        $tileUrl = url('/admin/map-tiles/{z}/{x}_{y}?v=42.20.0');
+        $mapInfoPath = config('zomboid.map.tiles_path').'/html/map_data/base/map_info.json';
+        $tileVersion = is_file($mapInfoPath) ? filemtime($mapInfoPath) : 'missing';
+        // Keep tiles on the same origin so localhost, LAN IP, and HTTPS all work.
+        $tileUrl = '/admin/map-tiles/{z}/{x}_{y}?v='.$tileVersion;
         $minZoom = (int) config('zomboid.map.min_zoom');
         $maxZoom = (int) config('zomboid.map.max_zoom');
         $defaultZoom = (int) config('zomboid.map.default_zoom');
 
         if ($localDzi) {
+            // The generated pyramid is authoritative. Do not expose zoom
+            // levels below its bounds or above its native resolution.
+            $nativeMaxZoom = $localDzi['maxNativeZoom'];
+            $localMinZoom = 0;
+            $localMaxZoom = min($maxZoom, $nativeMaxZoom);
+
             return [
                 'tileUrl' => $tileUrl,
                 'tileSize' => config('zomboid.map.tile_size'),
-                'minZoom' => $minZoom,
-                'maxZoom' => $maxZoom,
-                'defaultZoom' => max($minZoom, min($defaultZoom, $maxZoom)),
+                'minZoom' => $localMinZoom,
+                'maxZoom' => $localMaxZoom,
+                'defaultZoom' => max($localMinZoom, min($defaultZoom, $localMaxZoom)),
                 'center' => [
                     'x' => config('zomboid.map.center_x'),
                     'y' => config('zomboid.map.center_y'),
@@ -49,7 +58,7 @@ class MapConfigBuilder
     /**
      * Get DZI config from locally generated tiles, or null if not available.
      *
-     * @return array{width: int, height: int, x0: int, y0: int, sqr: int, maxNativeZoom: int, isometric: bool}|null
+     * @return array{width: int, height: int, x0: float, y0: float, sqr: float, maxNativeZoom: int, isometric: bool}|null
      */
     private function getLocalDziConfig(): ?array
     {
@@ -76,18 +85,18 @@ class MapConfigBuilder
 
         $skip = (int) ($mapInfo['skip'] ?? 0);
         $levelScale = 2 ** $skip;
-        $w = (int) $mapInfo['w'] * $levelScale;
-        $h = (int) $mapInfo['h'] * $levelScale;
-        $sqr = (int) ($mapInfo['sqr'] ?? 1);
+        $w = (int) $mapInfo['w'];
+        $h = (int) $mapInfo['h'];
+        $rawSqr = (float) ($mapInfo['sqr'] ?? 1);
 
         return [
             'width' => $w,
             'height' => $h,
-            'x0' => (int) ($mapInfo['x0'] ?? 0),
-            'y0' => (int) ($mapInfo['y0'] ?? 0),
-            'sqr' => $sqr,
+            'x0' => (float) ($mapInfo['x0'] ?? 0) / $levelScale,
+            'y0' => (float) ($mapInfo['y0'] ?? 0) / $levelScale,
+            'sqr' => $rawSqr / $levelScale,
             'maxNativeZoom' => (int) ceil(log(max($w, $h), 2)),
-            'isometric' => $sqr > 2,
+            'isometric' => $rawSqr > 2,
         ];
     }
 }

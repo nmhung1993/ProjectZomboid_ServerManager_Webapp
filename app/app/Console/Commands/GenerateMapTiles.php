@@ -174,9 +174,10 @@ class GenerateMapTiles extends Command
             break_key: ''
             tile_size: 256
             tile_align_levels: 3
-            # Fast preview mode: render only base ground layer.
+            # Render the complete native-resolution pyramid so max zoom does
+            # not upscale a low-resolution preview.
             layer_range: [0, 1]
-            omit_levels: 3
+            omit_levels: 0
             image_fmt: jpg
             image_fmt_base_layer0: jpg
             image_save_options: {}

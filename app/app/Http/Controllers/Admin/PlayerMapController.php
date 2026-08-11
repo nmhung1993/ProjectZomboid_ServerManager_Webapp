@@ -221,7 +221,7 @@ class PlayerMapController extends Controller
     private function missingTileResponse(): Response
     {
         // Transparent 1x1 PNG avoids broken-image placeholders in Leaflet.
-        return response(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='), 200, [
+        return response(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII='), 200, [
             'Content-Type' => 'image/png',
             'Cache-Control' => 'no-store, max-age=0',
         ]);

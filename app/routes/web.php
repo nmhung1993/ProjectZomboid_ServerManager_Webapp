@@ -38,6 +38,11 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
+    ->get('admin/map-tiles/{level}/{tile}', [Admin\PlayerMapController::class, 'tile'])
+    ->name('admin.map.tile')
+    ->where('tile', '.*');
+
 Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
@@ -51,9 +56,6 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('players/{username}/inventory/give', [Admin\InventoryController::class, 'giveItem'])->name('players.inventory.give');
         Route::post('players/{username}/inventory/remove', [Admin\InventoryController::class, 'removeItem'])->name('players.inventory.remove');
         Route::get('players/{username}/inventory/status', [Admin\InventoryController::class, 'deliveryStatus'])->name('players.inventory.status');
-
-        // Map Tiles
-        Route::get('map-tiles/{level}/{tile}', [Admin\PlayerMapController::class, 'tile'])->name('map.tile')->where('tile', '.*');
 
         // Config
         Route::get('config', [Admin\ConfigController::class, 'index'])->name('config');

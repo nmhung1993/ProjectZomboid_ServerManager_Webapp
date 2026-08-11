@@ -6,7 +6,7 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="flex aspect-square size-24 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+            <div className="flex aspect-square size-24 items-center justify-center rounded-md bg-transparent text-sidebar-foreground">
                 {site.logo_url ? (
                     <img src={site.logo_url} alt={site.name} className="size-24 object-contain" />
                 ) : (

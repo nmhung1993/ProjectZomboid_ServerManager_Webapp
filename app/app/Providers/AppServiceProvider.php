@@ -101,6 +101,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('map-tiles', function (Request $request) {
+            return Limit::perMinute(3000)->by($request->user()?->id ?: $request->ip());
+        });
+
         RateLimiter::for('admin-sensitive', function (Request $request) {
             return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
         });
