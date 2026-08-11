@@ -38,16 +38,23 @@ class ShopController extends Controller
         $items = ShopItem::query()
             ->with('category')
             ->orderByDesc('created_at')
-            ->get()
-            ->map(fn (ShopItem $item) => [
-                ...$item->toArray(),
-                'icon' => $this->iconResolver->resolve($item->item_type),
-            ]);
+            ->get();
+
+        $catalogEntries = $this->catalogReader->getAll();
+        $icons = $this->iconResolver->resolveMany([
+            ...$items->pluck('item_type')->all(),
+            ...array_column($catalogEntries, 'full_type'),
+        ]);
+
+        $items = $items->map(fn (ShopItem $item) => [
+            ...$item->toArray(),
+            'icon' => $icons[$item->item_type],
+        ]);
 
         $catalog = array_map(fn (array $entry) => [
             ...$entry,
-            'icon' => $this->iconResolver->resolve($entry['full_type']),
-        ], $this->catalogReader->getAll());
+            'icon' => $icons[$entry['full_type']],
+        ], $catalogEntries);
 
         return Inertia::render('admin/shop', [
             'categories' => $categories,

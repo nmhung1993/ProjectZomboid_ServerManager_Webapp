@@ -33,6 +33,32 @@ class ItemIconResolver
     }
 
     /**
+     * Resolve many item types with a single directory read.
+     *
+     * @param  array<int, string>  $fullTypes
+     * @return array<string, string>
+     */
+    public function resolveMany(array $fullTypes): array
+    {
+        $files = is_dir($this->iconsDir) ? scandir($this->iconsDir) : false;
+        $availableIcons = $files === false ? [] : array_fill_keys($files, true);
+        $resolved = [];
+
+        foreach ($fullTypes as $fullType) {
+            if (isset($resolved[$fullType])) {
+                continue;
+            }
+
+            $iconFilename = $this->toIconFilename($fullType);
+            $resolved[$fullType] = isset($availableIcons[$iconFilename])
+                ? $this->iconsUrlPrefix.'/'.$iconFilename
+                : $this->iconsUrlPrefix.'/placeholder.svg';
+        }
+
+        return $resolved;
+    }
+
+    /**
      * Convert a full item type to the PZwiki icon filename.
      *
      * "Base.Axe" -> "Item_Axe.png"

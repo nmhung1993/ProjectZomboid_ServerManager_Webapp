@@ -66,7 +66,10 @@ const labelColors: Record<PlayerMarker['status'], string> = {
     dead: '#f87171',
 };
 
-function createMarkerIcon(status: PlayerMarker['status'], name: string): L.DivIcon {
+function createMarkerIcon(
+    status: PlayerMarker['status'],
+    name: string,
+): L.DivIcon {
     const color = statusColors[status];
     const labelColor = labelColors[status];
     return L.divIcon({
@@ -99,8 +102,10 @@ function createPopupHtml(marker: PlayerMarker): string {
     const statusLabel = `<span style="color: ${statusColors[marker.status]}; text-transform: capitalize; font-size: 12px;">${marker.status}</span>`;
     const coords = `<small style="color: #9ca3af;">X: ${marker.x.toFixed(0)}, Y: ${marker.y.toFixed(0)}, Z: ${marker.z}</small>`;
 
-    const btnStyle = 'display:inline-block;padding:3px 8px;font-size:11px;border-radius:4px;cursor:pointer;border:1px solid #374151;background:#1f2937;color:#e5e7eb;margin:2px;';
-    const btnDanger = 'display:inline-block;padding:3px 8px;font-size:11px;border-radius:4px;cursor:pointer;border:1px solid #7f1d1d;background:#991b1b;color:#fecaca;margin:2px;';
+    const btnStyle =
+        'display:inline-block;padding:3px 8px;font-size:11px;border-radius:4px;cursor:pointer;border:1px solid #374151;background:#1f2937;color:#e5e7eb;margin:2px;';
+    const btnDanger =
+        'display:inline-block;padding:3px 8px;font-size:11px;border-radius:4px;cursor:pointer;border:1px solid #7f1d1d;background:#991b1b;color:#fecaca;margin:2px;';
 
     const actions = marker.is_online
         ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:2px;">
@@ -124,13 +129,30 @@ function createPopupHtml(marker: PlayerMarker): string {
  * Create a DZI tile layer.
  * pzmap2dzi outputs tiles as {z}/{x}_{y}.webp (underscore separator).
  */
-function createDziTileLayer(templateUrl: string, options: L.TileLayerOptions): L.TileLayer {
+function createDziTileLayer(
+    templateUrl: string,
+    options: L.TileLayerOptions,
+): L.TileLayer {
+    const initializeTile = (
+        L.GridLayer.prototype as unknown as {
+            _initTile(this: L.GridLayer, tile: HTMLElement): void;
+        }
+    )._initTile;
+
     const Layer = L.TileLayer.extend({
         getTileUrl(coords: L.Coords) {
             return templateUrl
                 .replace('{z}', String(coords.z))
                 .replace('{x}', String(coords.x))
                 .replace('{y}', String(coords.y));
+        },
+        _initTile(this: L.TileLayer, tile: HTMLImageElement) {
+            initializeTile.call(this, tile);
+
+            // A one-pixel overlap hides fractional-pixel seams during browser scaling.
+            const tileSize = this.getTileSize();
+            tile.style.width = `${tileSize.x + 1}px`;
+            tile.style.height = `${tileSize.y + 1}px`;
         },
     }) as unknown as new (url: string, opts: L.TileLayerOptions) => L.TileLayer;
 
@@ -180,8 +202,12 @@ function createPzCRS(dzi: DziInfo): L.CRS {
         return L.Util.extend({}, L.CRS, {
             projection,
             transformation: new L.Transformation(scale, 0, scale, 0),
-            scale(zoom: number) { return Math.pow(2, zoom); },
-            zoom(s: number) { return Math.log(s) / Math.LN2; },
+            scale(zoom: number) {
+                return Math.pow(2, zoom);
+            },
+            zoom(s: number) {
+                return Math.log(s) / Math.LN2;
+            },
             // Keep panning smooth without CRS center snapping.
             infinite: true,
         }) as unknown as L.CRS;
@@ -250,12 +276,12 @@ function loadStoredMapView(): StoredMapView | null {
         if (!raw) return null;
         const parsed = JSON.parse(raw) as Partial<StoredMapView>;
         if (
-            typeof parsed.lat !== 'number'
-            || typeof parsed.lng !== 'number'
-            || typeof parsed.zoom !== 'number'
-            || Number.isNaN(parsed.lat)
-            || Number.isNaN(parsed.lng)
-            || Number.isNaN(parsed.zoom)
+            typeof parsed.lat !== 'number' ||
+            typeof parsed.lng !== 'number' ||
+            typeof parsed.zoom !== 'number' ||
+            Number.isNaN(parsed.lat) ||
+            Number.isNaN(parsed.lng) ||
+            Number.isNaN(parsed.zoom)
         ) {
             return null;
         }
@@ -267,7 +293,10 @@ function loadStoredMapView(): StoredMapView | null {
 
 function saveStoredMapView(view: StoredMapView): void {
     try {
-        window.sessionStorage.setItem(getMapViewStorageKey(), JSON.stringify(view));
+        window.sessionStorage.setItem(
+            getMapViewStorageKey(),
+            JSON.stringify(view),
+        );
     } catch {
         // Ignore storage failures (private mode, quota, etc.)
     }
@@ -312,9 +341,15 @@ export default function PzMap({
 
     // Stable refs for callbacks so event handlers always see latest values
     const onZoneDrawnRef = useRef(onZoneDrawn);
-    onZoneDrawnRef.current = onZoneDrawn;
     const drawingModeRef = useRef(drawingMode);
-    drawingModeRef.current = drawingMode;
+
+    useEffect(() => {
+        onZoneDrawnRef.current = onZoneDrawn;
+    }, [onZoneDrawn]);
+
+    useEffect(() => {
+        drawingModeRef.current = drawingMode;
+    }, [drawingMode]);
 
     // Initialize map
     useEffect(() => {
@@ -354,10 +389,18 @@ export default function PzMap({
 
             const minBoundsZoom = map.getBoundsZoom(bounds, false);
             map.setMinZoom(minBoundsZoom);
-            const storedLatLng = storedView ? L.latLng(storedView.lat, storedView.lng) : null;
+            const storedLatLng = storedView
+                ? L.latLng(storedView.lat, storedView.lng)
+                : null;
 
             if (storedLatLng) {
-                const restoredZoom = Math.max(minBoundsZoom, Math.min(storedView?.zoom ?? mapConfig.defaultZoom, mapConfig.maxZoom));
+                const restoredZoom = Math.max(
+                    minBoundsZoom,
+                    Math.min(
+                        storedView?.zoom ?? mapConfig.defaultZoom,
+                        mapConfig.maxZoom,
+                    ),
+                );
                 map.setView(storedLatLng, restoredZoom, { animate: false });
             } else {
                 map.fitBounds(bounds, { animate: false });
@@ -369,8 +412,15 @@ export default function PzMap({
             // PZ coords: Leaflet uses [lat, lng] = [-y, x]
             const center = L.latLng(-mapConfig.center.y, mapConfig.center.x);
             if (storedView) {
-                const restoredZoom = Math.max(mapConfig.minZoom, Math.min(storedView.zoom, mapConfig.maxZoom));
-                map.setView(L.latLng(storedView.lat, storedView.lng), restoredZoom, { animate: false });
+                const restoredZoom = Math.max(
+                    mapConfig.minZoom,
+                    Math.min(storedView.zoom, mapConfig.maxZoom),
+                );
+                map.setView(
+                    L.latLng(storedView.lat, storedView.lng),
+                    restoredZoom,
+                    { animate: false },
+                );
             } else {
                 map.setView(center, mapConfig.defaultZoom);
             }
@@ -397,6 +447,11 @@ export default function PzMap({
         mapRef.current = map;
 
         onMapReady?.(map);
+
+        const resizeObserver = new ResizeObserver(() => {
+            map.invalidateSize({ animate: false, pan: false });
+        });
+        resizeObserver.observe(containerRef.current);
 
         const markInteracting = () => {
             if (interactionTimeoutRef.current !== null) {
@@ -431,15 +486,23 @@ export default function PzMap({
 
             // Create preview rectangle
             state.previewRect = L.rectangle(
-                [e.latlng, e.latlng],
-                { color: '#22c55e', weight: 2, fillOpacity: 0.15, dashArray: '6 4' },
+                L.latLngBounds(e.latlng, e.latlng),
+                {
+                    color: '#22c55e',
+                    weight: 2,
+                    fillOpacity: 0.15,
+                    dashArray: '6 4',
+                },
             ).addTo(map);
         });
 
         map.on('mousemove', (e: L.LeafletMouseEvent) => {
             const state = drawStateRef.current;
-            if (!state.drawing || !state.startLatLng || !state.previewRect) return;
-            state.previewRect.setBounds(L.latLngBounds(state.startLatLng, e.latlng));
+            if (!state.drawing || !state.startLatLng || !state.previewRect)
+                return;
+            state.previewRect.setBounds(
+                L.latLngBounds(state.startLatLng, e.latlng),
+            );
         });
 
         map.on('mouseup', (e: L.LeafletMouseEvent) => {
@@ -473,6 +536,7 @@ export default function PzMap({
         });
 
         return () => {
+            resizeObserver.disconnect();
             if (interactionTimeoutRef.current !== null) {
                 window.clearTimeout(interactionTimeoutRef.current);
                 interactionTimeoutRef.current = null;
@@ -494,20 +558,23 @@ export default function PzMap({
     }, [drawingMode]);
 
     // Cancel drawing on Escape
-    const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            const state = drawStateRef.current;
-            if (state.previewRect && mapRef.current) {
-                mapRef.current.removeLayer(state.previewRect);
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                const state = drawStateRef.current;
+                if (state.previewRect && mapRef.current) {
+                    mapRef.current.removeLayer(state.previewRect);
+                }
+                state.drawing = false;
+                state.startLatLng = null;
+                state.previewRect = null;
+                if (interactive && mapRef.current) {
+                    mapRef.current.dragging.enable();
+                }
             }
-            state.drawing = false;
-            state.startLatLng = null;
-            state.previewRect = null;
-            if (interactive && mapRef.current) {
-                mapRef.current.dragging.enable();
-            }
-        }
-    }, [interactive]);
+        },
+        [interactive],
+    );
 
     useEffect(() => {
         if (drawingMode) {
@@ -524,9 +591,10 @@ export default function PzMap({
         layer.clearLayers();
 
         markers.forEach((marker) => {
-            const label = marker.name && marker.name !== marker.username
-                ? `${marker.name} (${marker.username})`
-                : marker.username;
+            const label =
+                marker.name && marker.name !== marker.username
+                    ? `${marker.name} (${marker.username})`
+                    : marker.username;
             const icon = createMarkerIcon(marker.status, label);
             const popup = L.popup().setContent(createPopupHtml(marker));
             const lMarker = L.marker([-marker.y, marker.x], { icon })
@@ -536,15 +604,19 @@ export default function PzMap({
             lMarker.on('popupopen', () => {
                 const container = popup.getElement();
                 if (!container) return;
-                container.querySelectorAll<HTMLButtonElement>('.pz-action').forEach((btn) => {
-                    btn.addEventListener('click', (ev) => {
-                        const action = (ev.currentTarget as HTMLButtonElement).dataset.action as MarkerAction;
-                        if (action && onMarkerAction) {
-                            onMarkerAction(marker, action);
-                            lMarker.closePopup();
-                        }
+                container
+                    .querySelectorAll<HTMLButtonElement>('.pz-action')
+                    .forEach((btn) => {
+                        btn.addEventListener('click', (ev) => {
+                            const action = (
+                                ev.currentTarget as HTMLButtonElement
+                            ).dataset.action as MarkerAction;
+                            if (action && onMarkerAction) {
+                                onMarkerAction(marker, action);
+                                lMarker.closePopup();
+                            }
+                        });
                     });
-                });
             });
 
             if (onMarkerClick) {
@@ -606,7 +678,9 @@ export default function PzMap({
             }).addTo(layer);
 
             const typeLabel = em.type.replace('_', ' ');
-            const targetInfo = em.target ? `<br/><small>Target: ${em.target}</small>` : '';
+            const targetInfo = em.target
+                ? `<br/><small>Target: ${em.target}</small>`
+                : '';
             circle.bindPopup(
                 `<div style="min-width:120px;">
                     <strong>${em.player}</strong><br/>
@@ -622,7 +696,12 @@ export default function PzMap({
         });
     }, [eventMarkers, onEventMarkerClick]);
 
-    return <div ref={containerRef} className={`isolate h-full w-full ${className}`} />;
+    return (
+        <div
+            ref={containerRef}
+            className={`pz-map isolate h-full w-full ${className}`}
+        />
+    );
 }
 
 function addCoordinateGrid(map: L.Map) {

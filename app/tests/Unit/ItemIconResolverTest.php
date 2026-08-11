@@ -46,6 +46,15 @@ it('resolves unknown item to placeholder', function () {
     expect($this->resolver->resolve('Unknown.ModdedItem'))->toBe('/images/items/placeholder.svg');
 });
 
+it('resolves many icons with placeholders for missing files', function () {
+    file_put_contents($this->iconsDir.'/Item_Axe.png', 'fake-png');
+
+    expect($this->resolver->resolveMany(['Base.Axe', 'Base.Hammer']))->toBe([
+        'Base.Axe' => '/images/items/Item_Axe.png',
+        'Base.Hammer' => '/images/items/placeholder.svg',
+    ]);
+});
+
 it('reports icon existence correctly', function () {
     expect($this->resolver->hasIcon('Base.Axe'))->toBeFalse();
 

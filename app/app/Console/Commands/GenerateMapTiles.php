@@ -132,13 +132,13 @@ class GenerateMapTiles extends Command
         pz_root: |-
             {$serverPath}
 
-        output_path: |-
+        output_root: |-
             {$tilesPath}
 
         output_entry: default
         output_route: map_data/
 
-        map_conf_default: default.txt
+        map_conf_default: default_b42.txt
         map_conf:
             - vanilla.txt
 
