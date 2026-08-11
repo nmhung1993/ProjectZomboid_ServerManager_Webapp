@@ -71,7 +71,7 @@ class SiteSetting extends Model
             'hero_button_text' => 'Join Server',
             'features' => self::defaultFeatures(),
             'landing_sections' => self::defaultLandingSections(),
-            'default_locale' => 'en',
+            'default_locale' => 'vi',
         ]);
     }
 

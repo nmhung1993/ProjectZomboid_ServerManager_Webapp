@@ -22,7 +22,7 @@ class SetLocale
             ?? $request->cookie('locale')
             ?? session('locale');
 
-        $default = $siteSettings->default_locale ?? 'en';
+        $default = $siteSettings->default_locale ?? 'vi';
 
         $locale = $this->resolveLocale($preferred, $this->validateDefault($default));
 
@@ -50,8 +50,8 @@ class SetLocale
             return $default;
         }
 
-        if ($sanitized === 'en') {
-            return 'en';
+        if ($sanitized === 'en' || $sanitized === 'vi') {
+            return $sanitized;
         }
 
         if (Language::query()->where('code', $sanitized)->where('is_active', true)->exists()) {
@@ -66,8 +66,8 @@ class SetLocale
      */
     private function validateDefault(string $default): string
     {
-        if ($default === 'en') {
-            return 'en';
+        if ($default === 'en' || $default === 'vi') {
+            return $default;
         }
 
         if (strlen($default) > 10 || ! preg_match(Language::LOCALE_REGEX, $default)) {
