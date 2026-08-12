@@ -52,5 +52,6 @@ workshop/ZomboidManager/Contents/mods/ZomboidManager/42/media/
 .playwright-mcp/
 
 # Map Tiles Data
+map-vanilla-tiles-offline-top/
+map-mod-tiles-offline-top/
 map-tiles-offline/
-map-tiles-offline-top/
