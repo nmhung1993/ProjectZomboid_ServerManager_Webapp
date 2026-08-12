@@ -108,6 +108,12 @@ function Get-MapNameToKeyMapping {
             if ($line -match '^\s+map_name:\s*(.+)$') {
                 $currentMapName = $Matches[1].Trim()
             }
+            elseif ($line -match '^\s+display_name:\s*(.+)$') {
+                # Some servers use the human-facing B42 map label in Map=.
+                # Treat it as an alias for the same downloaded CDN key.
+                $displayName = $Matches[1].Trim()
+                $mapping[$displayName] = $currentKey
+            }
         }
     }
 
@@ -119,6 +125,20 @@ function Get-MapNameToKeyMapping {
     foreach ($key in $mapping.Keys) {
         if (-not $mapping.ContainsKey($mapping[$key])) {
             $mapping[$mapping[$key]] = $mapping[$key]
+        }
+    }
+
+    # Known B42 map-folder aliases used by popular workshop packs. The CDN
+    # manifest stores compact keys while the game/server.ini can use labels.
+    $aliases = @{
+        'EchoCreek' = 'EchoCreekMB'
+        'EchoCreek MilitaryBase回音河 军事基地' = 'EchoCreekMB'
+        'Fort Benning B42' = 'FortBenning'
+        'Fort Waterfront B42' = 'FortWaterfront'
+    }
+    foreach ($alias in $aliases.Keys) {
+        if ($mapping.ContainsKey($aliases[$alias])) {
+            $mapping[$alias] = $mapping[$aliases[$alias]]
         }
     }
 
@@ -282,80 +302,53 @@ Write-Step 'Step 4/4: Building merged output...'
 
 $outputMapData = Join-Path $OutputDir 'html\map_data'
 
-if (Test-Path $outputMapData) {
-    if ($Force) {
-        Write-Info "Removing existing output..."
-        Remove-Item -Recurse -Force $outputMapData
-    }
-    else {
-        Write-Warn "Output already exists. Use -Force to overwrite."
-        exit 0
-    }
+# The compositor swaps only map_data after a successful staging build, so it
+# is safe to refresh an existing merged map without deleting its live tiles.
+
+# The CDN vanilla pyramid (1024px JPG) and mod pyramids (256px WebP) do not
+# share tile coordinates. Run the Pillow compositor inside the app container,
+# which maps both source folders read-only and writes only the derived volume.
+if (-not $hasVanilla) {
+    Write-Fail 'Vanilla tiles are required to build a merged map.'
+    exit 1
 }
 
-# Copy vanilla base tiles (if available)
-if ($hasVanilla) {
-    Write-Info "Copying vanilla base tiles..."
-    $outputBase = Join-Path $outputMapData 'base'
-    Copy-Item -Recurse -Force $vanillaBase $outputBase
-    Write-OK "Vanilla base copied"
-}
-else {
-    Write-Info "Skipping vanilla base (not available)"
-    $outputBase = Join-Path $outputMapData 'base'
+$docker = Get-Command docker -ErrorAction SilentlyContinue
+if (-not $docker) {
+    Write-Fail 'Docker CLI is required to run the map tile compositor.'
+    exit 1
 }
 
-# Overlay mod tiles in REVERSE Map= order.
-# In PZ, Map= leftmost = bottom layer, rightmost = top layer.
-# When merging tiles, we overlay rightmost first, then work leftwards,
-# so mods closer to vanilla (left side) end up on top and are not hidden.
-if ($modMapsToMerge.Count -gt 0) {
-    $reversedMods = @($modMapsToMerge[$($modMapsToMerge.Count - 1)..0])
-    Write-Info "Overlaying $($reversedMods.Count) mod maps (reverse Map= order)..."
-
-    $totalOverlaid = 0
-    $modsProcessed = 0
-
-    foreach ($mod in $reversedMods) {
-        $modKey = $mod.CdnKey
-        $modTileDir = Join-Path (Join-Path (Join-Path $ModDir 'html\map_data\mod_maps') $modKey) 'base_top'
-
-        if (-not (Test-Path $modTileDir)) {
-            Write-Warn "$modKey ($($mod.MapName)) - tiles not found, skipping"
-            continue
-        }
-
-        $modFilesDir = Join-Path $modTileDir 'layer0_files'
-        if (-not (Test-Path $modFilesDir)) {
-            Write-Warn "$modKey - no layer0_files, skipping"
-            continue
-        }
-
-        Write-Info "  Overlaying $modKey ($($mod.MapName))..."
-
-        $tileCount = 0
-        $tileFiles = Get-ChildItem -Path $modFilesDir -Recurse -File -Filter '*.webp'
-
-        foreach ($tile in $tileFiles) {
-            $relativePath = $tile.FullName.Substring($modFilesDir.Length + 1)
-            $destPath = [System.IO.Path]::Combine($outputBase, 'layer0_files', $relativePath)
-
-            $destDir = Split-Path $destPath -Parent
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-            }
-
-            Copy-Item -Force $tile.FullName $destPath
-            $tileCount++
-        }
-
-        Write-OK "  $modKey - $tileCount tiles overlaid"
-        $totalOverlaid += $tileCount
-        $modsProcessed++
-    }
-
-    Write-OK "Total: $totalOverlaid tiles from $modsProcessed mods"
+$image = 'zomboid_server_manager_docker-app'
+docker image inspect $image 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Fail "App image '$image' not found. Run .\make.ps1 build first."
+    exit 1
 }
+
+$compositor = Join-Path $ProjectRoot 'app\scripts\composite-offline-map-tiles.py'
+$dockerArgs = @(
+    'run', '--rm', '--entrypoint', 'python3',
+    '--mount', "type=bind,src=$VanillaDir,dst=/map-tiles-vanilla,readonly",
+    '--mount', "type=bind,src=$ModDir,dst=/map-tiles-mods,readonly",
+    '--mount', "type=bind,src=$OutputDir,dst=/map-tiles",
+    '--mount', "type=bind,src=$compositor,dst=/composite-offline-map-tiles.py,readonly",
+    $image, '/composite-offline-map-tiles.py', '--vanilla', '/map-tiles-vanilla', '--mods', '/map-tiles-mods', '--output', '/map-tiles'
+)
+
+# Map= is ordered bottom-to-top by PZ. Apply it left-to-right so later entries
+# remain visible at overlaps, exactly matching the active server configuration.
+foreach ($mod in $modMapsToMerge) {
+    $dockerArgs += @('--mod', $mod.CdnKey)
+}
+
+Write-Info "Compositing $($modMapsToMerge.Count) active mod map(s) into vanilla..."
+& docker @dockerArgs
+if ($LASTEXITCODE -ne 0) {
+    Write-Fail "Tile compositor failed with exit code $LASTEXITCODE"
+    exit $LASTEXITCODE
+}
+Write-OK 'Merged pyramid written to map-tiles-merged'
 
 # Summary
 Write-Host ''
