@@ -231,7 +231,11 @@ volumes:
   lua-bridge:
     name: pz-lua-bridge
   map-tiles:
-    name: pz-map-tiles
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./map-tiles-offline-top
   caddy-data:
     name: pz-caddy-data
   caddy-config:

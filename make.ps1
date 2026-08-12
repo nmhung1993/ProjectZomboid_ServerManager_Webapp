@@ -24,7 +24,8 @@ $ErrorActionPreference = "Continue"
 # ── Architecture detection ──────────────────────────────────────────
 $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
     "aarch64"
-} else {
+}
+else {
     "x86_64"
 }
 
@@ -32,9 +33,9 @@ $ArchFile = if ($arch -eq "aarch64") { "docker-compose.arm64.yml" } else { "dock
 $ComposeArgs = @("compose", "-f", "docker-compose.yml", "-f", $ArchFile)
 
 # ── Port defaults (override via env vars) ───────────────────────────
-$PZ_GAME_PORT   = if ($env:PZ_GAME_PORT)   { $env:PZ_GAME_PORT }   else { "16261" }
+$PZ_GAME_PORT = if ($env:PZ_GAME_PORT) { $env:PZ_GAME_PORT }   else { "16261" }
 $PZ_DIRECT_PORT = if ($env:PZ_DIRECT_PORT) { $env:PZ_DIRECT_PORT } else { "16262" }
-$APP_PORT       = if ($env:APP_PORT)       { $env:APP_PORT }       else { "8000" }
+$APP_PORT = if ($env:APP_PORT) { $env:APP_PORT }       else { "8000" }
 
 # ── Volume list for nuke ────────────────────────────────────────────
 $Volumes = @(
@@ -218,14 +219,39 @@ function Do-DownloadMap {
         Write-Host "Error: download-map-tiles.ps1 not found at $scriptPath" -ForegroundColor Red
         return
     }
-    $outputDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-tiles-offline" }
-    Write-Host "Downloading map tiles to: $outputDir" -ForegroundColor Cyan
+    $outputDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-vanilla-tiles-offline-top" }
+    Write-Host "Downloading vanilla B42 map tiles to: $outputDir" -ForegroundColor Cyan
     Write-Host "This may take 30-60 minutes depending on internet speed." -ForegroundColor Yellow
-    $args = @('-OutputDir', $outputDir)
-    if ($script:CmdArgs) {
-        $args += $script:CmdArgs
+    & $scriptPath -OutputDir $outputDir @script:CmdArgs
+}
+
+function Do-DownloadModMaps {
+    $scriptPath = Join-Path $PSScriptRoot "scripts\download-mod-map-tiles.ps1"
+    if (-not (Test-Path $scriptPath)) {
+        Write-Host "Error: download-mod-map-tiles.ps1 not found at $scriptPath" -ForegroundColor Red
+        return
     }
-    & $scriptPath @args
+    $outputDir = if ($env:PZ_MOD_MAP_TILES_OFFLINE) { $env:PZ_MOD_MAP_TILES_OFFLINE } else { ".\map-mod-tiles-offline-top" }
+    Write-Host "Downloading B42 mod map tiles to: $outputDir" -ForegroundColor Cyan
+    Write-Host "This checks 45 B42 mod maps and downloads all available ones." -ForegroundColor Yellow
+    Write-Host "May take several hours depending on internet speed." -ForegroundColor Yellow
+    powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -OutputDir $outputDir @script:CmdArgs
+}
+
+function Do-MergeModMaps {
+    $scriptPath = Join-Path $PSScriptRoot "scripts\merge-mod-tiles.ps1"
+    if (-not (Test-Path $scriptPath)) {
+        Write-Host "Error: merge-mod-tiles.ps1 not found at $scriptPath" -ForegroundColor Red
+        return
+    }
+    $vanillaDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-vanilla-tiles-offline-top" }
+    $modDir = if ($env:PZ_MOD_MAP_TILES_OFFLINE) { $env:PZ_MOD_MAP_TILES_OFFLINE } else { ".\map-mod-tiles-offline-top" }
+    $outputDir = if ($env:PZ_MERGED_TILES) { $env:PZ_MERGED_TILES } else { ".\map-tiles-merged" }
+    Write-Host "Merging mod map tiles into vanilla map..." -ForegroundColor Cyan
+    Write-Host "  Vanilla: $vanillaDir" -ForegroundColor Gray
+    Write-Host "  Mods:    $modDir" -ForegroundColor Gray
+    Write-Host "  Output:  $outputDir" -ForegroundColor Gray
+    powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -VanillaDir $vanillaDir -ModDir $modDir -OutputDir $outputDir @script:CmdArgs
 }
 
 function Do-DeployApp {
@@ -257,25 +283,28 @@ function Do-Info {
             $val = $parts[1].Trim().Trim("'", '"')
             $fwVars[$key] = $val
         }
-        $httpPort  = if ($fwVars["ADMIN_HTTP_PORT"])  { $fwVars["ADMIN_HTTP_PORT"] }  else { "80" }
+        $httpPort = if ($fwVars["ADMIN_HTTP_PORT"]) { $fwVars["ADMIN_HTTP_PORT"] }  else { "80" }
         $httpsPort = if ($fwVars["ADMIN_HTTPS_PORT"]) { $fwVars["ADMIN_HTTPS_PORT"] } else { "443" }
         $host_ = $fwVars["ADMIN_PUBLIC_HOST"]
         if ($host_ -and $host_ -ne "localhost") {
             $url = if ($httpsPort -eq "443") { "https://$host_" } else { "https://${host_}:$httpsPort" }
             Write-Host "  Public Admin:  $url  (requires '.\make.ps1 admin-expose')"
-        } else {
+        }
+        else {
             Write-Host "  Public Admin:  not configured (run '.\make.ps1 init' to enable)"
         }
         Write-Host "  Caddy Ports:   $httpPort (HTTP) / $httpsPort (HTTPS)"
         Write-Host "  Firewall:      $($fwVars['FIREWALL_BACKEND'])"
-    } else {
+    }
+    else {
         Write-Host "  Public Admin:  not configured (run '.\make.ps1 init')"
         Write-Host "  Firewall:      not configured"
     }
 
     if ($publicIp) {
         Write-Host "  Public IP:     $publicIp"
-    } else {
+    }
+    else {
         Write-Host "  Public IP:     unavailable"
     }
     Write-Host "  Game Ports:    $PZ_GAME_PORT/udp, $PZ_DIRECT_PORT/udp (closed by default)"
@@ -294,7 +323,8 @@ function Do-DbInit {
     Assert-DockerEnvironment
     if (Test-VolumeExists "pz-postgres") {
         Write-Host "Volume pz-postgres already exists - keeping existing data."
-    } else {
+    }
+    else {
         Write-Host "Creating Postgres volume pz-postgres (empty database)."
         docker volume create pz-postgres | Out-Null
         Write-Host "Volume created. Run '.\make.ps1 up' to start services."
@@ -333,11 +363,13 @@ function Do-DbBackup {
 
         if ($process.ExitCode -eq 0 -and (Test-Path $backupFile) -and (Get-Item $backupFile).Length -gt 0) {
             Write-Host "Backup saved to $backupFile"
-        } else {
+        }
+        else {
             Remove-Item -Force -ErrorAction SilentlyContinue $backupFile
             Write-Host "No database to backup (first run?)" -ForegroundColor Yellow
         }
-    } finally {
+    }
+    finally {
         Remove-Item -Force -ErrorAction SilentlyContinue $stderrFile
     }
 }
@@ -415,7 +447,7 @@ function Do-AdminExpose {
         $parts = $line -split "=", 2
         $fwVars[$parts[0].Trim()] = $parts[1].Trim().Trim("'", '"')
     }
-    $httpPort  = if ($fwVars["ADMIN_HTTP_PORT"])  { $fwVars["ADMIN_HTTP_PORT"] }  else { "80" }
+    $httpPort = if ($fwVars["ADMIN_HTTP_PORT"]) { $fwVars["ADMIN_HTTP_PORT"] }  else { "80" }
     $httpsPort = if ($fwVars["ADMIN_HTTPS_PORT"]) { $fwVars["ADMIN_HTTPS_PORT"] } else { "443" }
 
     Write-Host "Opening admin ports in Windows Firewall..." -ForegroundColor Cyan
@@ -439,7 +471,7 @@ function Do-AdminHide {
         $parts = $line -split "=", 2
         $fwVars[$parts[0].Trim()] = $parts[1].Trim().Trim("'", '"')
     }
-    $httpPort  = if ($fwVars["ADMIN_HTTP_PORT"])  { $fwVars["ADMIN_HTTP_PORT"] }  else { "80" }
+    $httpPort = if ($fwVars["ADMIN_HTTP_PORT"]) { $fwVars["ADMIN_HTTP_PORT"] }  else { "80" }
     $httpsPort = if ($fwVars["ADMIN_HTTPS_PORT"]) { $fwVars["ADMIN_HTTPS_PORT"] } else { "443" }
 
     netsh advfirewall firewall delete rule name="PZ Admin HTTP $httpPort" 2>$null | Out-Null
@@ -456,7 +488,8 @@ function Do-UpdateVersion {
             if ($line -match "^PZ_VERSION=(.+)") { Write-Host "  $($Matches[1])" }
             if ($line -match "^PZ_VERSION_FULL=(.+)") { Write-Host "  $($Matches[1])" }
         }
-    } else {
+    }
+    else {
         Write-Host "  (not set)"
     }
     Write-Host ""
@@ -467,7 +500,8 @@ function Do-UpdateVersion {
     if (-not $full) { Write-Host "Cancelled."; return }
     if ($full -match "^(\d+\.\d+(\.\d+)*)") {
         $ver = $Matches[1]
-    } else {
+    }
+    else {
         Write-Host "Error: could not parse version number." -ForegroundColor Red
         return
     }
@@ -518,6 +552,12 @@ function Do-Help {
     Write-Host '    .\make.ps1 test             Run tests'
     Write-Host '    .\make.ps1 exec "CMD"       Run command in app container'
     Write-Host ""
+    Write-Host "  Map Tiles:" -ForegroundColor White
+    Write-Host "    .\make.ps1 gen-map          Generate map tiles from game data (Docker)"
+    Write-Host "    .\make.ps1 download-map     Download vanilla B42 map tiles from CDN"
+    Write-Host "    .\make.ps1 download-mod-maps Download all B42 mod map tiles from CDN"
+    Write-Host "    .\make.ps1 merge-mod-maps   Merge active mod tiles into vanilla (reads server.ini Map=)"
+    Write-Host ""
     Write-Host "  Other:" -ForegroundColor White
     Write-Host "    .\make.ps1 info             Show URLs, IP, firewall status"
     Write-Host "    .\make.ps1 arch             Show detected CPU architecture"
@@ -528,37 +568,39 @@ function Do-Help {
 
 # ── Dispatch ────────────────────────────────────────────────────────
 switch ($Command) {
-    "init"           { Do-Init }
-    "setup"          { Do-Init }
-    "deploy"         { Do-Deploy }
-    "up"             { Do-Up }
-    "down"           { Do-Down }
-    "build"          { Do-Build }
-    "restart"        { Do-Restart }
-    "stop"           { Do-Stop }
-    "logs"           { Do-Logs }
-    "ps"             { Do-Ps }
-    "pull"           { Do-Pull }
-    "migrate"        { Do-Migrate }
-    "test"           { Do-Test }
-    "exec"           { Do-Exec }
-    "arch"           { Do-Arch }
-    "info"           { Do-Info }
-    "db-check"       { Do-DbCheck }
-    "db-init"        { Do-DbInit }
-    "db-reset"       { Do-DbReset }
-    "db-backup"      { Do-DbBackup }
-    "db-restore"     { Do-DbRestore }
-    "nuke"           { Do-Nuke }
-    "expose"         { Do-Expose }
-    "hide"           { Do-Hide }
-    "admin-expose"   { Do-AdminExpose }
-    "admin-hide"     { Do-AdminHide }
+    "init" { Do-Init }
+    "setup" { Do-Init }
+    "deploy" { Do-Deploy }
+    "up" { Do-Up }
+    "down" { Do-Down }
+    "build" { Do-Build }
+    "restart" { Do-Restart }
+    "stop" { Do-Stop }
+    "logs" { Do-Logs }
+    "ps" { Do-Ps }
+    "pull" { Do-Pull }
+    "migrate" { Do-Migrate }
+    "test" { Do-Test }
+    "exec" { Do-Exec }
+    "arch" { Do-Arch }
+    "info" { Do-Info }
+    "db-check" { Do-DbCheck }
+    "db-init" { Do-DbInit }
+    "db-reset" { Do-DbReset }
+    "db-backup" { Do-DbBackup }
+    "db-restore" { Do-DbRestore }
+    "nuke" { Do-Nuke }
+    "expose" { Do-Expose }
+    "hide" { Do-Hide }
+    "admin-expose" { Do-AdminExpose }
+    "admin-hide" { Do-AdminHide }
     "update-version" { Do-UpdateVersion }
-    "gen-map"        { Do-GenMap }
-    "download-map"   { Do-DownloadMap }
-    "deploy-app"     { Do-DeployApp }
-    "help"           { Do-Help }
+    "gen-map" { Do-GenMap }
+    "download-map" { Do-DownloadMap }
+    "download-mod-maps" { Do-DownloadModMaps }
+    "merge-mod-maps" { Do-MergeModMaps }
+    "deploy-app" { Do-DeployApp }
+    "help" { Do-Help }
     default {
         Write-Host "Unknown command: $Command" -ForegroundColor Red
         Write-Host "Run '.\make.ps1 help' for available commands."

@@ -1,0 +1,186 @@
+# B42.20 Mod Maps - from https://map.projectzomboid.com/static_20260803224102/build_list.json
+# Format:
+#   Key:
+#     display_name: Tên hiển thị trên map viewer
+#     map_name: Tên map trong game (dùng trong server.ini Map=)
+# Key = folder name on CDN: maps/42.20.0/mod_maps/{Key}/base_top/
+
+Tikitown:
+  display_name: Tikitown
+  map_name: Tikitown
+
+Ashenwood:
+  display_name: Ashenwood
+  map_name: Ashenwood
+
+RavenCreek:
+  display_name: Raven Creek
+  map_name: RavenCreek
+
+EchoCreekMB:
+  display_name: Echo Creek Military Base
+  map_name: EchoCreekMB
+
+Constown:
+  display_name: Constown
+  map_name: Constown
+
+Grapeseed:
+  display_name: Grapeseed
+  map_name: Grapeseed
+
+Taylorsville:
+  display_name: Taylorsville
+  map_name: Taylorsville
+
+Maplewood:
+  display_name: Maplewood
+  map_name: Maplewood
+
+LVQZ:
+  display_name: Louisville Quarantine Zone
+  map_name: LVQZ
+
+Dawntown:
+  display_name: Dawn Town
+  map_name: Dawntown
+
+CedarHill:
+  display_name: Cedar Hill
+  map_name: CedarHill
+
+Hartburg:
+  display_name: Hartburg
+  map_name: Hartburg
+
+Chestown:
+  display_name: Chestown
+  map_name: Chestown
+
+LRM:
+  display_name: Louisville River Marina
+  map_name: LRM
+
+WPE:
+  display_name: West Point Expansion
+  map_name: WPE
+
+Greenleaf:
+  display_name: Greenleaf
+  map_name: Greenleaf
+
+DC:
+  display_name: DC
+  map_name: DC
+
+AnruisiTown:
+  display_name: Anruisi Town
+  map_name: AnruisiTown
+
+RaccoonCity:
+  display_name: Raccoon City
+  map_name: RaccoonCity
+
+Willowbrook:
+  display_name: Willowbrook
+  map_name: Willowbrook
+
+Greenport:
+  display_name: Greenport
+  map_name: Greenport
+
+Muldraugh1993:
+  display_name: Muldraugh 1993
+  map_name: Muldraugh1993
+
+HavenFall:
+  display_name: Haven Fall
+  map_name: HavenFall
+
+StJohn:
+  display_name: St. John's Farm
+  map_name: StJohn
+
+Flaherty:
+  display_name: Flaherty
+  map_name: Flaherty
+
+IrisEyot:
+  display_name: Iris Eyot
+  map_name: IrisEyot
+
+Fortbb:
+  display_name: Fort Boonesborough
+  map_name: Fortbb
+
+FortPreston:
+  display_name: Fort Preston
+  map_name: FortPreston
+
+Meiyas:
+  display_name: Meiyas
+  map_name: Meiyas
+
+Asakusa:
+  display_name: Asakusa
+  map_name: Asakusa
+
+CathayaValley:
+  display_name: Cathaya Valley
+  map_name: CathayaValley
+
+FortWaterfront:
+  display_name: Fort Waterfront
+  map_name: FortWaterfront
+
+FortJadeLake:
+  display_name: Fort Jade Lake
+  map_name: FortJadeLake
+
+Frogtown:
+  display_name: Frogtown
+  map_name: Frogtown
+
+Whiteforest:
+  display_name: Whiteforest
+  map_name: Whiteforest
+
+FortBenning:
+  display_name: Fort Benning
+  map_name: FortBenning
+
+Yanghu:
+  display_name: Yanghu
+  map_name: Yanghu
+
+Chinatown:
+  display_name: Chinatown
+  map_name: Chinatown
+
+CamdenCounty:
+  display_name: Camden County
+  map_name: CamdenCounty
+
+Blackpine:
+  display_name: Blackpine County
+  map_name: Blackpine
+
+Coryerdon:
+  display_name: Coryerdon
+  map_name: Coryerdon
+
+Blackstone:
+  display_name: Blackstone
+  map_name: Blackstone
+
+Oakshire:
+  display_name: Oakshire
+  map_name: Oakshire
+
+Wildsteel:
+  display_name: Wildsteel
+  map_name: Wildsteel
+
+LittleTownship:
+  display_name: Little Township
+  map_name: LittleTownship
