@@ -105,7 +105,21 @@ def merge_mod(base_path: Path, mod_path: Path, base_info: dict, tile_size: int, 
         y = int(match.group(2)) + y_shift
         destination = tile_path(base_path, destination_level, x, y, extension)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, destination)
+
+        # Composite: only overlay non-background pixels from mod onto base.
+        # pzmap2dzi renders empty areas as black tiles; copying them wholesale
+        # would paint black borders over valid vanilla map data.
+        if destination.exists():
+            with Image.open(destination) as base_img, Image.open(source) as mod_img:
+                base_rgb = base_img.convert("RGB")
+                mod_rgb = mod_img.convert("RGB")
+                # Pixels brighter than threshold 30 are map data (not background)
+                mask = mod_rgb.convert("L").point(lambda p: 255 if p > 30 else 0)
+                base_rgb.paste(mod_rgb, (0, 0), mask)
+                base_rgb.save(destination)
+        else:
+            shutil.copyfile(source, destination)
+
         modified.add((x, y))
 
     rebuild_parents(base_path, base_info, modified, destination_level, tile_size, extension)
