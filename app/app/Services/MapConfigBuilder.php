@@ -12,7 +12,7 @@ class MapConfigBuilder
     public function build(): array
     {
         $localDzi = $this->getLocalDziConfig();
-        $mapInfoPath = config('zomboid.map.tiles_path').'/html/map_data/base/map_info.json';
+        $mapInfoPath = config('zomboid.map.tiles_path').'/html/map_data/base_top/map_info.json';
         $tileVersion = is_file($mapInfoPath) ? filemtime($mapInfoPath) : 'missing';
         // Keep tiles on the same origin so localhost, LAN IP, and HTTPS all work.
         $tileUrl = '/admin/map-tiles/{z}/{x}_{y}?v='.$tileVersion;
@@ -65,22 +65,35 @@ class MapConfigBuilder
      */
     private function getLocalDziConfig(): ?array
     {
-        $dziPath = config('zomboid.map.tiles_path').'/html/map_data/base/layer0_files';
+        $dziPath = config('zomboid.map.tiles_path').'/html/map_data/base_top/layer0_files';
 
-        if (! is_dir($dziPath.'/0')) {
-            return null;
-        }
-
-        $webp = glob($dziPath.'/0/*.webp');
-        $jpg = glob($dziPath.'/0/*.jpg');
-
-        if (empty($webp) && empty($jpg)) {
-            return null;
-        }
-
-        $infoPath = config('zomboid.map.tiles_path').'/html/map_data/base/map_info.json';
+        $infoPath = config('zomboid.map.tiles_path').'/html/map_data/base_top/map_info.json';
 
         if (! is_file($infoPath)) {
+            return null;
+        }
+
+        // Some pyramids omit level 0 (the single overview tile) and only
+        // contain tiles from level 1 upward. Scan every numeric level
+        // directory instead of hard-requiring layer0_files/0.
+        $hasTiles = false;
+        $levelDirs = is_dir($dziPath) ? glob($dziPath.'/*', GLOB_ONLYDIR) : [];
+
+        foreach ($levelDirs as $levelDir) {
+            if (! is_numeric(basename((string) $levelDir))) {
+                continue;
+            }
+
+            $webp = glob($levelDir.'/*.webp');
+            $jpg = glob($levelDir.'/*.jpg');
+
+            if (! empty($webp) || ! empty($jpg)) {
+                $hasTiles = true;
+                break;
+            }
+        }
+
+        if (! $hasTiles) {
             return null;
         }
 

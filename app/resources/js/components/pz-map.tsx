@@ -52,6 +52,7 @@ type PzMapProps = {
     onEventMarkerClick?: (marker: EventMarker) => void;
     onMapReady?: (map: L.Map) => void;
     onInteractionChange?: (interacting: boolean) => void;
+    onZoomChange?: (zoom: number) => void;
 };
 
 const statusColors: Record<PlayerMarker['status'], string> = {
@@ -328,6 +329,7 @@ export default function PzMap({
     onEventMarkerClick,
     onMapReady,
     onInteractionChange,
+    onZoomChange,
 }: PzMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
@@ -448,6 +450,14 @@ export default function PzMap({
 
         map.on('moveend', persistView);
         map.on('zoomend', persistView);
+
+        const reportZoom = () => {
+            onZoomChange?.(map.getZoom());
+        };
+
+        map.on('zoomend', reportZoom);
+        // Report the initial zoom as soon as the view is settled.
+        reportZoom();
 
         const markersLayer = L.layerGroup().addTo(map);
         markersLayerRef.current = markersLayer;

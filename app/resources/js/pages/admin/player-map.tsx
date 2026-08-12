@@ -8,6 +8,7 @@ import {
     Radio,
     Skull,
     UsersRound,
+    ZoomIn,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PlayerActionDialogs from '@/components/player-action-dialogs';
@@ -72,6 +73,7 @@ export default function PlayerMap({
 }: Props) {
     const { t } = useTranslation();
     const [isMapInteracting, setIsMapInteracting] = useState(false);
+    const [zoomLevel, setZoomLevel] = useState<number | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
 
     useEffect(() => {
@@ -308,6 +310,12 @@ export default function PlayerMap({
                                     {t('admin.player_map.no_tiles_suffix')}
                                 </div>
                             )}
+                            {zoomLevel !== null && (
+                                <div className="absolute right-2 bottom-2 z-[1000] flex items-center gap-1.5 rounded-md border bg-background/85 px-2.5 py-1 text-xs font-medium tabular-nums text-muted-foreground shadow-sm backdrop-blur-sm">
+                                    <ZoomIn className="size-3.5" />
+                                    Zoom {zoomLevel}
+                                </div>
+                            )}
                             <PzMap
                                 markers={markers}
                                 mapConfig={mapConfig}
@@ -318,6 +326,7 @@ export default function PlayerMap({
                                     mapInstanceRef.current = map;
                                 }}
                                 onInteractionChange={setIsMapInteracting}
+                                onZoomChange={setZoomLevel}
                             />
                         </div>
 
