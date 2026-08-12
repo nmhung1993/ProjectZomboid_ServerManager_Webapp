@@ -219,7 +219,7 @@ function Do-DownloadMap {
         Write-Host "Error: download-map-tiles.ps1 not found at $scriptPath" -ForegroundColor Red
         return
     }
-    $outputDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-vanilla-tiles-offline-top" }
+    $outputDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-tiles-offline-top" }
     Write-Host "Downloading vanilla B42 map tiles to: $outputDir" -ForegroundColor Cyan
     Write-Host "This may take 30-60 minutes depending on internet speed." -ForegroundColor Yellow
     & $scriptPath -OutputDir $outputDir @script:CmdArgs
@@ -244,7 +244,7 @@ function Do-MergeModMaps {
         Write-Host "Error: merge-mod-tiles.ps1 not found at $scriptPath" -ForegroundColor Red
         return
     }
-    $vanillaDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-vanilla-tiles-offline-top" }
+    $vanillaDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-tiles-offline-top" }
     $modDir = if ($env:PZ_MOD_MAP_TILES_OFFLINE) { $env:PZ_MOD_MAP_TILES_OFFLINE } else { ".\map-mod-tiles-offline-top" }
     $outputDir = if ($env:PZ_MERGED_TILES) { $env:PZ_MERGED_TILES } else { ".\map-tiles-merged" }
     Write-Host "Merging mod map tiles into vanilla map..." -ForegroundColor Cyan

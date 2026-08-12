@@ -16,7 +16,7 @@
 .PARAMETER MapList
     Override: semicolon-separated map list (e.g. "Muldraugh, KY;RavenCreek;Grapeseed")
 .PARAMETER VanillaDir
-    Directory containing vanilla B42 map tiles (default: .\map-vanilla-tiles-offline-top)
+    Directory containing vanilla B42 map tiles (default: .\map-tiles-offline-top)
 .PARAMETER ModDir
     Directory containing mod map tiles (default: .\map-mod-tiles-offline-top)
 .PARAMETER OutputDir
@@ -32,7 +32,7 @@
 param(
     [string]$ServerIni = '',
     [string]$MapList = '',
-    [string]$VanillaDir = '.\map-vanilla-tiles-offline-top',
+    [string]$VanillaDir = '.\map-tiles-offline-top',
     [string]$ModDir = '.\map-mod-tiles-offline-top',
     [string]$OutputDir = '.\map-tiles-merged',
     [string]$ConfigFile = 'maps-b42-custom.txt',
@@ -134,14 +134,14 @@ Write-Host '==================================================' -ForegroundColor
 Write-Host ''
 
 # Resolve paths
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectRoot = Split-Path -Parent $ScriptDir
+$ScriptDir = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path)
+$ProjectRoot = [System.IO.Path]::GetDirectoryName($ScriptDir)
 
-if (-not [System.IO.Path]::IsPathRooted($VanillaDir)) { $VanillaDir = Join-Path $ProjectRoot $VanillaDir }
-if (-not [System.IO.Path]::IsPathRooted($ModDir)) { $ModDir = Join-Path $ProjectRoot $ModDir }
-if (-not [System.IO.Path]::IsPathRooted($OutputDir)) { $OutputDir = Join-Path $ProjectRoot $OutputDir }
-if (-not [System.IO.Path]::IsPathRooted($ConfigFile)) { $ConfigFile = Join-Path $ScriptDir $ConfigFile }
-if ($ServerIni -and -not [System.IO.Path]::IsPathRooted($ServerIni)) { $ServerIni = Join-Path $ProjectRoot $ServerIni }
+if (-not [System.IO.Path]::IsPathRooted($VanillaDir)) { $VanillaDir = [System.IO.Path]::Combine($ProjectRoot, $VanillaDir) }
+if (-not [System.IO.Path]::IsPathRooted($ModDir)) { $ModDir = [System.IO.Path]::Combine($ProjectRoot, $ModDir) }
+if (-not [System.IO.Path]::IsPathRooted($OutputDir)) { $OutputDir = [System.IO.Path]::Combine($ProjectRoot, $OutputDir) }
+if (-not [System.IO.Path]::IsPathRooted($ConfigFile)) { $ConfigFile = [System.IO.Path]::Combine($ScriptDir, $ConfigFile) }
+if ($ServerIni -and -not [System.IO.Path]::IsPathRooted($ServerIni)) { $ServerIni = [System.IO.Path]::Combine($ProjectRoot, $ServerIni) }
 
 $VanillaDir = [System.IO.Path]::GetFullPath($VanillaDir)
 $ModDir = [System.IO.Path]::GetFullPath($ModDir)
@@ -163,25 +163,70 @@ elseif ($ServerIni) {
     $activeMaps = Get-MapListFromIni -Path $ServerIni
 }
 else {
-    # Auto-detect server.ini
-    $possiblePaths = @(
-        Join-Path $ProjectRoot 'game-server\server.ini',
-        Join-Path $ProjectRoot 'zomboid-data\Server\servertest.ini',
-        Join-Path $ProjectRoot 'zomboid-data\Server\servertest_SandboxVars.lua'
-    )
-    foreach ($p in $possiblePaths) {
-        if (Test-Path $p) {
-            Write-Info "Auto-detected server.ini: $p"
-            $activeMaps = Get-MapListFromIni -Path $p
-            if ($activeMaps) { break }
+    # Try reading from Docker container first
+    Write-Info "Trying to read Map= from game server container..."
+    $containerName = if ($env:GAME_SERVER_CONTAINER_NAME) { $env:GAME_SERVER_CONTAINER_NAME } else { 'pz-game-server' }
+    
+    # Check if container is running
+    $containerRunning = docker ps --format '{{.Names}}' 2>$null | Select-String -Pattern "^$containerName$" -Quiet
+    if ($containerRunning) {
+        # Try multiple possible server.ini paths
+        $iniPaths = @(
+            '/home/steam/Zomboid/Server/servertest.ini',
+            '/home/steam/Zomboid/Server/ZomboidServer.ini'
+        )
+        foreach ($iniPath in $iniPaths) {
+            $iniContent = docker exec $containerName cat $iniPath 2>$null
+            if ($LASTEXITCODE -eq 0 -and $iniContent) {
+                foreach ($line in ($iniContent -split '\n')) {
+                    if ($line -match '^\s*Map\s*=\s*(.+)$') {
+                        $mapLine = $Matches[1].Trim()
+                        $activeMaps = $mapLine -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+                        Write-Info "Read from Docker container ($iniPath): $($activeMaps -join '; ')"
+                        break
+                    }
+                }
+                if ($activeMaps) { break }
+            }
+        }
+    }
+    else {
+        Write-Info "Container '$containerName' is not running, skipping Docker check."
+    }
+    
+    # Fallback: try local files
+    if (-not $activeMaps) {
+        $possiblePaths = @(
+            [System.IO.Path]::Combine($ProjectRoot, 'game-server\server.ini'),
+            [System.IO.Path]::Combine($ProjectRoot, 'zomboid-data\Server\servertest.ini')
+        )
+        foreach ($p in $possiblePaths) {
+            if (Test-Path $p) {
+                Write-Info "Auto-detected server.ini: $p"
+                $activeMaps = Get-MapListFromIni -Path $p
+                if ($activeMaps) { break }
+            }
         }
     }
 }
 
 if (-not $activeMaps -or $activeMaps.Count -eq 0) {
-    Write-Fail "No active maps found. Provide -ServerIni or -MapList."
-    Write-Host '  Example: .\scripts\merge-mod-tiles.ps1 -MapList "Muldraugh, KY;RavenCreek;Grapeseed"' -ForegroundColor Yellow
-    exit 1
+    Write-Warn "No server.ini found and no MapList provided."
+    Write-Info "Falling back to merge ALL available mod maps."
+    
+    # Build MapList from all available mod tiles
+    $modMapsBase = Join-Path $ModDir 'html\map_data\mod_maps'
+    if (Test-Path $modMapsBase) {
+        $allModKeys = Get-ChildItem -Path $modMapsBase -Directory | ForEach-Object { $_.Name }
+        # Use key as map_name (most mods use same name)
+        $activeMaps = @('Muldraugh, KY') + $allModKeys
+        Write-Info "Generated MapList: $($activeMaps -join '; ')"
+    }
+    else {
+        Write-Fail "No mod maps found at: $modMapsBase"
+        Write-Host '  Run: .\make.ps1 download-mod-maps  first.' -ForegroundColor Yellow
+        exit 1
+    }
 }
 
 Write-OK "Active maps: $($activeMaps -join ', ')"

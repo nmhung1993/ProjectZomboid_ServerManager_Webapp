@@ -134,7 +134,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-zomboid}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-zomboid}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-zomboid} -d ${DB_DATABASE:-zomboid}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-zomboid} -d ${DB_DATABASE:-zomboid}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -155,7 +155,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     command: /bin/sh -c 'set -- --appendonly yes; [ -n "$$REDIS_PASSWORD" ] && set -- "$$@" --requirepass "$$REDIS_PASSWORD"; exec redis-server "$$@"'
     healthcheck:
-      test: ["CMD-SHELL", 'if [ -n "$$REDIS_PASSWORD" ]; then REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping; else redis-cli ping; fi']
+      test: [ "CMD-SHELL", 'if [ -n "$$REDIS_PASSWORD" ]; then REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping; else redis-cli ping; fi' ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -205,12 +205,9 @@ services:
 networks:
   zomboid-net:
     driver: bridge
-    # Not internal — game-server needs internet for SteamCMD + Steam master servers
-    # RCON security: port not published to host, only accessible between containers
   backend-net:
     driver: bridge
     internal: true
-    # Internal — db and redis never accessible from host or internet
 
 # -----------------------------------------------------------------------------
 # Volumes
@@ -235,7 +232,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ./map-tiles-offline-top
+      device: ./map-tiles-merged
   caddy-data:
     name: pz-caddy-data
   caddy-config:
