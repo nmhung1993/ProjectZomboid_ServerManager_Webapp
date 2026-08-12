@@ -190,24 +190,25 @@ else {
     # Check if container is running
     $containerRunning = docker ps --format '{{.Names}}' 2>$null | Select-String -Pattern "^$containerName$" -Quiet
     if ($containerRunning) {
-        # Try multiple possible server.ini paths
-        $iniPaths = @(
-            '/home/steam/Zomboid/Server/servertest.ini',
-            '/home/steam/Zomboid/Server/ZomboidServer.ini'
-        )
+        # World names are configurable, so discover every server INI instead
+        # of assuming the legacy `servertest.ini` filename. Redirect stderr
+        # explicitly because PowerShell otherwise promotes docker warnings to
+        # terminating NativeCommandError records.
+        $iniPaths = @(docker exec $containerName sh -lc "find /home/steam/Zomboid/Server -maxdepth 1 -type f -name '*.ini' -print" 2>$null)
         foreach ($iniPath in $iniPaths) {
-            $iniContent = docker exec $containerName cat $iniPath 2>$null
-            if ($LASTEXITCODE -eq 0 -and $iniContent) {
-                foreach ($line in ($iniContent -split '\n')) {
-                    if ($line -match '^\s*Map\s*=\s*(.+)$') {
-                        $mapLine = $Matches[1].Trim()
-                        $activeMaps = $mapLine -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
-                        Write-Info "Read from Docker container ($iniPath): $($activeMaps -join '; ')"
-                        break
-                    }
+            $iniPath = [string]$iniPath
+            if ([string]::IsNullOrWhiteSpace($iniPath)) { continue }
+            $iniContent = @(docker exec $containerName cat $iniPath 2>$null)
+            if ($LASTEXITCODE -ne 0 -or -not $iniContent) { continue }
+            foreach ($line in ($iniContent -join "`n" -split '\n')) {
+                if ($line -match '^\s*Map\s*=\s*(.+)$') {
+                    $mapLine = $Matches[1].Trim()
+                    $activeMaps = $mapLine -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+                    Write-Info "Read from Docker container ($iniPath): $($activeMaps -join '; ')"
+                    break
                 }
-                if ($activeMaps) { break }
             }
+            if ($activeMaps) { break }
         }
     }
     else {
@@ -220,6 +221,7 @@ else {
             [System.IO.Path]::Combine($ProjectRoot, 'game-server\server.ini'),
             [System.IO.Path]::Combine($ProjectRoot, 'zomboid-data\Server\servertest.ini')
         )
+        $possiblePaths += @(Get-ChildItem -LiteralPath (Join-Path $ProjectRoot 'zomboid-data\Server') -Filter '*.ini' -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)
         foreach ($p in $possiblePaths) {
             if (Test-Path $p) {
                 Write-Info "Auto-detected server.ini: $p"

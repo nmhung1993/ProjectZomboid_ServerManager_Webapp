@@ -38,7 +38,9 @@ services:
       - zomboid-server:/pz-server:ro
       - backup-data:/backups
       - lua-bridge:/lua-bridge
-      - map-tiles:/map-tiles
+      # Local bind mount for pre-downloaded/merged map tiles (offline).
+      # Use a relative path so Docker Compose resolves it from the project root.
+      - ./map-tiles-merged:/map-tiles
     env_file: ./app/.env
     environment:
       DB_HOST: ${DB_HOST:-db}
@@ -87,7 +89,7 @@ services:
       - zomboid-server:/pz-server:ro
       - backup-data:/backups
       - lua-bridge:/lua-bridge
-      - map-tiles:/map-tiles
+      - ./map-tiles-merged:/map-tiles
     env_file: ./app/.env
     environment:
       DB_HOST: ${DB_HOST:-db}
@@ -227,12 +229,6 @@ volumes:
     name: pz-backups
   lua-bridge:
     name: pz-lua-bridge
-  map-tiles:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./map-tiles-merged
   caddy-data:
     name: pz-caddy-data
   caddy-config:
