@@ -212,6 +212,22 @@ function Do-GenMap {
     Invoke-Compose @("exec", "app", "php", "artisan", "zomboid:generate-map-tiles", "--force", "--workers=8")
 }
 
+function Do-DownloadMap {
+    $scriptPath = Join-Path $PSScriptRoot "scripts\download-map-tiles.ps1"
+    if (-not (Test-Path $scriptPath)) {
+        Write-Host "Error: download-map-tiles.ps1 not found at $scriptPath" -ForegroundColor Red
+        return
+    }
+    $outputDir = if ($env:PZ_MAP_TILES_OFFLINE) { $env:PZ_MAP_TILES_OFFLINE } else { ".\map-tiles-offline" }
+    Write-Host "Downloading map tiles to: $outputDir" -ForegroundColor Cyan
+    Write-Host "This may take 30-60 minutes depending on internet speed." -ForegroundColor Yellow
+    $args = @('-OutputDir', $outputDir)
+    if ($script:CmdArgs) {
+        $args += $script:CmdArgs
+    }
+    & $scriptPath @args
+}
+
 function Do-DeployApp {
     Assert-DockerEnvironment
     Invoke-Compose @("build", "app")
@@ -540,6 +556,7 @@ switch ($Command) {
     "admin-hide"     { Do-AdminHide }
     "update-version" { Do-UpdateVersion }
     "gen-map"        { Do-GenMap }
+    "download-map"   { Do-DownloadMap }
     "deploy-app"     { Do-DeployApp }
     "help"           { Do-Help }
     default {
