@@ -142,10 +142,15 @@ class PlayerMapController extends Controller
         }
 
         if ($filePath === null) {
-            $proxiedTile = $this->proxyRemoteTile($level, $baseTile);
+            // Only proxy if no local tiles have been generated/downloaded yet.
+            // Once map_info.json exists, serve exclusively from local storage.
+            $mapInfoPath = $tilesPath.'/html/map_data/base/map_info.json';
+            if (! is_file($mapInfoPath)) {
+                $proxiedTile = $this->proxyRemoteTile($level, $baseTile);
 
-            if ($proxiedTile !== null) {
-                return $proxiedTile;
+                if ($proxiedTile !== null) {
+                    return $proxiedTile;
+                }
             }
 
             return $this->missingTileResponse();
