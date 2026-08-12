@@ -65,8 +65,11 @@ class GenerateMapTiles extends Command
         }
 
         if ($this->option('force')) {
-            File::deleteDirectory($tilesPath.'/html/map_data/base');
-            File::deleteDirectory($tilesPath.'/html/map_data/base_top');
+            // Delete the entire map_data tree so pzmap2dzi does a full
+            // fresh render. Partial deletes can leave stale metadata
+            // that causes "No such file or directory" errors when mod
+            // maps add cells at zoom levels the vanilla map lacks.
+            File::deleteDirectory($tilesPath.'/html/map_data');
         }
 
         // Create output directory
@@ -99,6 +102,10 @@ class GenerateMapTiles extends Command
             $topViewPath = $tilesPath.'/html/map_data/base_top';
             $basePath = $tilesPath.'/html/map_data/base';
             if (is_dir($topViewPath)) {
+                // Remove any stale base directory first (e.g. from a previous run)
+                if (is_dir($basePath)) {
+                    File::deleteDirectory($basePath);
+                }
                 rename($topViewPath, $basePath);
             }
         }
@@ -151,60 +158,336 @@ class GenerateMapTiles extends Command
 
         $this->info("Using {$workerCount} render workers");
 
-        $config = <<<YAML
-        pz_root: |-
-            {$serverPath}
+        $pzmap2dziPath = $this->findPzmap2dzi();
+        $confDir = dirname($pzmap2dziPath).'/conf';
 
-        output_root: |-
-            {$tilesPath}
+        // Discover mod maps from server.ini Map= line
+        $modMaps = $this->resolveModMaps($confDir, $serverPath);
 
-        output_entry: default
-        output_route: map_data/
+        $mapConfLines = "    - vanilla.txt";
+        $modRootLine = '';
+        $modMapsYaml = '';
 
-        map_conf_default: default_b42.txt
-        map_conf:
-            - vanilla.txt
+        if (! empty($modMaps)) {
+            $mapConfLines .= "\n    - mod/";
+            $modRootLine = "mod_root: |-\n    {$serverPath}/steamapps/workshop/content/108600";
+            $modMapsYaml = "mod_maps:";
+            foreach ($modMaps as $modMap) {
+                $modMapsYaml .= "\n    - {$modMap}";
+            }
+        }
 
-        base_map: {$mapOption}
-
-        render_conf:
-            verbose: true
-            profile: false
-            worker_count: {$workerCount}
-            break_key: ''
-            tile_size: 256
-            tile_align_levels: 3
-            # Render the complete native-resolution pyramid so max zoom does
-            # not upscale a low-resolution preview.
-            layer_range: [0, 1]
-            omit_levels: 0
-            image_fmt: jpg
-            image_fmt_base_layer0: jpg
-            image_save_options: {}
-            enable_cache: false
-            cache_limit_mb: 0
-            # Four pixels per PZ square produces native detail through zoom 17.
-            top_view_square_size: 4
-            top_view_color_mode: carto-zed
-            use_mark: false
-            plants_conf:
-                snow: false
-                large_bush: false
-                flower: false
-                season: summer2
-                tree_size: 2
-                jumbo_tree_size: 4
-                jumbo_tree_type: 0
-                no_ground_cover: false
-                unify_tree_type: -1
-        YAML;
+        $config = "pz_root: |-\n".
+            "    {$serverPath}\n".
+            "\n".
+            "output_root: |-\n".
+            "    {$tilesPath}\n".
+            "\n".
+            "output_entry: default\n".
+            "output_route: map_data/\n".
+            "\n".
+            "map_conf_default: default_b42.txt\n".
+            "map_conf:\n".
+            "{$mapConfLines}\n".
+            "{$modRootLine}\n".
+            "base_map: {$mapOption}\n".
+            "{$modMapsYaml}\n".
+            "\n".
+            "render_conf:\n".
+            "    verbose: true\n".
+            "    profile: false\n".
+            "    worker_count: {$workerCount}\n".
+            "    break_key: ''\n".
+            "    tile_size: 256\n".
+            "    tile_align_levels: 3\n".
+            "    # Render the complete native-resolution pyramid so max zoom does\n".
+            "    # not upscale a low-resolution preview.\n".
+            "    layer_range: [0, 1]\n".
+            "    omit_levels: 0\n".
+            "    image_fmt: jpg\n".
+            "    image_fmt_base_layer0: jpg\n".
+            "    image_save_options: {}\n".
+            "    enable_cache: false\n".
+            "    cache_limit_mb: 0\n".
+            "    # Four pixels per PZ square produces native detail through zoom 17.\n".
+            "    top_view_square_size: 4\n".
+            "    top_view_color_mode: carto-zed\n".
+            "    use_mark: false\n".
+            "    plants_conf:\n".
+            "        snow: false\n".
+            "        large_bush: false\n".
+            "        flower: false\n".
+            "        season: summer2\n".
+            "        tree_size: 2\n".
+            "        jumbo_tree_size: 4\n".
+            "        jumbo_tree_type: 0\n".
+            "        no_ground_cover: false\n".
+            "        unify_tree_type: -1\n";
 
         // Config must live in pzmap2dzi/conf/ so relative map_conf paths resolve
-        $confDir = dirname($this->findPzmap2dzi()).'/conf';
         $confPath = $confDir.'/generated.yaml';
         file_put_contents($confPath, $config);
 
         return $confPath;
+    }
+
+    /**
+     * Resolve mod map names from the server.ini Map= line.
+     *
+     * Reads the active map list, parses vanilla.txt and mod/maps-*.txt to
+     * classify each map, and returns the list of mod map names (as defined
+     * in pzmap2dzi's mod map config files) that should be rendered.
+     *
+     * @return string[]
+     */
+    private function resolveModMaps(string $confDir, string $serverPath): array
+    {
+        $iniPath = config('zomboid.paths.server_ini');
+        if (! is_file($iniPath)) {
+            $this->warn('server.ini not found, skipping mod map detection.');
+
+            return [];
+        }
+
+        $ini = (new \App\Services\ServerIniParser)->read($iniPath);
+        $mapLine = $ini['Map'] ?? '';
+
+        if ($mapLine === '') {
+            return [];
+        }
+
+        // PZ uses semicolons as list separators in Map=
+        $activeMaps = array_map('trim', explode(';', $mapLine));
+        $activeMaps = array_filter($activeMaps, fn ($m) => $m !== '');
+
+        if (empty($activeMaps)) {
+            return [];
+        }
+
+        // Parse vanilla.txt to get vanilla map names
+        $vanillaNames = $this->parseVanillaMapNames($confDir.'/vanilla.txt');
+
+        // Parse mod/maps-*.txt to build mod map name → pzmap2dzi key mapping
+        $modMapKeys = $this->parseModMapKeys($confDir.'/mod');
+
+        // Auto-discover mod maps from workshop directories for any active
+        // maps not found in existing mod definition files.
+        $discoveredKeys = $this->discoverModMapKeys($serverPath, $activeMaps, $vanillaNames, $modMapKeys);
+        $modMapKeys = array_merge($modMapKeys, $discoveredKeys);
+
+        $modMaps = [];
+        foreach ($activeMaps as $mapName) {
+            // Skip vanilla maps (they're covered by base_map)
+            if (in_array($mapName, $vanillaNames, true)) {
+                continue;
+            }
+
+            // Look up the pzmap2dzi key for this mod map
+            $key = $modMapKeys[$mapName] ?? null;
+            if ($key !== null) {
+                $modMaps[] = $key;
+                $this->info("Detected mod map: {$mapName} → {$key}");
+            } else {
+                $this->warn("Mod map '{$mapName}' not found in pzmap2dzi mod definitions — skipping.");
+            }
+        }
+
+        return $modMaps;
+    }
+
+    /**
+     * Discover mod map keys by scanning workshop directories.
+     *
+     * For any active map not found in existing mod definition files,
+     * scans the Steam workshop content directory to find matching
+     * installed mods and returns their pzmap2dzi keys.
+     *
+     * @param array<string, string> $existingKeys
+     * @return array<string, string>
+     */
+    private function discoverModMapKeys(string $serverPath, array $activeMaps, array $vanillaNames, array $existingKeys): array
+    {
+        $workshopBase = $serverPath.'/steamapps/workshop/content/108600';
+        if (! is_dir($workshopBase)) {
+            return [];
+        }
+
+        $discovered = [];
+        $defEntries = [];
+
+        foreach ($activeMaps as $mapName) {
+            if (in_array($mapName, $vanillaNames, true)) {
+                continue;
+            }
+            if (isset($existingKeys[$mapName])) {
+                continue; // Already defined
+            }
+
+            // Scan workshop directories for this map
+            $workshopDirs = glob($workshopBase.'/*', GLOB_ONLYDIR);
+            foreach ($workshopDirs as $wsDir) {
+                $steamId = basename($wsDir);
+                $modDirs = glob($wsDir.'/mods/*', GLOB_ONLYDIR);
+                foreach ($modDirs as $modDir) {
+                    $modName = basename($modDir);
+                    $mapDir = $modDir.'/common/media/maps/'.$mapName;
+                    if (is_dir($mapDir)) {
+                        $key = $this->sanitizeModMapKey($mapName);
+                        $discovered[$mapName] = $key;
+                        $defEntries[] = [
+                            'key' => $key,
+                            'map_name' => $mapName,
+                            'mod_name' => $modName,
+                            'steam_id' => $steamId,
+                        ];
+                        $this->info("Discovered mod map: {$mapName} → {$key} (workshop {$steamId})");
+                        break 2; // Found match, move to next map
+                    }
+                }
+            }
+        }
+
+        // Write discovered definitions to a file so pzmap2dzi can read them
+        if (! empty($defEntries)) {
+            $pzmap2dziPath = $this->findPzmap2dzi();
+            $modConfDir = dirname($pzmap2dziPath).'/conf/mod';
+            $autoDefPath = $modConfDir.'/maps-auto-generated.txt';
+            $yaml = '';
+            foreach ($defEntries as $entry) {
+                $yaml .= "{$entry['key']}:\n";
+                $yaml .= "  display_name: {$entry['map_name']}\n";
+                $yaml .= "  map_name: {$entry['map_name']}\n";
+                $yaml .= "  mod_name: {$entry['mod_name']}\n";
+                $yaml .= "  steam_id: '{$entry['steam_id']}'\n";
+                $yaml .= "  texture: false\n\n";
+            }
+            file_put_contents($autoDefPath, $yaml);
+            $this->info("Wrote auto-generated mod definitions to: {$autoDefPath}");
+        }
+
+        return $discovered;
+    }
+
+    /**
+     * Sanitize a map name into a valid pzmap2dzi config key.
+     */
+    private function sanitizeModMapKey(string $mapName): string
+    {
+        // Replace spaces and special chars with nothing, keep alphanumeric
+        return preg_replace('/[^a-zA-Z0-9]/', '', $mapName);
+    }
+
+    /**
+     * Parse vanilla.txt to extract vanilla map names.
+     *
+     * @return string[]
+     */
+    private function parseVanillaMapNames(string $vanillaPath): array
+    {
+        if (! is_file($vanillaPath)) {
+            return [];
+        }
+
+        $content = file_get_contents($vanillaPath);
+        if ($content === false) {
+            return [];
+        }
+
+        $names = [];
+        // The default map is defined under "default:" with map_path containing the map name
+        // Other maps are defined as top-level keys
+        $lines = explode("\n", $content);
+        $currentSection = null;
+
+        foreach ($lines as $line) {
+            $line = rtrim($line, "\r");
+            $trimmed = trim($line);
+
+            // Skip comments and empty lines
+            if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+                continue;
+            }
+
+            // Check for section header (top-level key ending with :)
+            if (preg_match('/^(\S+):$/', $trimmed, $m)) {
+                $currentSection = $m[1];
+                continue;
+            }
+
+            // Extract map_name from map_path line
+            if ($currentSection !== null && preg_match('/map_path:\s*[\'"]?.*\/maps\/(.+?)[\'"]?\s*$/', $trimmed, $m)) {
+                $names[] = $m[1];
+            }
+        }
+
+        // Also add the default map name
+        $names[] = 'Muldraugh, KY';
+
+        return array_unique($names);
+    }
+
+    /**
+     * Parse mod/maps-*.txt files to build a mapping of map_name → pzmap2dzi key.
+     *
+     * @return array<string, string>
+     */
+    private function parseModMapKeys(string $modDir): array
+    {
+        if (! is_dir($modDir)) {
+            return [];
+        }
+
+        $mapFiles = glob($modDir.'/maps-*.txt');
+        if (empty($mapFiles)) {
+            return [];
+        }
+
+        $mapping = [];
+
+        foreach ($mapFiles as $file) {
+            $content = file_get_contents($file);
+            if ($content === false) {
+                continue;
+            }
+
+            // Parse YAML-like structure: each mod map is a top-level key
+            // with map_name and mod_name sub-keys
+            $lines = explode("\n", $content);
+            $currentKey = null;
+            $currentMapName = null;
+
+            foreach ($lines as $line) {
+                $line = rtrim($line, "\r");
+                $trimmed = trim($line);
+
+                if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+                    continue;
+                }
+
+                // Top-level key (no indentation, ends with :)
+                if (preg_match('/^(\S+):$/', $trimmed, $m)) {
+                    // Save previous entry
+                    if ($currentKey !== null && $currentMapName !== null) {
+                        $mapping[$currentMapName] = $currentKey;
+                    }
+                    $currentKey = $m[1];
+                    $currentMapName = null;
+                    continue;
+                }
+
+                // Indented key: map_name or mod_name
+                if ($currentKey !== null && preg_match('/^\s+map_name:\s*(.+)$/', $trimmed, $m)) {
+                    $currentMapName = trim($m[1]);
+                }
+            }
+
+            // Save last entry
+            if ($currentKey !== null && $currentMapName !== null) {
+                $mapping[$currentMapName] = $currentKey;
+            }
+        }
+
+        return $mapping;
     }
 
     private function ensureDefaultMapConfig(string $pzmap2dziPath): void

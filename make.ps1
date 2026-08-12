@@ -207,6 +207,17 @@ function Do-Exec {
     Invoke-Compose (@("exec", "app") + $script:CmdArgs)
 }
 
+function Do-GenMap {
+    Assert-DockerEnvironment
+    Invoke-Compose @("exec", "app", "php", "artisan", "zomboid:generate-map-tiles", "--force", "--workers=8")
+}
+
+function Do-DeployApp {
+    Assert-DockerEnvironment
+    Invoke-Compose @("build", "app")
+    Invoke-Compose @("up", "-d", "--force-recreate", "app")
+}
+
 function Do-Arch {
     Write-Host "Detected: $arch -> $ArchFile"
 }
@@ -528,6 +539,8 @@ switch ($Command) {
     "admin-expose"   { Do-AdminExpose }
     "admin-hide"     { Do-AdminHide }
     "update-version" { Do-UpdateVersion }
+    "gen-map"        { Do-GenMap }
+    "deploy-app"     { Do-DeployApp }
     "help"           { Do-Help }
     default {
         Write-Host "Unknown command: $Command" -ForegroundColor Red

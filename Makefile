@@ -205,6 +205,15 @@ test-game-server:
 exec:
 	$(COMPOSE) exec app $(CMD)
 
+# ── Map tile generation ──────────────────────────────────────────────
+gen-map:
+	$(COMPOSE) exec app php artisan zomboid:generate-map-tiles --force --workers=8
+
+# ── App rebuild & deploy ─────────────────────────────────────────────
+deploy-app:
+	$(COMPOSE) build app
+	$(COMPOSE) up -d --force-recreate app
+
 arch:
 	@echo "Detected: $(ARCH) -> $(ARCH_FILE)"
 
