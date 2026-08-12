@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 class GenerateMapTiles extends Command
 {
@@ -58,6 +59,9 @@ class GenerateMapTiles extends Command
 
         $hasTexturePacks = is_dir($serverPath.'/media/texturepacks');
 
+        $confDir = dirname($pzmap2dziPath).'/conf';
+        $modMaps = $this->resolveModMaps($confDir, $serverPath);
+
         if (! $this->option('force') && $this->hasGeneratedTiles($tilesPath)) {
             $this->warn('Tiles already exist. Use --force to regenerate.');
 
@@ -78,7 +82,7 @@ class GenerateMapTiles extends Command
         }
 
         // Generate pzmap2dzi config
-        $confPath = $this->generateConfig($serverPath, $tilesPath);
+        $confPath = $this->generateConfig($serverPath, $tilesPath, $modMaps);
         $this->info("Generated config: {$confPath}");
 
         // Step 1: Unpack textures
@@ -108,6 +112,10 @@ class GenerateMapTiles extends Command
                 }
                 rename($topViewPath, $basePath);
             }
+        }
+
+        if (! empty($modMaps) && ! $this->mergeModTiles($tilesPath, $modMaps, $renderCommand)) {
+            return self::FAILURE;
         }
 
         $this->info('Map tiles generated successfully at: '.$tilesPath);
@@ -151,7 +159,10 @@ class GenerateMapTiles extends Command
         return true;
     }
 
-    private function generateConfig(string $serverPath, string $tilesPath): string
+    /**
+     * @param string[] $modMaps
+     */
+    private function generateConfig(string $serverPath, string $tilesPath, array $modMaps): string
     {
         $mapOption = $this->option('map') ?: 'default';
         $workerCount = (int) ($this->option('workers') ?: $this->detectCpuCores());
@@ -160,9 +171,6 @@ class GenerateMapTiles extends Command
 
         $pzmap2dziPath = $this->findPzmap2dzi();
         $confDir = dirname($pzmap2dziPath).'/conf';
-
-        // Discover mod maps from server.ini Map= line
-        $modMaps = $this->resolveModMaps($confDir, $serverPath);
 
         $mapConfLines = "    - vanilla.txt";
         $modRootLine = '';
@@ -229,6 +237,54 @@ class GenerateMapTiles extends Command
         file_put_contents($confPath, $config);
 
         return $confPath;
+    }
+
+    /**
+     * Copy every mod's native tiles into the vanilla DZI and rebuild only the
+     * affected parent tiles. This leaves the map viewer with one coherent tile
+     * pyramid while preserving the Map= ordering as overlay priority.
+     *
+     * @param string[] $modMaps
+     */
+    private function mergeModTiles(string $tilesPath, array $modMaps, string $renderCommand): bool
+    {
+        $basePath = $tilesPath.'/html/map_data/base';
+        $modRenderName = $renderCommand === 'render base_top' ? 'base_top' : 'base';
+        $scriptPath = base_path('scripts/composite-map-tiles.py');
+
+        if (! is_file($scriptPath)) {
+            $this->error("Map tile compositor not found: {$scriptPath}");
+
+            return false;
+        }
+
+        $command = ['python3', $scriptPath, '--base', $basePath];
+        foreach ($modMaps as $modMap) {
+            $modPath = $tilesPath.'/html/map_data/mod_maps/'.$modMap.'/'.$modRenderName;
+            if (is_dir($modPath)) {
+                $command[] = '--mod';
+                $command[] = $modPath;
+            }
+        }
+
+        if (count($command) === 4) {
+            return true;
+        }
+
+        $this->info('Merging mod map tiles into the base map...');
+        $process = new Process($command);
+        $process->setTimeout(600);
+        $process->run(function (string $type, string $output): void {
+            $this->output->write($output);
+        });
+
+        if (! $process->isSuccessful()) {
+            $this->error('Could not merge mod map tiles: '.$process->getErrorOutput());
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
