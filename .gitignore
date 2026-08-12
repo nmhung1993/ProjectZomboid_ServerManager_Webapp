@@ -50,3 +50,7 @@ workshop/ZomboidManager/Contents/mods/ZomboidManager/42/media/
 /app/.phpunit.result.cache
 /app/coverage/
 .playwright-mcp/
+
+# Map Tiles Data
+map-tiles-offline/
+map-tiles-offline-top/

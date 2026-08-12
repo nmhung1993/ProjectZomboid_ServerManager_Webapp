@@ -28,6 +28,7 @@
 param(
     [string]$OutputDir = '.\map-tiles-offline',
     [string]$BaseUrl = 'https://map.projectzomboid.com/maps/42.20.0/base',
+    [string]$Layer = 'layer0',
     [int]$Workers = 10,
     [switch]$Force,
     [int]$MaxLevel = -1
@@ -114,12 +115,13 @@ Write-Host ''
 
 # Resolve absolute path
 $OutputDir = [System.IO.Path]::GetFullPath($OutputDir)
-$basePath = Join-Path $OutputDir 'html\map_data\base'
+$layerName = $BaseUrl.TrimEnd('/') -split '/' | Select-Object -Last 1
+$basePath = Join-Path $OutputDir "html\map_data\$layerName"
 
 # Step 1: Download metadata
 Write-Step 'Step 1/3: Downloading metadata...'
 
-$metadataFiles = @('map_info.json', 'layer0.dzi')
+$metadataFiles = @('map_info.json', "$Layer.dzi")
 foreach ($file in $metadataFiles) {
     $url = "$BaseUrl/$file"
     $local = Join-Path $basePath $file
@@ -137,6 +139,7 @@ foreach ($file in $metadataFiles) {
 Write-Step 'Step 2/3: Reading map dimensions...'
 
 $mapInfoPath = Join-Path $basePath 'map_info.json'
+$dziPath = Join-Path $basePath "$Layer.dzi"
 $mapInfo = Get-Content $mapInfoPath -Raw | ConvertFrom-Json
 
 $width = [int]$mapInfo.w
@@ -209,8 +212,8 @@ for ($level = 0; $level -le $actualMaxLevel; $level++) {
         foreach ($tile in $batch) {
             $x = $tile.x
             $y = $tile.y
-            $url = "$BaseUrl/layer0_files/$level/${x}_${y}.$extension"
-            $local = Join-Path $basePath "layer0_files\$level\${x}_${y}.$extension"
+            $url = "$BaseUrl/${Layer}_files/$level/${x}_${y}.$extension"
+            $local = Join-Path $basePath "${Layer}_files\$level\${x}_${y}.$extension"
 
             if ((Test-Path $local) -and (-not $Force)) {
                 $skipped++
@@ -242,8 +245,10 @@ for ($level = 0; $level -le $actualMaxLevel; $level++) {
 
         # Wait for all jobs in batch
         foreach ($j in $jobs) {
-            $result = $j.job | Receive-Job -Wait -AutoRemoveJob
-            if ($result -eq 'ok') {
+            Wait-Job -Job $j.job | Out-Null
+            $result = Receive-Job -Job $j.job
+            Remove-Job -Job $j.job -Force
+            if ($result -contains 'ok' -or $result -eq 'ok') {
                 $downloaded++
             } else {
                 $failed++
