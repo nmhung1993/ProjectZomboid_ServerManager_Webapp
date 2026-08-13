@@ -93,29 +93,21 @@ export default function Dashboard({
         setTimeout(() => router.reload({ only: ['server'] }), 2000);
     }
 
-    const statusBgClass =
+    const statusDot =
         server.status === 'online'
-            ? 'bg-green-500/5 border-green-500/20'
+            ? 'fill-emerald-500 text-emerald-500'
             : server.status === 'starting'
-              ? 'bg-amber-500/5 border-amber-500/20'
-              : 'bg-red-500/5 border-red-500/20';
+              ? 'animate-pulse fill-amber-500 text-amber-500'
+              : 'fill-red-500 text-red-500';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.dashboard.title')} />
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 lg:p-6">
                 {/* Server Status Banner */}
-                <div className={`flex flex-col gap-3 overflow-hidden rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between ${statusBgClass}`}>
+                <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between lg:p-5">
                     <div className="flex min-w-0 flex-wrap items-center gap-3">
-                        <Circle
-                            className={`size-4 fill-current ${
-                                server.status === 'online'
-                                    ? 'text-green-500'
-                                    : server.status === 'starting'
-                                      ? 'animate-pulse text-yellow-500'
-                                      : 'text-red-500'
-                            }`}
-                        />
+                        <Circle className={`size-4 ${statusDot}`} />
                         <div>
                             <span className="font-semibold">
                                 {server.status === 'online'
@@ -162,7 +154,7 @@ export default function Dashboard({
                             </div>
                         )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative flex flex-wrap items-center gap-2">
                         {server.online ? (
                             <>
                                 <Button
@@ -230,101 +222,110 @@ export default function Dashboard({
                 {/* Stats Cards */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.players_online')}</CardTitle>
-                            <Users className="size-4 text-blue-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">
-                                {server.player_count}
-                                {server.max_players !== null && (
-                                    <span className="text-base font-normal text-muted-foreground">
-                                        /{server.max_players}
-                                    </span>
+                        <CardContent className="flex items-center gap-4">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                                <Users className="size-6" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm text-muted-foreground">{t('admin.dashboard.players_online')}</p>
+                                <div className="text-2xl font-bold tabular-nums">
+                                    {server.player_count}
+                                    {server.max_players !== null && (
+                                        <span className="text-base font-normal text-muted-foreground">
+                                            /{server.max_players}
+                                        </span>
+                                    )}
+                                </div>
+                                {server.max_players !== null && server.max_players > 0 && (
+                                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                                        <div
+                                            className="h-full rounded-full bg-blue-500 transition-all"
+                                            style={{ width: `${Math.min((server.player_count / server.max_players) * 100, 100)}%` }}
+                                        />
+                                    </div>
                                 )}
                             </div>
-                            {server.max_players !== null && server.max_players > 0 && (
-                                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                                    <div
-                                        className="h-full rounded-full bg-blue-500 transition-all"
-                                        style={{ width: `${Math.min((server.player_count / server.max_players) * 100, 100)}%` }}
-                                    />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardContent className="flex items-center gap-4">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
+                                <Map className="size-6" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm text-muted-foreground">{t('admin.dashboard.map')}</p>
+                                <div className="truncate text-2xl font-bold">{server.map || t('admin.dashboard.na')}</div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardContent className="flex items-center gap-4">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
+                                <Globe className="size-6" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.connection')}</p>
+                                    <Dialog open={connOpen} onOpenChange={(open) => {
+                                        setConnOpen(open);
+                                        if (open) {
+                                            setConnIp(connection.server_ip);
+                                            setConnPort(connection.server_port);
+                                        }
+                                    }}>
+                                        <DialogTrigger asChild>
+                                            <button className="text-muted-foreground transition-colors hover:text-foreground">
+                                                <Pencil className="size-3.5" />
+                                            </button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle>{t('admin.dashboard.connection_settings')}</DialogTitle>
+                                                <DialogDescription>
+                                                    {t('admin.dashboard.connection_description')}
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-4 py-2">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="conn-ip">{t('admin.dashboard.server_ip')}</Label>
+                                                    <Input
+                                                        id="conn-ip"
+                                                        value={connIp}
+                                                        onChange={(e) => setConnIp(e.target.value)}
+                                                        placeholder="123.45.67.89"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="conn-port">{t('admin.dashboard.port')}</Label>
+                                                    <Input
+                                                        id="conn-port"
+                                                        value={connPort}
+                                                        onChange={(e) => setConnPort(e.target.value)}
+                                                        placeholder="16261"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <DialogFooter>
+                                                <DialogClose asChild>
+                                                    <Button variant="outline">{t('common.cancel')}</Button>
+                                                </DialogClose>
+                                                <Button onClick={saveConnection} disabled={connSaving}>
+                                                    {connSaving ? t('common.saving') : t('common.save')}
+                                                </Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.map')}</CardTitle>
-                            <Map className="size-4 text-green-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="truncate text-3xl font-bold">{server.map || t('admin.dashboard.na')}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.connection')}</CardTitle>
-                            <Dialog open={connOpen} onOpenChange={(open) => {
-                                setConnOpen(open);
-                                if (open) {
-                                    setConnIp(connection.server_ip);
-                                    setConnPort(connection.server_port);
-                                }
-                            }}>
-                                <DialogTrigger asChild>
-                                    <button className="text-muted-foreground hover:text-foreground">
-                                        <Pencil className="size-4" />
-                                    </button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
-                                    <DialogHeader>
-                                        <DialogTitle>{t('admin.dashboard.connection_settings')}</DialogTitle>
-                                        <DialogDescription>
-                                            {t('admin.dashboard.connection_description')}
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-4 py-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="conn-ip">{t('admin.dashboard.server_ip')}</Label>
-                                            <Input
-                                                id="conn-ip"
-                                                value={connIp}
-                                                onChange={(e) => setConnIp(e.target.value)}
-                                                placeholder="123.45.67.89"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="conn-port">{t('admin.dashboard.port')}</Label>
-                                            <Input
-                                                id="conn-port"
-                                                value={connPort}
-                                                onChange={(e) => setConnPort(e.target.value)}
-                                                placeholder="16261"
-                                            />
-                                        </div>
+                                {connection.server_ip ? (
+                                    <div className="truncate font-mono text-base font-bold">
+                                        {connection.server_ip}:{connection.server_port}
                                     </div>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant="outline">{t('common.cancel')}</Button>
-                                        </DialogClose>
-                                        <Button onClick={saveConnection} disabled={connSaving}>
-                                            {connSaving ? t('common.saving') : t('common.save')}
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </CardHeader>
-                        <CardContent>
-                            {connection.server_ip ? (
-                                <div className="truncate font-mono text-sm font-bold">
-                                    {connection.server_ip}:{connection.server_port}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">{t('admin.dashboard.not_configured')}</p>
-                            )}
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.not_configured')}</p>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -352,31 +353,35 @@ export default function Dashboard({
                         </>
                     }>
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.backups')}</CardTitle>
-                                <Archive className="size-4 text-purple-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">{backup_summary?.total_count}</div>
-                                <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_size', { size: backup_summary?.total_size_human ?? '' })}</p>
+                            <CardContent className="flex items-center gap-4">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
+                                    <Archive className="size-6" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.backups')}</p>
+                                    <div className="text-2xl font-bold tabular-nums">{backup_summary?.total_count}</div>
+                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_size', { size: backup_summary?.total_size_human ?? '' })}</p>
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.last_backup')}</CardTitle>
-                                <HardDrive className="size-4 text-orange-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="truncate text-3xl font-bold">
-                                    {backup_summary?.last_backup
-                                        ? formatDate(backup_summary.last_backup.created_at)
-                                        : t('admin.dashboard.never')}
+                            <CardContent className="flex items-center gap-4">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+                                    <HardDrive className="size-6" />
                                 </div>
-                                {backup_summary?.last_backup && (
-                                    <p className="text-xs text-muted-foreground">
-                                        {backup_summary.last_backup.size_human} ({backup_summary.last_backup.type})
-                                    </p>
-                                )}
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.last_backup')}</p>
+                                    <div className="truncate text-2xl font-bold">
+                                        {backup_summary?.last_backup
+                                            ? formatDate(backup_summary.last_backup.created_at)
+                                            : t('admin.dashboard.never')}
+                                    </div>
+                                    {backup_summary?.last_backup && (
+                                        <p className="text-xs text-muted-foreground">
+                                            {backup_summary.last_backup.size_human} ({backup_summary.last_backup.type})
+                                        </p>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                     </Deferred>

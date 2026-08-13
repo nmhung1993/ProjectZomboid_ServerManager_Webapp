@@ -82,20 +82,28 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Match the requested compact admin overview while preserving full-width shells. */
+/* Compact admin overview while preserving full-width shells. */
 html {
     zoom: 0.85;
 }
 
 @theme {
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Public Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    --font-mono:
+        'Public Sans', ui-monospace, SFMono-Regular, Menlo, Consolas,
+        'Liberation Mono', monospace;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
+
+    --shadow-soft: 0 1px 2px rgba(145, 158, 171, 0.16);
+    --shadow-card:
+        0 0 2px rgba(145, 158, 171, 0.2),
+        0 12px 24px -4px rgba(145, 158, 171, 0.12);
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -121,6 +129,13 @@ html {
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
 
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -141,75 +156,88 @@ html {
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* MUI "Minimal" design language: light-first, clean, white surfaces. */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --background: #f9fafb;
+    --foreground: #212b36;
+    --card: #ffffff;
+    --card-foreground: #212b36;
+    --popover: #ffffff;
+    --popover-foreground: #212b36;
+    --primary: #00a76f;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f6f8;
+    --secondary-foreground: #212b36;
+    --muted: #f4f6f8;
+    --muted-foreground: #637381;
+    --accent: #00a76f14;
+    --accent-foreground: #007b52;
+    --destructive: #ff5630;
+    --destructive-foreground: #ffffff;
+    --success: #22c55e;
+    --success-foreground: #ffffff;
+    --warning: #ffab00;
+    --warning-foreground: #3d2800;
+    --info: #00b8d9;
+    --info-foreground: #ffffff;
+    --border: #919eab33;
+    --input: #919eab33;
+    --ring: #00a76f;
+    --chart-1: #00a76f;
+    --chart-2: #00b8d9;
+    --chart-3: #ffab00;
+    --chart-4: #8e33ff;
+    --chart-5: #ff5630;
+    --radius: 0.75rem;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #637381;
+    --sidebar-primary: #00a76f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #00a76f14;
+    --sidebar-accent-foreground: #007b52;
+    --sidebar-border: #919eab29;
+    --sidebar-ring: #00a76f;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.205 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --background: #161c24;
+    --foreground: #ffffff;
+    --card: #212b36;
+    --card-foreground: #ffffff;
+    --popover: #212b36;
+    --popover-foreground: #ffffff;
+    --primary: #00a76f;
+    --primary-foreground: #ffffff;
+    --secondary: #28323d;
+    --secondary-foreground: #ffffff;
+    --muted: #28323d;
+    --muted-foreground: #919eab;
+    --accent: #00a76f29;
+    --accent-foreground: #38c68c;
+    --destructive: #ff5630;
+    --destructive-foreground: #ffffff;
+    --success: #22c55e;
+    --success-foreground: #04210f;
+    --warning: #ffab00;
+    --warning-foreground: #3d2800;
+    --info: #00b8d9;
+    --info-foreground: #ffffff;
+    --border: #919eab3d;
+    --input: #919eab3d;
+    --ring: #00a76f;
+    --chart-1: #36c58b;
+    --chart-2: #38bdf8;
+    --chart-3: #ffc658;
+    --chart-4: #b58cff;
+    --chart-5: #ff886e;
+    --sidebar: #1c252e;
+    --sidebar-foreground: #919eab;
+    --sidebar-primary: #00a76f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #00a76f29;
+    --sidebar-accent-foreground: #38c68c;
+    --sidebar-border: #919eab29;
+    --sidebar-ring: #00a76f;
 }
 
 @layer base {
@@ -217,13 +245,55 @@ html {
         @apply border-border;
     }
 
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    ::selection {
+        background: color-mix(in oklab, var(--primary) 25%, transparent);
+        color: var(--foreground);
     }
 
     button,
     [role='button'] {
         cursor: pointer;
+    }
+
+    [data-slot='sidebar-menu-button'] {
+        transition:
+            background-color 150ms ease,
+            color 150ms ease;
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent)
+            transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+        border: 3px solid transparent;
+        border-radius: 999px;
+        background-clip: content-box;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: color-mix(in oklab, var(--muted-foreground) 60%, transparent);
     }
 }
 
@@ -238,6 +308,18 @@ body,
 /* Sidebar uses explicit svh heights, which otherwise shrink with html zoom. */
 [data-slot='sidebar'] > div {
     height: calc(100svh / 0.85);
+}
+
+/* Reduced motion support. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 .pz-zone-tooltip {
