@@ -69,13 +69,19 @@ def composite_mod(base: Path, mod: Path) -> int:
     base_level = maximum_level(base_info)
     mod_level = maximum_level(mod_info)
 
-    # x0/y0 are pixels in each renderer's native scale. Convert through PZ
-    # squares, then back to vanilla pixels so 256px/webp mod tiles can merge
-    # correctly into the 1024px/jpg vanilla pyramid.
+    # Native pixel coordinates are related to PZ world squares by:
+    #     pixel = world * sqr + x0   =>   world = (pixel - x0) / sqr
+    # Convert mod pixels → PZ squares → vanilla pixels so 256px/webp mod tiles
+    # merge correctly into the 1024px/jpg vanilla pyramid.
     base_pixels_per_square = float(base_info["sqr"])
     mod_pixels_per_square = float(mod_info["sqr"])
     if base_pixels_per_square <= 0 or mod_pixels_per_square <= 0:
         raise ValueError(f"Invalid square scale for {mod}")
+
+    base_x0 = float(base_info.get("x0", 0))
+    base_y0 = float(base_info.get("y0", 0))
+    mod_x0 = float(mod_info.get("x0", 0))
+    mod_y0 = float(mod_info.get("y0", 0))
 
     modified: set[tuple[int, int]] = set()
     source_dir = mod / "layer0_files" / str(mod_level)
@@ -85,10 +91,10 @@ def composite_mod(base: Path, mod: Path) -> int:
             continue
 
         source_x, source_y = int(match.group(1)), int(match.group(2))
-        world_x = (float(mod_info.get("x0", 0)) + source_x * mod_tile_size) / mod_pixels_per_square
-        world_y = (float(mod_info.get("y0", 0)) + source_y * mod_tile_size) / mod_pixels_per_square
-        target_x = round(world_x * base_pixels_per_square + float(base_info.get("x0", 0)))
-        target_y = round(world_y * base_pixels_per_square + float(base_info.get("y0", 0)))
+        world_x = (source_x * mod_tile_size - mod_x0) / mod_pixels_per_square
+        world_y = (source_y * mod_tile_size - mod_y0) / mod_pixels_per_square
+        target_x = round(world_x * base_pixels_per_square + base_x0)
+        target_y = round(world_y * base_pixels_per_square + base_y0)
         scale = base_pixels_per_square / mod_pixels_per_square
         target_size = round(mod_tile_size * scale)
         if target_size <= 0:
@@ -159,36 +165,37 @@ def main() -> int:
     parser.add_argument("--mods", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--mod", action="append", default=[], dest="mod_keys")
+    parser.add_argument("--skip-base", action="store_true", help="Reuse the existing output map_data as the base instead of copying vanilla")
     args = parser.parse_args()
 
-    vanilla_base = args.vanilla / "html" / "map_data" / "base"
+    vanilla_base = args.vanilla / "html" / "map_data" / "base_top"
     output_map_data = args.output / "html" / "map_data"
-    if not (vanilla_base / "map_info.json").is_file():
-        raise FileNotFoundError(f"Vanilla map metadata not found: {vanilla_base}")
+    base = output_map_data / "base_top"
 
-    staging = args.output / ".map-data-staging"
-    shutil.rmtree(staging, ignore_errors=True)
-    try:
-        shutil.copytree(args.vanilla / "html" / "map_data", staging)
-        base = staging / "base"
-        for key in args.mod_keys:
-            mod = args.mods / "html" / "map_data" / "mod_maps" / key / "base_top"
-            if not (mod / "map_info.json").is_file():
-                print(f"WARNING: {key}: tiles not found; skipped", file=sys.stderr)
-                continue
-            merged = composite_mod(base, mod)
-            print(f"{key}: updated {merged} vanilla native tiles")
+    if args.skip_base:
+        if not (base / "map_info.json").is_file():
+            raise FileNotFoundError(f"Skipped base not found: {base}. Run once without --skip-base first.")
+        print("Skipping base copy; reusing existing merged output", file=sys.stderr)
+    else:
+        if not (vanilla_base / "map_info.json").is_file():
+            raise FileNotFoundError(f"Vanilla map metadata not found: {vanilla_base}")
+        # Start from a clean vanilla pyramid, then composite mods directly.
+        # We avoid directory rename/swap because Docker Desktop's Windows bind
+        # mount does not reliably rename directories that another container
+        # (the running app) is reading.
+        shutil.rmtree(output_map_data, ignore_errors=True)
+        shutil.copytree(args.vanilla / "html" / "map_data", output_map_data)
+        base = output_map_data / "base_top"
 
-        os.utime(base / "map_info.json", None)
-        backup = args.output / ".map-data-previous"
-        shutil.rmtree(backup, ignore_errors=True)
-        if output_map_data.exists():
-            output_map_data.rename(backup)
-        staging.rename(output_map_data)
-        shutil.rmtree(backup, ignore_errors=True)
-    except Exception:
-        shutil.rmtree(staging, ignore_errors=True)
-        raise
+    for key in args.mod_keys:
+        mod = args.mods / "html" / "map_data" / "mod_maps" / key / "base_top"
+        if not (mod / "map_info.json").is_file():
+            print(f"WARNING: {key}: tiles not found; skipped", file=sys.stderr)
+            continue
+        merged = composite_mod(base, mod)
+        print(f"{key}: updated {merged} vanilla native tiles")
+
+    os.utime(base / "map_info.json", None)
     return 0
 
 

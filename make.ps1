@@ -251,7 +251,14 @@ function Do-MergeModMaps {
     Write-Host "  Vanilla: $vanillaDir" -ForegroundColor Gray
     Write-Host "  Mods:    $modDir" -ForegroundColor Gray
     Write-Host "  Output:  $outputDir" -ForegroundColor Gray
-    powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -VanillaDir $vanillaDir -ModDir $modDir -OutputDir $outputDir @script:CmdArgs
+    if ($script:CmdArgs -contains '-SkipBase') {
+        Write-Host "  Mode:    skip base copy (reuse existing merged output)" -ForegroundColor Yellow
+    }
+    $args = @('-VanillaDir', $vanillaDir, '-ModDir', $modDir, '-OutputDir', $outputDir)
+    if ($script:CmdArgs) {
+        $args += $script:CmdArgs
+    }
+    powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath @args
 }
 
 function Do-DeployApp {

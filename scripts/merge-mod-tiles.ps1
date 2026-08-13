@@ -36,7 +36,8 @@ param(
     [string]$ModDir = '.\map-mod-tiles-offline-top',
     [string]$OutputDir = '.\map-tiles-merged',
     [string]$ConfigFile = 'maps-b42-custom.txt',
-    [switch]$Force
+    [switch]$Force,
+    [switch]$SkipBase
 )
 
 $ErrorActionPreference = 'Stop'
@@ -310,7 +311,7 @@ $outputMapData = Join-Path $OutputDir 'html\map_data'
 # The CDN vanilla pyramid (1024px JPG) and mod pyramids (256px WebP) do not
 # share tile coordinates. Run the Pillow compositor inside the app container,
 # which maps both source folders read-only and writes only the derived volume.
-if (-not $hasVanilla) {
+if (-not $hasVanilla -and -not $SkipBase) {
     Write-Fail 'Vanilla tiles are required to build a merged map.'
     exit 1
 }
@@ -337,6 +338,9 @@ $dockerArgs = @(
     '--mount', "type=bind,src=$compositor,dst=/composite-offline-map-tiles.py,readonly",
     $image, '/composite-offline-map-tiles.py', '--vanilla', '/map-tiles-vanilla', '--mods', '/map-tiles-mods', '--output', '/map-tiles'
 )
+if ($SkipBase) {
+    $dockerArgs += @('--skip-base')
+}
 
 # Map= is ordered bottom-to-top by PZ. Apply it left-to-right so later entries
 # remain visible at overlaps, exactly matching the active server configuration.

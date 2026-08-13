@@ -52,7 +52,6 @@ type PzMapProps = {
     onEventMarkerClick?: (marker: EventMarker) => void;
     onMapReady?: (map: L.Map) => void;
     onInteractionChange?: (interacting: boolean) => void;
-    onZoomChange?: (zoom: number) => void;
 };
 
 const statusColors: Record<PlayerMarker['status'], string> = {
@@ -329,7 +328,6 @@ export default function PzMap({
     onEventMarkerClick,
     onMapReady,
     onInteractionChange,
-    onZoomChange,
 }: PzMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
@@ -451,13 +449,27 @@ export default function PzMap({
         map.on('moveend', persistView);
         map.on('zoomend', persistView);
 
-        const reportZoom = () => {
-            onZoomChange?.(map.getZoom());
+        // Zoom level indicator pinned to Leaflet's top-left control stack.
+        const zoomIndicator = new L.Control({ position: 'topleft' });
+        zoomIndicator.onAdd = () => {
+            const el = L.DomUtil.create('div', 'pz-zoom-indicator');
+            el.style.cssText =
+                'display:flex;align-items:center;padding:0.375rem 0.625rem;' +
+                'background:rgba(255,255,255,0.92);border:1px solid rgba(0,0,0,0.12);' +
+                'border-radius:0.375rem;font-size:0.75rem;font-weight:500;line-height:1;' +
+                'color:#374151;box-shadow:0 1px 3px rgba(0,0,0,0.12);';
+            return el;
         };
+        zoomIndicator.addTo(map);
 
-        map.on('zoomend', reportZoom);
-        // Report the initial zoom as soon as the view is settled.
-        reportZoom();
+        const updateZoomIndicator = () => {
+            const el = zoomIndicator.getContainer();
+            if (el) {
+                el.textContent = `Zoom ${map.getZoom()}`;
+            }
+        };
+        updateZoomIndicator();
+        map.on('zoomend', updateZoomIndicator);
 
         const markersLayer = L.layerGroup().addTo(map);
         markersLayerRef.current = markersLayer;
