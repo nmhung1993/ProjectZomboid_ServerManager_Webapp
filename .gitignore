@@ -55,3 +55,6 @@ workshop/ZomboidManager/Contents/mods/ZomboidManager/42/media/
 map-tiles-offline-top/
 map-mod-tiles-offline-top/
 map-tiles-merged/
+
+# Local Cline rules (not for sharing)
+.clinerules
