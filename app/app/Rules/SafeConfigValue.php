@@ -14,11 +14,19 @@ use Illuminate\Contracts\Validation\ValidationRule;
  */
 class SafeConfigValue implements ValidationRule
 {
-    /** Safe characters WITHOUT backslash (for Lua config values). */
-    private const SAFE_PATTERN = '/^[a-zA-Z0-9 ,.:;\/\-_=+@#!%^*\[\]\'?]+$/';
+    /**
+     * Safe characters WITHOUT backslash (for Lua config values).
+     *
+     * Allowlist covers ASCII alphanumerics plus Unicode letters/numbers so that
+     * non-Latin map names (e.g. Chinese, Vietnamese diacritics) can be saved,
+     * while still rejecting control characters, newlines and structural symbols.
+     */
+    private const SAFE_PATTERN = '/^[\p{L}\p{N} ,.:;\/\-_=+@#!%^*\[\]\'?]+$/u';
 
-    /** Safe characters WITH backslash (for INI config values — B42 mod IDs use \). */
-    private const SAFE_PATTERN_WITH_BACKSLASH = '/^[a-zA-Z0-9 ,.:;\/\\\\\-_=+@#!%^*\[\]\'?]+$/';
+    /**
+     * Safe characters WITH backslash (for INI config values — B42 mod IDs use \).
+     */
+    private const SAFE_PATTERN_WITH_BACKSLASH = '/^[\p{L}\p{N} ,.:;\/\\\\\-_=+@#!%^*\[\]\'?]+$/u';
 
     public function __construct(
         private readonly bool $allowBackslash = false,
