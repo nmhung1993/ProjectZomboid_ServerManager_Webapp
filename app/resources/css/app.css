@@ -82,11 +82,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Compact admin overview while preserving full-width shells. */
-html {
-    zoom: 0.85;
-}
-
 @theme {
     --font-sans:
         'Public Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
@@ -297,17 +292,11 @@ html {
     }
 }
 
-/* Compensate the compact 85% UI zoom so application shells still fill the viewport. */
 body,
 #app,
 [data-slot='sidebar-wrapper'],
 [data-slot='sidebar-inset'] {
-    min-height: calc(100svh / 0.85);
-}
-
-/* Sidebar uses explicit svh heights, which otherwise shrink with html zoom. */
-[data-slot='sidebar'] > div {
-    height: calc(100svh / 0.85);
+    min-height: 100svh;
 }
 
 /* Reduced motion support. */

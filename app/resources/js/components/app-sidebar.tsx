@@ -132,12 +132,12 @@ export function AppSidebar() {
           }));
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
+        <Sidebar collapsible="icon" variant="inset" className="border-sidebar-border/70 bg-sidebar">
+            <SidebarHeader className="border-b border-sidebar-border/60 px-5 py-5">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? dashboard() : '/portal'} prefetch>
+                            <Link href={isAdmin ? dashboard() : '/portal'} prefetch className="group/logo">
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -145,11 +145,11 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className="px-3 py-3">
                 <NavMain groups={navGroups} />
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="border-t border-sidebar-border/60 px-3 py-4">
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>

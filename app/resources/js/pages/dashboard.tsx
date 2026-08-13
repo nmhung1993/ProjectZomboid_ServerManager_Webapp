@@ -103,7 +103,7 @@ export default function Dashboard({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.dashboard.title')} />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 lg:p-6">
+            <div className="dashboard-page flex h-full flex-1 flex-col gap-6 overflow-x-auto bg-background p-5 md:p-8">
                 {/* Server Status Banner */}
                 <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between lg:p-5">
                     <div className="flex min-w-0 flex-wrap items-center gap-3">
