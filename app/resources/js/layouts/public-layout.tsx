@@ -79,6 +79,52 @@ function NavLinks({ className, onClick }: { className?: string; onClick?: () => 
     );
 }
 
+function FooterText({ text }: { text: string }) {
+    // Footer text may end with a URL, e.g.
+    //   "Created by nmhung1993 — https://github.com/nmhung1993"
+    // In that case, wrap the name (text after "by ") in the link instead of
+    // showing the raw URL.
+    const match = text.match(/^(.*?)\s+[—–-]\s+(https?:\/\/\S+)\s*$/);
+
+    if (!match) {
+        return <>{text}</>;
+    }
+
+    const prefix = match[1];
+    const url = match[2];
+
+    const by = prefix.match(/^(.+\bby\s+)(\S+)$/i);
+    if (by) {
+        return (
+            <>
+                {by[1]}
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:opacity-80"
+                >
+                    {by[2]}
+                </a>
+            </>
+        );
+    }
+
+    return (
+        <>
+            {prefix}{' '}
+            <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:opacity-80"
+            >
+                {url}
+            </a>
+        </>
+    );
+}
+
 export default function PublicLayout({ children }: PropsWithChildren) {
     const { site } = usePage().props;
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -145,7 +191,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
 
             <footer className="border-t border-border/40 py-8">
                 <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground">
-                    {site.footer_text}
+                    <FooterText text={site.footer_text} />
                 </div>
             </footer>
         </div>
