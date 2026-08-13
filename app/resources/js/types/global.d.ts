@@ -7,6 +7,9 @@ export type SiteSettings = {
     footer_text: string;
     theme_colors: Record<string, string> | null;
     default_locale: string;
+    show_status: boolean;
+    show_rankings: boolean;
+    show_shop: boolean;
 };
 
 export type AvailableLocale = {

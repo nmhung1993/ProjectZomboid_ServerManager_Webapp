@@ -37,6 +37,9 @@ class SiteSettingController extends Controller
                 'landing_sections' => $settings->landing_sections ?? SiteSetting::defaultLandingSections(),
                 'theme_colors' => $settings->theme_colors,
                 'default_locale' => $settings->default_locale,
+                'show_status' => $settings->show_status,
+                'show_rankings' => $settings->show_rankings,
+                'show_shop' => $settings->show_shop,
             ],
             'available_icons' => self::availableIcons(),
             'available_sections' => [
@@ -79,6 +82,15 @@ class SiteSettingController extends Controller
             'site_name', 'footer_text', 'hero_badge', 'hero_title',
             'hero_subtitle', 'hero_description', 'hero_button_text', 'default_locale',
         ];
+
+        $boolFields = ['show_status', 'show_rankings', 'show_shop'];
+
+        foreach ($boolFields as $field) {
+            if (array_key_exists($field, $validated)) {
+                $settings->{$field} = (bool) $validated[$field];
+                $changes[] = $field;
+            }
+        }
 
         foreach ($textFields as $field) {
             if (array_key_exists($field, $validated)) {

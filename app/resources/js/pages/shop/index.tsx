@@ -346,23 +346,28 @@ export default function ShopIndex({
             <Head title={t('shop.title')} />
             <div className="mx-auto max-w-7xl space-y-6 p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('shop.title')}</h1>
-                        <p className="text-muted-foreground text-sm">{t('shop.description')}</p>
-                    </div>
-                    {balance !== null && (
-                        <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2">
-                            <Coins className="size-5 text-amber-500" />
-                            <div className="flex flex-col items-end">
-                                <span className="text-lg font-bold tabular-nums">{coin(balance)}</span>
-                                {availableBalance !== null && availableBalance < balance && (
-                                    <span className="text-muted-foreground text-xs tabular-nums">{t('shop.available', { count: String(coin(availableBalance)) })}</span>
-                                )}
-                            </div>
+                <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-emerald-500/10 p-6 shadow-sm lg:p-8">
+                    <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-emerald-500/10 blur-3xl" />
+                    <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">{t('shop.title')}</h1>
+                            <p className="text-muted-foreground text-sm">{t('shop.description')}</p>
                         </div>
-                    )}
-                </div>
+                        {balance !== null && (
+                            <div className="flex items-center gap-3 rounded-xl border bg-background/60 px-4 py-3">
+                                <div className="flex size-10 items-center justify-center rounded-lg bg-amber-500/10">
+                                    <Coins className="size-5 text-amber-500" />
+                                </div>
+                                <div>
+                                    <p className="text-xl font-bold tabular-nums">{coin(balance)}</p>
+                                    {availableBalance !== null && availableBalance < balance && (
+                                        <p className="text-muted-foreground text-xs tabular-nums">{t('shop.available', { count: String(coin(availableBalance)) })}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
 
                 <PromoRibbon promotions={activePromotions} />
 

@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { ImageIcon, Palette, RotateCcw, Save, Trash2, Type, Upload } from 'lucide-react';
+import { Globe, ImageIcon, Palette, RotateCcw, Save, ShoppingBag, Trash2, Trophy, Type, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { fetchAction } from '@/lib/fetch-action';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/hooks/use-translation';
 import type { BreadcrumbItem } from '@/types';
@@ -27,6 +28,9 @@ type Settings = {
     landing_sections: LandingSection[];
     theme_colors: Record<string, string> | null;
     default_locale: string;
+    show_status: boolean;
+    show_rankings: boolean;
+    show_shop: boolean;
 };
 
 type Feature = {
@@ -72,6 +76,9 @@ export default function SiteSettings({ settings, available_icons, available_sect
     );
     const [landingSections, setLandingSections] = useState<LandingSection[]>(settings.landing_sections);
     const [themeColors, setThemeColors] = useState<Record<string, string>>(settings.theme_colors ?? {});
+    const [showStatus, setShowStatus] = useState(settings.show_status);
+    const [showRankings, setShowRankings] = useState(settings.show_rankings);
+    const [showShop, setShowShop] = useState(settings.show_shop);
 
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
@@ -113,6 +120,9 @@ export default function SiteSettings({ settings, available_icons, available_sect
         JSON.stringify(features.map(({ _id, ...f }) => f)) !== JSON.stringify(settings.features.map(({ _id, ...f }) => f)) ||
         JSON.stringify(landingSections) !== JSON.stringify(settings.landing_sections) ||
         JSON.stringify(themeColors) !== JSON.stringify(settings.theme_colors ?? {}) ||
+        showStatus !== settings.show_status ||
+        showRankings !== settings.show_rankings ||
+        showShop !== settings.show_shop ||
         logoFile !== null ||
         faviconFile !== null;
 
@@ -128,6 +138,9 @@ export default function SiteSettings({ settings, available_icons, available_sect
         formData.append('hero_subtitle', heroSubtitle);
         formData.append('hero_description', heroDescription);
         formData.append('hero_button_text', heroButtonText);
+        formData.append('show_status', showStatus ? '1' : '0');
+        formData.append('show_rankings', showRankings ? '1' : '0');
+        formData.append('show_shop', showShop ? '1' : '0');
 
         if (logoFile) formData.append('logo', logoFile);
         if (faviconFile) formData.append('favicon', faviconFile);
@@ -508,6 +521,42 @@ export default function SiteSettings({ settings, available_icons, available_sect
                                 rows={3}
                                 maxLength={1000}
                             />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Public Pages Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Globe className="size-5" />
+                            {t('admin.site_settings.public_pages')}
+                        </CardTitle>
+                        <CardDescription>
+                            {t('admin.site_settings.public_pages_description')}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <div className="flex items-center justify-between rounded-lg border border-border/50 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <Globe className="size-4 text-emerald-500" />
+                                <span className="text-sm font-medium">{t('nav.server_status')}</span>
+                            </div>
+                            <Switch checked={showStatus} onCheckedChange={setShowStatus} />
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-border/50 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <Trophy className="size-4 text-amber-500" />
+                                <span className="text-sm font-medium">{t('nav.rankings')}</span>
+                            </div>
+                            <Switch checked={showRankings} onCheckedChange={setShowRankings} />
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-border/50 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <ShoppingBag className="size-4 text-blue-500" />
+                                <span className="text-sm font-medium">{t('nav.shop')}</span>
+                            </div>
+                            <Switch checked={showShop} onCheckedChange={setShowShop} />
                         </div>
                     </CardContent>
                 </Card>

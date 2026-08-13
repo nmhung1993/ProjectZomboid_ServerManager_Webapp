@@ -28,6 +28,9 @@ class SiteSettingFactory extends Factory
             'features' => SiteSetting::defaultFeatures(),
             'landing_sections' => SiteSetting::defaultLandingSections(),
             'default_locale' => 'en',
+            'show_status' => true,
+            'show_rankings' => true,
+            'show_shop' => true,
         ];
     }
 }

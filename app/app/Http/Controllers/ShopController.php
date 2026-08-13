@@ -9,6 +9,7 @@ use App\Models\ShopCategory;
 use App\Models\ShopItem;
 use App\Models\ShopPromotion;
 use App\Models\ShopPurchase;
+use App\Models\SiteSetting;
 use App\Models\WhitelistEntry;
 use App\Services\InventoryReader;
 use App\Services\ItemIconResolver;
@@ -41,6 +42,10 @@ class ShopController extends Controller
      */
     public function index(): Response
     {
+        if (! SiteSetting::cached()->show_shop) {
+            abort(404);
+        }
+
         $categories = ShopCategory::query()
             ->where('is_active', true)
             ->orderBy('sort_order')

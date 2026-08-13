@@ -1,12 +1,59 @@
 import { Head, usePoll } from '@inertiajs/react';
-import { Circle, Clock, Map, Package, Users } from 'lucide-react';
+import {
+    Activity,
+    Circle,
+    Clock,
+    Globe,
+    Map,
+    Package,
+    Server,
+    Signal,
+    Users,
+} from 'lucide-react';
 import { GameStateWidget } from '@/components/game-state-widget';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { usePing } from '@/hooks/use-ping';
 import { useTranslation } from '@/hooks/use-translation';
 import PublicLayout from '@/layouts/public-layout';
 import type { StatusPageData } from '@/types';
+
+type StatusTone = 'online' | 'starting' | 'offline';
+
+const statusTone: Record<
+    StatusTone,
+    {
+        dot: string;
+        text: string;
+        badge: string;
+        labelKey: string;
+    }
+> = {
+    online: {
+        dot: 'bg-emerald-500',
+        text: 'text-emerald-600 dark:text-emerald-400',
+        badge: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+        labelKey: 'status.online',
+    },
+    starting: {
+        dot: 'animate-pulse bg-amber-500',
+        text: 'text-amber-600 dark:text-amber-400',
+        badge: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
+        labelKey: 'status.starting',
+    },
+    offline: {
+        dot: 'bg-red-500',
+        text: 'text-red-600 dark:text-red-400',
+        badge: 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400',
+        labelKey: 'status.offline',
+    },
+};
 
 export default function Status({
     server,
@@ -18,164 +65,149 @@ export default function Status({
     const { t } = useTranslation();
     const ping = usePing('/ping', 15000);
 
+    const tone = statusTone[server.status] ?? statusTone.offline;
+    const playerCount = server.player_count;
+    const maxPlayers = server.max_players;
+
     return (
         <>
             <Head title={`${server_name} — ${t('status.page_title')}`} />
             <PublicLayout>
-                {/* Content */}
-                <main className="mx-auto max-w-7xl px-4 py-8">
-                    {/* Server Status Hero */}
-                    <div className="mb-8 text-center">
-                        <h1 className="mb-2 text-3xl font-bold tracking-tight">{server_name}</h1>
-                        <div className="flex items-center justify-center gap-2">
-                            <Circle
-                                className={`size-3 fill-current ${
-                                    server.status === 'online'
-                                        ? 'text-green-500'
-                                        : server.status === 'starting'
-                                          ? 'text-yellow-500'
-                                          : 'text-red-500'
-                                }`}
-                            />
-                            <span className={`text-lg font-medium ${
-                                server.status === 'online'
-                                    ? 'text-green-500'
-                                    : server.status === 'starting'
-                                      ? 'text-yellow-500'
-                                      : 'text-red-500'
-                            }`}>
-                                {server.status === 'online'
-                                    ? t('status.online')
-                                    : server.status === 'starting'
-                                      ? t('status.starting')
-                                      : t('status.offline')}
-                            </span>
-                            {ping !== null && server.status === 'online' && (
-                                <span className="text-sm text-muted-foreground">— {ping}ms</span>
-                            )}
-                        </div>
-                    </div>
+                <div className="mx-auto max-w-7xl px-4 py-8">
+                    {/* Hero */}
+                    <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-emerald-500/10 p-6 shadow-sm lg:p-8">
+                        <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-emerald-500/10 blur-3xl" />
+                        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex items-start gap-4">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10">
+                                    <Server className="size-6 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
+                                        {server_name}
+                                    </h1>
+                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                        <Badge variant="outline" className={`gap-1.5 ${tone.badge}`}>
+                                            <span className={`size-1.5 rounded-full ${tone.dot}`} />
+                                            {t(tone.labelKey)}
+                                        </Badge>
+                                        {ping !== null && server.status === 'online' && (
+                                            <Badge variant="secondary" className="gap-1.5 tabular-nums">
+                                                <Signal className="size-3" />
+                                                {ping}ms
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
 
-                    {/* Game State */}
-                    {server.status !== 'offline' && (
-                        <div className="mb-8">
+                            <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto">
+                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                    <Users className="mx-auto mb-1 size-4 text-emerald-500" />
+                                    <p className="text-xl font-bold tabular-nums">
+                                        {playerCount}
+                                        {maxPlayers !== null && (
+                                            <span className="text-sm font-normal text-muted-foreground">
+                                                /{maxPlayers}
+                                            </span>
+                                        )}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">{t('status.players_online')}</p>
+                                </div>
+                                <TooltipProvider delayDuration={200}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="cursor-default rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                                <Map className="mx-auto mb-1 size-4 text-blue-500" />
+                                                <p className="truncate text-xl font-bold">{server.map || '—'}</p>
+                                                <p className="text-[11px] text-muted-foreground">{t('status.map')}</p>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-mono text-xs">
+                                                {server.map || t('status.map')}
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                    <Clock className="mx-auto mb-1 size-4 text-violet-500" />
+                                    <p className="truncate text-xl font-bold">{server.uptime || '—'}</p>
+                                    <p className="text-[11px] text-muted-foreground">{t('status.uptime')}</p>
+                                </div>
+                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                    <Package className="mx-auto mb-1 size-4 text-orange-500" />
+                                    <p className="text-xl font-bold tabular-nums">{mods.length}</p>
+                                    <p className="text-[11px] text-muted-foreground">{t('status.mods')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Game state */}
+                    {server.status !== 'offline' && game_state && (
+                        <div className="mt-6">
                             <GameStateWidget gameState={game_state} />
                         </div>
                     )}
 
-                    {/* Stats Grid */}
-                    <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {/* Detail columns */}
+                    <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                        {/* Online players */}
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{t('status.players_card')}</CardTitle>
-                                <Users className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {server.player_count}
-                                    {server.max_players !== null && (
-                                        <span className="text-base font-normal text-muted-foreground">
-                                            /{server.max_players}
-                                        </span>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{t('status.map')}</CardTitle>
-                                <Map className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="truncate text-2xl font-bold">
-                                    {server.map || 'N/A'}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{t('status.uptime')}</CardTitle>
-                                <Clock className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="truncate text-2xl font-bold">
-                                    {server.uptime || 'N/A'}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{t('status.mods')}</CardTitle>
-                                <Package className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{mods.length}</div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        {/* Online Players */}
-                        <Card>
-                            <CardHeader>
+                            <CardHeader className="border-b pb-4">
                                 <CardTitle className="flex items-center gap-2">
-                                    <Users className="size-5" />
+                                    <Activity className="size-5 text-emerald-500" />
                                     {t('status.online_players_title')}
                                 </CardTitle>
-                                <CardDescription>
-                                    {t(server.player_count !== 1 ? 'status.players_connected_plural' : 'status.players_connected', { count: String(server.player_count) })}
-                                </CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="pt-4">
                                 {server.players.length > 0 ? (
-                                    <div className="space-y-2">
+                                    <div className="grid gap-2 sm:grid-cols-2">
                                         {server.players.map((player) => (
                                             <div
                                                 key={player}
-                                                className="flex items-center gap-2 rounded-md border border-border/50 px-3 py-2"
+                                                className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/40 px-3 py-2"
                                             >
-                                                <Circle className="size-2 fill-green-500 text-green-500" />
-                                                <span className="text-sm font-medium">{player}</span>
+                                                <Circle className="size-2 shrink-0 fill-emerald-500 text-emerald-500" />
+                                                <span className="truncate text-sm font-medium">{player}</span>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        {server.status === 'online'
-                                            ? t('status.no_players_online')
-                                            : server.status === 'starting'
-                                              ? t('status.server_starting')
-                                              : t('status.server_offline')}
-                                    </p>
+                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                        <Users className="mb-3 size-8 text-muted-foreground/40" />
+                                        <p className="text-sm text-muted-foreground">
+                                            {server.status === 'online'
+                                                ? t('status.no_players_online')
+                                                : server.status === 'starting'
+                                                  ? t('status.server_starting')
+                                                  : t('status.server_offline')}
+                                        </p>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
 
-                        {/* Mod List */}
+                        {/* Installed mods */}
                         <Card>
-                            <CardHeader>
+                            <CardHeader className="border-b pb-4">
                                 <CardTitle className="flex items-center gap-2">
-                                    <Package className="size-5" />
+                                    <Globe className="size-5 text-blue-500" />
                                     {t('status.installed_mods_title')}
                                 </CardTitle>
-                                <CardDescription>
-                                    {t(mods.length !== 1 ? 'status.mods_installed_plural' : 'status.mods_installed', { count: String(mods.length) })}
-                                </CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="pt-4">
                                 {mods.length > 0 ? (
                                     <div className="space-y-2">
                                         {mods.map((mod) => (
                                             <div
                                                 key={mod.workshop_id}
-                                                className="flex items-center justify-between rounded-md border border-border/50 px-3 py-2"
+                                                className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-background/40 px-3 py-2"
                                             >
-                                                <span className="text-sm font-medium">{mod.mod_id}</span>
+                                                <span className="truncate text-sm font-medium">{mod.mod_id}</span>
                                                 {mod.workshop_id && (
-                                                    <Badge variant="secondary" className="text-xs">
+                                                    <Badge variant="secondary" className="shrink-0 font-mono text-xs">
                                                         {mod.workshop_id}
                                                     </Badge>
                                                 )}
@@ -183,12 +215,15 @@ export default function Status({
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">{t('status.no_mods_installed')}</p>
+                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                        <Package className="mb-3 size-8 text-muted-foreground/40" />
+                                        <p className="text-sm text-muted-foreground">{t('status.no_mods_installed')}</p>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
                     </div>
-                </main>
+                </div>
             </PublicLayout>
         </>
     );

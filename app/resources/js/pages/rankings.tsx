@@ -67,7 +67,7 @@ function KillsTable({ data }: { data: LeaderboardEntry[] }) {
                             {entry.profession && (
                                 <Badge variant="secondary" className="text-xs">{entry.profession}</Badge>
                             )}
-                            {entry.is_dead && <Skull className="size-3.5 text-red-500" title="Dead" />}
+                            {entry.is_dead && <Skull className="size-3.5 text-red-500" aria-label="Dead" />}
                         </div>
                         <span className="font-semibold tabular-nums">{entry.zombie_kills.toLocaleString()}</span>
                     </Link>
@@ -102,7 +102,7 @@ function SurvivalTable({ data, hoursMode, dayLengthMinutes }: { data: Leaderboar
                             {entry.profession && (
                                 <Badge variant="secondary" className="text-xs">{entry.profession}</Badge>
                             )}
-                            {entry.is_dead && <Skull className="size-3.5 text-red-500" title="Dead" />}
+                            {entry.is_dead && <Skull className="size-3.5 text-red-500" aria-label="Dead" />}
                         </div>
                         <span className="font-semibold tabular-nums">
                             {formatHours(entry.hours_survived, hoursMode, dayLengthMinutes)}
@@ -293,107 +293,82 @@ export default function Rankings({
             <Head title={t('rankings.title')} />
             <PublicLayout>
                 <main className="mx-auto max-w-7xl px-4 py-8">
-                    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                        <h1 className="text-3xl font-bold tracking-tight">{t('rankings.title')}</h1>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{t('rankings.time_unit_label')}</span>
-                            <div className="inline-flex overflow-hidden rounded-md border border-border text-xs">
-                                <button
-                                    type="button"
-                                    onClick={() => changeHoursMode('ingame')}
-                                    className={`px-3 py-1.5 transition-colors ${
-                                        hoursMode === 'ingame'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                    title={t('rankings.hours_ingame_tooltip')}
-                                >
-                                    {t('rankings.hours_ingame_short')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => changeHoursMode('real')}
-                                    className={`px-3 py-1.5 transition-colors ${
-                                        hoursMode === 'real'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                    title={t('rankings.hours_real_tooltip')}
-                                >
-                                    {t('rankings.hours_real_short')}
-                                </button>
+                    {/* Hero */}
+                    <section className="relative mb-6 overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-emerald-500/10 p-6 shadow-sm lg:p-8">
+                        <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-emerald-500/10 blur-3xl" />
+                        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">{t('rankings.title')}</h1>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">{t('rankings.time_unit_label')}</span>
+                                    <div className="inline-flex overflow-hidden rounded-md border border-border text-xs">
+                                        <button
+                                            type="button"
+                                            onClick={() => changeHoursMode('ingame')}
+                                            className={`px-3 py-1.5 transition-colors ${
+                                                hoursMode === 'ingame'
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'text-muted-foreground hover:text-foreground'
+                                            }`}
+                                            title={t('rankings.hours_ingame_tooltip')}
+                                        >
+                                            {t('rankings.hours_ingame_short')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => changeHoursMode('real')}
+                                            className={`px-3 py-1.5 transition-colors ${
+                                                hoursMode === 'real'
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'text-muted-foreground hover:text-foreground'
+                                            }`}
+                                            title={t('rankings.hours_real_tooltip')}
+                                        >
+                                            {t('rankings.hours_real_short')}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Server Stats Hero */}
-                    <div className="mb-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                        <Card>
-                            <CardContent className="flex items-center gap-3 pt-4">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10">
-                                    <Users className="size-5 text-blue-500" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('rankings.total_players')}</p>
-                                    <p className="text-2xl font-bold tabular-nums">
-                                        <AnimatedCounter value={server_stats.total_players} />
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center gap-3 pt-4">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-red-500/10">
-                                    <Skull className="size-5 text-red-500" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('rankings.zombie_kills')}</p>
-                                    <p className="text-2xl font-bold tabular-nums">
-                                        <AnimatedCounter value={server_stats.total_zombie_kills} />
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center gap-3 pt-4">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-green-500/10">
-                                    <Clock className="size-5 text-green-500" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('rankings.hours_played')}</p>
-                                    <p className="text-2xl font-bold tabular-nums">
-                                        <AnimatedCounter value={displayedHours} decimals={1} suffix="h" />
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center gap-3 pt-4">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-orange-500/10">
-                                    <Skull className="size-5 text-orange-500" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('rankings.deaths')}</p>
-                                    <p className="text-2xl font-bold tabular-nums">
-                                        <AnimatedCounter value={server_stats.total_deaths} />
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center gap-3 pt-4">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-purple-500/10">
-                                    <Swords className="size-5 text-purple-500" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('rankings.pvp_kills')}</p>
-                                    <p className="text-2xl font-bold tabular-nums">
-                                        <AnimatedCounter value={server_stats.total_pvp_kills} />
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                        <div className="relative mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                <Users className="mx-auto mb-1 size-4 text-blue-500" />
+                                <p className="text-xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_players} />
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">{t('rankings.total_players')}</p>
+                            </div>
+                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                <Skull className="mx-auto mb-1 size-4 text-red-500" />
+                                <p className="text-xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_zombie_kills} />
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">{t('rankings.zombie_kills')}</p>
+                            </div>
+                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                <Clock className="mx-auto mb-1 size-4 text-green-500" />
+                                <p className="text-xl font-bold tabular-nums">
+                                    <AnimatedCounter value={displayedHours} decimals={1} suffix="h" />
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">{t('rankings.hours_played')}</p>
+                            </div>
+                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                <Skull className="mx-auto mb-1 size-4 text-orange-500" />
+                                <p className="text-xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_deaths} />
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">{t('rankings.deaths')}</p>
+                            </div>
+                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                <Swords className="mx-auto mb-1 size-4 text-purple-500" />
+                                <p className="text-xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_pvp_kills} />
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">{t('rankings.pvp_kills')}</p>
+                            </div>
+                        </div>
+                    </section>
 
                     {/* Tabbed Leaderboards */}
                     <Card>

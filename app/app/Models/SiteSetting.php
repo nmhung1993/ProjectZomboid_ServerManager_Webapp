@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Cache;
  * @property array<int, array<string, string>>|null $features
  * @property array<int, array<string, mixed>>|null $landing_sections
  * @property array<string, string>|null $theme_colors
+ * @property bool $show_status
+ * @property bool $show_rankings
+ * @property bool $show_shop
  * @property string $default_locale
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -42,6 +45,9 @@ class SiteSetting extends Model
         'landing_sections',
         'theme_colors',
         'default_locale',
+        'show_status',
+        'show_rankings',
+        'show_shop',
     ];
 
     /**
@@ -53,6 +59,9 @@ class SiteSetting extends Model
             'features' => 'array',
             'landing_sections' => 'array',
             'theme_colors' => 'array',
+            'show_status' => 'boolean',
+            'show_rankings' => 'boolean',
+            'show_shop' => 'boolean',
         ];
     }
 
@@ -72,6 +81,9 @@ class SiteSetting extends Model
             'features' => self::defaultFeatures(),
             'landing_sections' => self::defaultLandingSections(),
             'default_locale' => 'vi',
+            'show_status' => true,
+            'show_rankings' => true,
+            'show_shop' => true,
         ]);
     }
 

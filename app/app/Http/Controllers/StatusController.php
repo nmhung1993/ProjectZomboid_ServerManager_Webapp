@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SiteSetting;
 use App\Services\GameStateReader;
 use App\Services\ModManager;
 use App\Services\ServerStatusResolver;
@@ -18,6 +19,10 @@ class StatusController extends Controller
 
     public function __invoke(): Response
     {
+        if (! SiteSetting::cached()->show_status) {
+            abort(404);
+        }
+
         $resolved = $this->statusResolver->resolve();
 
         $server = [

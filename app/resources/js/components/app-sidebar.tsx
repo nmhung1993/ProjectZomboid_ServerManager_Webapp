@@ -116,16 +116,20 @@ export function AppSidebar() {
         items: [
             { title: t('nav.discord'), href: '/admin/discord', icon: Bell },
             { title: t('nav.discord_bot'), href: '/admin/discord_bot', icon: Bot },
+        ],
+    };
+
+    const systemGroup: NavGroup = {
+        label: t('nav.group.system'),
+        items: [
             { title: t('nav.audit_log'), href: '/admin/audit', icon: ScrollText },
             { title: t('nav.site_settings'), href: '/admin/site-settings', icon: Palette },
             { title: t('nav.translations'), href: '/admin/translations', icon: Languages },
-            { title: t('nav.rankings'), href: '/rankings', icon: Trophy },
-            myStatsItem,
         ],
     };
 
     const navGroups = isAdmin
-        ? [...adminNavGroups, communityGroup]
+        ? [...adminNavGroups, communityGroup, systemGroup]
         : playerNavGroups.map((group) => ({
               ...group,
               items: [...group.items, myStatsItem],

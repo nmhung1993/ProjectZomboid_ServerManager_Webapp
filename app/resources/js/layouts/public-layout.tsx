@@ -34,21 +34,27 @@ function NavLink({ href, children, onClick }: { href: string; children: React.Re
 }
 
 function NavLinks({ className, onClick }: { className?: string; onClick?: () => void }) {
-    const { auth } = usePage().props;
+    const { auth, site } = usePage().props;
     const { t } = useTranslation();
     const isAdmin = auth.user && adminRoles.includes((auth.user as { role: string }).role);
 
     return (
         <nav className={className}>
-            <NavLink href="/status" onClick={onClick}>
-                {t('nav.server_status')}
-            </NavLink>
-            <NavLink href="/rankings" onClick={onClick}>
-                {t('nav.rankings')}
-            </NavLink>
-            <NavLink href="/shop" onClick={onClick}>
-                {t('nav.shop')}
-            </NavLink>
+            {site.show_status && (
+                <NavLink href="/status" onClick={onClick}>
+                    {t('nav.server_status')}
+                </NavLink>
+            )}
+            {site.show_rankings && (
+                <NavLink href="/rankings" onClick={onClick}>
+                    {t('nav.rankings')}
+                </NavLink>
+            )}
+            {site.show_shop && (
+                <NavLink href="/shop" onClick={onClick}>
+                    {t('nav.shop')}
+                </NavLink>
+            )}
             {auth.user ? (
                 <Link
                     href={isAdmin ? '/dashboard' : '/portal'}
@@ -131,7 +137,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
 
     return (
         <ThemeProvider>
-        <div className="min-h-screen bg-background">
+        <div className="flex min-h-screen flex-col bg-background">
             <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
                     <Link href="/" className="flex items-center gap-2">
@@ -187,7 +193,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                 </SheetContent>
             </Sheet>
 
-            {children}
+            <main className="flex-1">{children}</main>
 
             <footer className="border-t border-border/40 py-8">
                 <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground">

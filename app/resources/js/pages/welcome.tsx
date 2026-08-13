@@ -111,7 +111,8 @@ function HeroSection({
 
     return (
         <section className="relative overflow-hidden py-20 lg:py-28">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-emerald-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-0 left-0 size-72 rounded-full bg-primary/5 blur-3xl" />
             <div className="relative mx-auto max-w-7xl px-4 text-center">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -138,18 +139,26 @@ function HeroSection({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="mb-6 flex items-center justify-center gap-2 text-sm"
+                    className="mb-6 flex flex-wrap items-center justify-center gap-2"
                 >
                     <span
-                        className={`inline-block size-2.5 rounded-full ${
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium ${
                             server.status === 'online'
-                                ? 'animate-pulse bg-green-500'
+                                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                 : server.status === 'starting'
-                                  ? 'animate-pulse bg-yellow-500'
-                                  : 'bg-red-500'
+                                  ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                  : 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400'
                         }`}
-                    />
-                    <span className="font-medium">
+                    >
+                        <span
+                            className={`size-2 rounded-full ${
+                                server.status === 'online'
+                                    ? 'animate-pulse bg-emerald-500'
+                                    : server.status === 'starting'
+                                      ? 'animate-pulse bg-amber-500'
+                                      : 'bg-red-500'
+                            }`}
+                        />
                         {server.status === 'online'
                             ? `${t('status.online')} — ${server.player_count} ${server.player_count !== 1 ? t('common.players') : t('common.player')}`
                             : server.status === 'starting'
@@ -157,7 +166,9 @@ function HeroSection({
                               : t('status.offline')}
                     </span>
                     {ping !== null && server.status === 'online' && (
-                        <span className="text-muted-foreground">— {ping}ms</span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-sm tabular-nums text-muted-foreground">
+                            {ping}ms
+                        </span>
                     )}
                 </motion.div>
 
@@ -234,8 +245,8 @@ function StatsSection({ server_stats, server }: Pick<WelcomePageData, 'server_st
 
     return (
         <Deferred data="server_stats" fallback={
-            <section className="border-y border-border/40 bg-muted/20 py-8">
-                <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 sm:grid-cols-4">
+            <section className="py-8">
+                <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 rounded-2xl border bg-muted/20 px-4 py-6 sm:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="flex flex-col items-center gap-2">
                             <Skeleton className="size-8 rounded" />
@@ -247,8 +258,8 @@ function StatsSection({ server_stats, server }: Pick<WelcomePageData, 'server_st
             </section>
         }>
             {server_stats && (
-                <section className="border-y border-border/40 bg-muted/20 py-8">
-                    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 sm:grid-cols-4 lg:grid-cols-5">
+                <section className="py-8">
+                    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 rounded-2xl border bg-muted/20 px-4 py-6 sm:grid-cols-4 lg:grid-cols-5">
                         <div className="flex flex-col items-center gap-1">
                             <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10">
                                 <Users className="size-5 text-blue-500" />

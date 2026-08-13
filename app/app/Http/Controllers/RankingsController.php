@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SiteSetting;
 use App\Services\GameTimeService;
 use App\Services\PlayerStatsService;
 use Inertia\Inertia;
@@ -16,6 +17,10 @@ class RankingsController extends Controller
 
     public function __invoke(): Response
     {
+        if (! SiteSetting::cached()->show_rankings) {
+            abort(404);
+        }
+
         return Inertia::render('rankings', [
             'server_stats' => $this->playerStatsService->getServerStats(),
             'day_length_minutes' => $this->gameTime->realMinutesPerInGameDay(),
