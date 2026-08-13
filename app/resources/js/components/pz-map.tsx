@@ -449,24 +449,31 @@ export default function PzMap({
         map.on('moveend', persistView);
         map.on('zoomend', persistView);
 
-        // Zoom level indicator pinned to Leaflet's top-left control stack.
-        const zoomIndicator = new L.Control({ position: 'topleft' });
-        zoomIndicator.onAdd = () => {
-            const el = L.DomUtil.create('div', 'pz-zoom-indicator');
-            el.style.cssText =
-                'display:flex;align-items:center;padding:0.375rem 0.625rem;' +
-                'background:rgba(255,255,255,0.92);border:1px solid rgba(0,0,0,0.12);' +
-                'border-radius:0.375rem;font-size:0.75rem;font-weight:500;line-height:1;' +
-                'color:#374151;box-shadow:0 1px 3px rgba(0,0,0,0.12);';
-            return el;
-        };
-        zoomIndicator.addTo(map);
+        // Zoom level label embedded inside Leaflet's native zoom control,
+        // between the "+" (zoom-in) and "−" (zoom-out) buttons. Reusing the
+        // .leaflet-bar <a> styles makes all three elements visually identical.
+        const zoomControlContainer = map.zoomControl?.getContainer();
+        let zoomLabel: HTMLAnchorElement | null = null;
+        if (zoomControlContainer) {
+            zoomLabel = L.DomUtil.create('a', 'leaflet-control-zoom-label') as HTMLAnchorElement;
+            zoomLabel.href = '#';
+            zoomLabel.setAttribute('role', 'button');
+            zoomLabel.setAttribute('aria-label', 'Zoom level');
+            zoomLabel.style.cursor = 'default';
+            zoomLabel.addEventListener('click', (event) => event.preventDefault());
+            const zoomIn = zoomControlContainer.querySelector('.leaflet-control-zoom-in');
+            if (zoomIn && zoomIn.nextSibling) {
+                zoomControlContainer.insertBefore(zoomLabel, zoomIn.nextSibling);
+            } else {
+                zoomControlContainer.appendChild(zoomLabel);
+            }
+        }
 
         const updateZoomIndicator = () => {
-            const el = zoomIndicator.getContainer();
-            if (el) {
-                el.textContent = `Zoom ${map.getZoom()}`;
-            }
+            if (!zoomLabel) return;
+            const zoom = Math.round(map.getZoom());
+            zoomLabel.textContent = String(zoom);
+            zoomLabel.title = `Zoom: ${zoom}`;
         };
         updateZoomIndicator();
         map.on('zoomend', updateZoomIndicator);
