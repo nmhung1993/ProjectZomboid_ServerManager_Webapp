@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('site_name')->default('Zomboid Manager');
             $table->string('logo_path')->nullable();
             $table->string('favicon_path')->nullable();
-            $table->string('footer_text')->default('Powered by Zomboid Manager');
-            $table->string('hero_badge')->default('Georgian Gaming Community');
+            $table->string('footer_text')->default('Created by nmhung1993 — https://github.com/nmhung1993');
+            $table->string('hero_badge')->default('nmhung1993');
             $table->string('hero_title')->default('Project Zomboid');
             $table->string('hero_subtitle')->default('Dedicated Server');
             $table->text('hero_description')->default('A fully managed PZ server with web-based administration. Mod management, automated backups, player controls, and RCON console — all from your browser.');

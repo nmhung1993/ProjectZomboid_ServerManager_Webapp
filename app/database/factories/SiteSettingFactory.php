@@ -19,8 +19,8 @@ class SiteSettingFactory extends Factory
     {
         return [
             'site_name' => 'Zomboid Manager',
-            'footer_text' => 'Powered by Zomboid Manager',
-            'hero_badge' => 'Georgian Gaming Community',
+            'footer_text' => 'Created by nmhung1993 — https://github.com/nmhung1993',
+            'hero_badge' => 'nmhung1993',
             'hero_title' => 'Project Zomboid',
             'hero_subtitle' => 'Dedicated Server',
             'hero_description' => 'A fully managed PZ server with web-based administration.',

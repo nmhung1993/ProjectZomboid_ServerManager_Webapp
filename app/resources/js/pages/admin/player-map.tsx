@@ -261,9 +261,9 @@ export default function PlayerMap({
                     </div>
                 )}
 
-                <Card className="isolate min-h-[32rem] flex-1 gap-0 overflow-hidden py-0">
-                    <CardContent className="grid min-h-0 flex-1 p-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
-                        <div className="relative min-h-[32rem] overflow-hidden lg:min-h-0">
+                <Card className="isolate min-h-0 flex-1 gap-0 overflow-hidden py-0">
+                    <CardContent className="grid h-full min-h-0 flex-1 p-0 lg:grid-cols-[minmax(0,1fr)_20rem] lg:grid-rows-[minmax(0,1fr)]">
+                        <div className="relative min-h-[28rem] overflow-hidden lg:h-full lg:min-h-0">
                             {!hasTiles && tileProgress?.generating && (
                                 <div className="absolute top-2 left-1/2 z-[1000] w-64 -translate-x-1/2 rounded-lg border bg-background/90 px-4 py-3 shadow-sm backdrop-blur-sm sm:w-72">
                                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -321,7 +321,7 @@ export default function PlayerMap({
                             />
                         </div>
 
-                        <aside className="flex min-h-0 flex-col border-t bg-card/95 lg:border-t-0 lg:border-l">
+                        <aside className="flex h-full min-h-0 flex-col border-t bg-card/95 lg:border-t-0 lg:border-l">
                             <CardHeader className="border-b px-4 py-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>

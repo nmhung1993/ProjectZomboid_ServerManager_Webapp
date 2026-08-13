@@ -6,11 +6,11 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="flex aspect-square size-24 items-center justify-center rounded-md bg-transparent text-sidebar-foreground">
+            <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-transparent text-sidebar-foreground">
                 {site.logo_url ? (
-                    <img src={site.logo_url} alt={site.name} className="size-24 object-contain" />
+                    <img src={site.logo_url} alt={site.name} className="size-8 object-contain" />
                 ) : (
-                    <Skull className="size-24" />
+                    <Skull className="size-8" />
                 )}
             </div>
             <div className="ml-1 grid flex-1 text-left text-sm">

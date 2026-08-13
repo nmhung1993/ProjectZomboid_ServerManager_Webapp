@@ -125,7 +125,8 @@ class PlayerMapController extends Controller
     public function tile(string $level, string $tile): BinaryFileResponse|Response
     {
         $tilesPath = config('zomboid.map.tiles_path');
-        $dziPath = $tilesPath.'/html/map_data/base_top/layer0_files';
+        $subdir = $this->mapConfigBuilder->resolveMapBaseSubdir();
+        $dziPath = $tilesPath.'/html/map_data/'.$subdir.'/layer0_files';
 
         // Try webp first, then jpg
         $baseTile = pathinfo($tile, PATHINFO_FILENAME);
@@ -144,7 +145,7 @@ class PlayerMapController extends Controller
         if ($filePath === null) {
             // Only proxy if no local tiles have been generated/downloaded yet.
             // Once map_info.json exists, serve exclusively from local storage.
-            $mapInfoPath = $tilesPath.'/html/map_data/base_top/map_info.json';
+            $mapInfoPath = $tilesPath.'/html/map_data/'.$subdir.'/map_info.json';
             if (! is_file($mapInfoPath)) {
                 $proxiedTile = $this->proxyRemoteTile($level, $baseTile);
 

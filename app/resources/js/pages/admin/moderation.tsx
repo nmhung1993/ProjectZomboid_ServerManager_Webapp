@@ -246,9 +246,9 @@ export default function Moderation({
                     </div>
                 </section>
 
-                <div className="grid gap-5 xl:grid-cols-[18rem_minmax(0,1fr)] xl:items-start">
+                <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
                     {/* Filters */}
-                    <Card className="h-fit gap-4 py-5 xl:sticky xl:top-4">
+                    <Card className="h-fit gap-4 py-5 xl:order-last xl:sticky xl:top-4">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Filter className="size-4" />
@@ -364,9 +364,9 @@ export default function Moderation({
                     </Card>
 
                     {/* Map */}
-                    <Card className="gap-0 overflow-hidden py-0">
-                        <CardHeader className="py-6">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <Card className="h-[70svh] max-h-[52rem] min-h-[28rem] gap-0 overflow-hidden py-0 xl:order-first">
+                        <CardHeader className="py-5">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <CardTitle className="flex items-center gap-2">
                                         <MapPin className="size-5" />
@@ -378,26 +378,10 @@ export default function Moderation({
                                         )}
                                     </CardDescription>
                                 </div>
-                                <div className="flex flex-wrap gap-x-4 gap-y-2 sm:justify-end">
-                                    {EVENT_TYPES.map((et) => (
-                                        <div
-                                            key={et.value}
-                                            className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                                        >
-                                            <span
-                                                className="inline-block size-2.5 rounded-full"
-                                                style={{
-                                                    backgroundColor: et.color,
-                                                }}
-                                            />
-                                            {t(et.labelKey)}
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="h-[70svh] max-h-[52rem] min-h-[28rem] overflow-hidden border-t">
+                        <CardContent className="relative min-h-0 flex-1 p-0">
+                            <div className="h-full overflow-hidden">
                                 <PzMap
                                     mapConfig={mapConfig}
                                     hasTiles={hasTiles}

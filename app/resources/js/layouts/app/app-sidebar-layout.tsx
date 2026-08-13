@@ -16,9 +16,11 @@ export default function AppSidebarLayout({
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
-            <AppContent variant="sidebar" className="overflow-x-hidden">
+            <AppContent variant="sidebar" className="overflow-hidden">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <ErrorBoundary>{children}</ErrorBoundary>
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <ErrorBoundary>{children}</ErrorBoundary>
+                </div>
             </AppContent>
             <Toaster position="bottom-right" richColors closeButton />
         </AppShell>

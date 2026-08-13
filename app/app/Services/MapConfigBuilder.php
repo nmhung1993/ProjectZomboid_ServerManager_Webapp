@@ -12,7 +12,8 @@ class MapConfigBuilder
     public function build(): array
     {
         $localDzi = $this->getLocalDziConfig();
-        $mapInfoPath = config('zomboid.map.tiles_path').'/html/map_data/base_top/map_info.json';
+        $subdir = $this->resolveMapBaseSubdir();
+        $mapInfoPath = config('zomboid.map.tiles_path').'/html/map_data/'.$subdir.'/map_info.json';
         $tileVersion = is_file($mapInfoPath) ? filemtime($mapInfoPath) : 'missing';
         // Keep tiles on the same origin so localhost, LAN IP, and HTTPS all work.
         $tileUrl = '/admin/map-tiles/{z}/{x}_{y}?v='.$tileVersion;
@@ -59,15 +60,34 @@ class MapConfigBuilder
     }
 
     /**
+     * Resolve the map data base subdirectory that actually holds tiles.
+     *
+     * gen-map renders top-view as base_top then renames it to base (see
+     * GenerateMapTiles), while the offline CDN merge writes base_top. Prefer
+     * base when present, otherwise fall back to base_top.
+     */
+    public function resolveMapBaseSubdir(): string
+    {
+        $tilesPath = config('zomboid.map.tiles_path');
+
+        if (is_file($tilesPath.'/html/map_data/base/map_info.json')) {
+            return 'base';
+        }
+
+        return 'base_top';
+    }
+
+    /**
      * Get DZI config from locally generated tiles, or null if not available.
      *
      * @return array{width: int, height: int, x0: float, y0: float, sqr: float, maxNativeZoom: int, isometric: bool}|null
      */
     private function getLocalDziConfig(): ?array
     {
-        $dziPath = config('zomboid.map.tiles_path').'/html/map_data/base_top/layer0_files';
+        $subdir = $this->resolveMapBaseSubdir();
+        $dziPath = config('zomboid.map.tiles_path').'/html/map_data/'.$subdir.'/layer0_files';
 
-        $infoPath = config('zomboid.map.tiles_path').'/html/map_data/base_top/map_info.json';
+        $infoPath = config('zomboid.map.tiles_path').'/html/map_data/'.$subdir.'/map_info.json';
 
         if (! is_file($infoPath)) {
             return null;

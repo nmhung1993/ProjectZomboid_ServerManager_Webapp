@@ -1075,16 +1075,6 @@ By using this software, you acknowledge and accept these terms. See the [LICENSE
 
 <div align="center">
 
-Built for the Georgian Project Zomboid community
+Created with ❤️ by [nmhung1993](https://github.com/nmhung1993)
 
 </div>
-
-
----
-
-## Acknowledgements
-
-The game server containers powering this project are built and maintained by the community:
-
-- **AMD64:** [Renegade-Master/zomboid-dedicated-server](https://github.com/Renegade-Master/zomboid-dedicated-server) by [@Renegade-Master](https://github.com/Renegade-Master)
-- **ARM64:** [joyfui/project-zomboid-server-docker-arm64](https://github.com/joyfui/project-zomboid-server-docker-arm64) by [@joyfui](https://github.com/joyfui)
