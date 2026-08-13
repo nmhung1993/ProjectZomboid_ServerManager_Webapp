@@ -29,7 +29,7 @@ class MoneyDepositManager
      */
     public function createRequest(string $username): array
     {
-        $data = $this->readJsonFile($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
+        $data = JsonFile::read($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
 
         $entry = [
             'id' => Str::uuid()->toString(),
@@ -41,7 +41,7 @@ class MoneyDepositManager
         $data['requests'][] = $entry;
         $data['updated_at'] = date('c');
 
-        $this->writeJsonFileAtomic($this->requestsPath, $data);
+        JsonFile::writeAtomic($this->requestsPath, $data);
 
         return $entry;
     }
@@ -53,8 +53,8 @@ class MoneyDepositManager
      */
     public function hasPendingRequest(string $username): bool
     {
-        $requests = $this->readJsonFile($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
-        $results = $this->readJsonFile($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
+        $requests = JsonFile::read($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
+        $results = JsonFile::read($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
 
         // Build set of processed request IDs from results
         $processedIds = [];
@@ -96,11 +96,11 @@ class MoneyDepositManager
      */
     public function getLastResult(string $username): ?array
     {
-        $resultsData = $this->readJsonFile($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
+        $resultsData = JsonFile::read($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
 
         // Only show results that match a recent request (created within the last 5 minutes).
         // This avoids timezone mismatch between Lua and PHP timestamps.
-        $requestsData = $this->readJsonFile($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
+        $requestsData = JsonFile::read($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
         $recentRequestIds = [];
         $fiveMinutesAgo = time() - 300;
         foreach ($requestsData['requests'] as $request) {
@@ -125,7 +125,7 @@ class MoneyDepositManager
         }
 
         // No Lua result — check for a timed-out request and synthesize an error
-        $requestsData = $this->readJsonFile($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
+        $requestsData = JsonFile::read($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
         $timeoutCutoff = time() - self::PENDING_TIMEOUT_SECONDS;
 
         $staleAge = time() - 600; // 10 minutes — same as cleanup window
@@ -165,7 +165,7 @@ class MoneyDepositManager
      */
     public function processResults(WalletService $walletService): array
     {
-        $data = $this->readJsonFile($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
+        $data = JsonFile::read($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
 
         if (empty($data['results'])) {
             return [];
@@ -229,8 +229,8 @@ class MoneyDepositManager
      */
     public function cleanupStaleRequests(): void
     {
-        $data = $this->readJsonFile($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
-        $results = $this->readJsonFile($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
+        $data = JsonFile::read($this->requestsPath, ['version' => 1, 'updated_at' => '', 'requests' => []]);
+        $results = JsonFile::read($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
         $cutoff = strtotime('-10 minutes');
         $changed = false;
 
@@ -263,7 +263,7 @@ class MoneyDepositManager
 
         if ($changed) {
             $data['updated_at'] = date('c');
-            $this->writeJsonFileAtomic($this->requestsPath, $data);
+            JsonFile::writeAtomic($this->requestsPath, $data);
         }
     }
 
@@ -279,7 +279,7 @@ class MoneyDepositManager
             return true;
         }
 
-        $data = $this->readJsonFile($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
+        $data = JsonFile::read($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
         $idSet = array_flip($creditedIds);
 
         $data['results'] = array_values(array_filter(
@@ -288,48 +288,6 @@ class MoneyDepositManager
         ));
         $data['updated_at'] = date('c');
 
-        return $this->writeJsonFileAtomic($this->resultsPath, $data);
-    }
-
-    /**
-     * Read and decode a JSON file, returning default on failure.
-     */
-    private function readJsonFile(string $path, array $default): array
-    {
-        if (! file_exists($path)) {
-            return $default;
-        }
-
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return $default;
-        }
-
-        $data = json_decode($content, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return $default;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Write JSON data atomically using temp file + rename.
-     */
-    private function writeJsonFileAtomic(string $path, array $data): bool
-    {
-        $dir = dirname($path);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $tmpPath = $path.'.tmp.'.getmypid().'.'.bin2hex(random_bytes(4));
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if (file_put_contents($tmpPath, $json) === false) {
-            return false;
-        }
-
-        return rename($tmpPath, $path);
+        return JsonFile::writeAtomic($this->resultsPath, $data);
     }
 }

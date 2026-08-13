@@ -7,7 +7,6 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
-import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import type { User } from '@/types';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
@@ -17,10 +16,8 @@ type Props = {
 };
 
 export function UserMenuContent({ user }: Props) {
-    const cleanup = useMobileNavigation();
-
     const handleLogout = () => {
-        cleanup();
+        document.body.style.removeProperty('pointer-events');
         router.flushAll();
     };
 
@@ -38,7 +35,7 @@ export function UserMenuContent({ user }: Props) {
                         className="block w-full cursor-pointer"
                         href={edit()}
                         prefetch
-                        onClick={cleanup}
+                        onClick={() => document.body.style.removeProperty('pointer-events')}
                     >
                         <Settings className="mr-2" />
                         Settings

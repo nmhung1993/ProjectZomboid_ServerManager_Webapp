@@ -8,11 +8,11 @@ use InvalidArgumentException;
 
 class RconSanitizer
 {
-    private const PLAYER_NAME_PATTERN = '/^[a-zA-Z0-9_]{1,50}$/';
+    public const PLAYER_NAME_PATTERN = '/^[a-zA-Z0-9_]{1,50}$/';
 
-    private const ITEM_ID_PATTERN = '/^[a-zA-Z0-9_.]{1,100}$/';
+    public const ITEM_ID_PATTERN = '/^[a-zA-Z0-9_.]{1,100}$/';
 
-    private const SKILL_PATTERN = '/^[a-zA-Z0-9]{1,50}$/';
+    public const SKILL_PATTERN = '/^[a-zA-Z0-9]{1,50}$/';
 
     private const VALID_ACCESS_LEVELS = [
         'admin',

@@ -27,7 +27,7 @@ class RespawnDelayManager
      */
     public function getConfig(): array
     {
-        $data = $this->readJsonFile($this->configPath, []);
+        $data = JsonFile::read($this->configPath, []);
 
         return [
             'enabled' => (bool) ($data['enabled'] ?? false),
@@ -40,7 +40,7 @@ class RespawnDelayManager
      */
     public function updateConfig(bool $enabled, int $delayMinutes): bool
     {
-        return $this->writeJsonFileAtomic($this->configPath, [
+        return JsonFile::writeAtomic($this->configPath, [
             'enabled' => $enabled,
             'delay_minutes' => $delayMinutes,
         ]);
@@ -58,7 +58,7 @@ class RespawnDelayManager
             return [];
         }
 
-        $deaths = $this->readJsonFile($this->deathsPath, ['deaths' => []]);
+        $deaths = JsonFile::read($this->deathsPath, ['deaths' => []]);
         $deathRecords = $deaths['deaths'] ?? [];
 
         $now = time();
@@ -86,55 +86,13 @@ class RespawnDelayManager
      */
     public function resetPlayer(string $username): bool
     {
-        $data = $this->readJsonFile($this->resetsPath, ['resets' => []]);
+        $data = JsonFile::read($this->resetsPath, ['resets' => []]);
         $resets = $data['resets'] ?? [];
 
         if (! in_array($username, $resets)) {
             $resets[] = $username;
         }
 
-        return $this->writeJsonFileAtomic($this->resetsPath, ['resets' => $resets]);
-    }
-
-    /**
-     * Read and decode a JSON file, returning default on failure.
-     */
-    private function readJsonFile(string $path, array $default): array
-    {
-        if (! file_exists($path)) {
-            return $default;
-        }
-
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return $default;
-        }
-
-        $data = json_decode($content, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return $default;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Write JSON data atomically using temp file + rename.
-     */
-    private function writeJsonFileAtomic(string $path, array $data): bool
-    {
-        $dir = dirname($path);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $tmpPath = $path.'.tmp.'.getmypid().'.'.bin2hex(random_bytes(4));
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if (file_put_contents($tmpPath, $json) === false) {
-            return false;
-        }
-
-        return rename($tmpPath, $path);
+        return JsonFile::writeAtomic($this->resetsPath, ['resets' => $resets]);
     }
 }

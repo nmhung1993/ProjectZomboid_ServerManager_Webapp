@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Services\RconSanitizer;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -13,9 +14,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class RconSafeIdentifier implements ValidationRule
 {
     private const PATTERNS = [
-        'player' => '/^[a-zA-Z0-9_]{1,50}$/',
-        'item' => '/^[a-zA-Z0-9_.]{1,100}$/',
-        'skill' => '/^[a-zA-Z0-9]{1,50}$/',
+        'player' => RconSanitizer::PLAYER_NAME_PATTERN,
+        'item' => RconSanitizer::ITEM_ID_PATTERN,
+        'skill' => RconSanitizer::SKILL_PATTERN,
     ];
 
     public function __construct(

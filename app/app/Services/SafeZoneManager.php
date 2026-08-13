@@ -27,7 +27,7 @@ class SafeZoneManager
      */
     public function getConfig(): array
     {
-        $data = $this->readJsonFile($this->configPath, []);
+        $data = JsonFile::read($this->configPath, []);
 
         return [
             'enabled' => (bool) ($data['enabled'] ?? false),
@@ -43,7 +43,7 @@ class SafeZoneManager
         $config = $this->getConfig();
         $config['enabled'] = $enabled;
 
-        return $this->writeJsonFileAtomic($this->configPath, $config);
+        return JsonFile::writeAtomic($this->configPath, $config);
     }
 
     /**
@@ -56,7 +56,7 @@ class SafeZoneManager
         $config = $this->getConfig();
         $config['zones'][] = $zone;
 
-        return $this->writeJsonFileAtomic($this->configPath, $config);
+        return JsonFile::writeAtomic($this->configPath, $config);
     }
 
     /**
@@ -70,7 +70,7 @@ class SafeZoneManager
             fn (array $zone) => ($zone['id'] ?? '') !== $zoneId,
         ));
 
-        return $this->writeJsonFileAtomic($this->configPath, $config);
+        return JsonFile::writeAtomic($this->configPath, $config);
     }
 
     /**
@@ -83,7 +83,7 @@ class SafeZoneManager
         try {
             $this->deduplicateViolations();
 
-            $data = $this->readJsonFile($this->violationsPath, ['violations' => []]);
+            $data = JsonFile::read($this->violationsPath, ['violations' => []]);
             $violations = $data['violations'] ?? [];
 
             if (empty($violations)) {
@@ -126,7 +126,7 @@ class SafeZoneManager
             }
 
             // Clear the violations file after import
-            $this->writeJsonFileAtomic($this->violationsPath, ['violations' => []]);
+            JsonFile::writeAtomic($this->violationsPath, ['violations' => []]);
 
             return $count;
         } catch (\Throwable $e) {
@@ -220,60 +220,5 @@ class SafeZoneManager
             'zomboid.lua_bridge.safezone_violations' => '/tmp/safezone_violations.json',
             default => '/tmp/default.json',
         };
-    }
-
-    private function readJsonFile(string $path, array $default): array
-    {
-        if (! file_exists($path)) {
-            return $default;
-        }
-
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return $default;
-        }
-
-        $data = json_decode($content, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return $default;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Write JSON data atomically using temp file + rename.
-     */
-    private function writeJsonFileAtomic(string $path, array $data): bool
-    {
-        $dir = dirname($path);
-        if ($dir === '' || $dir === '.') {
-            return false;
-        }
-
-        if (is_file($dir)) {
-            return false;
-        }
-
-        if (! is_dir($dir) && ! @mkdir($dir, 0755, true) && ! is_dir($dir)) {
-            return false;
-        }
-
-        $tmpPath = $path.'.tmp.'.getmypid().'.'.bin2hex(random_bytes(4));
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if (file_put_contents($tmpPath, $json) === false) {
-            @unlink($tmpPath);
-
-            return false;
-        }
-
-        if (! @rename($tmpPath, $path)) {
-            @unlink($tmpPath);
-
-            return false;
-        }
-
-        return true;
     }
 }

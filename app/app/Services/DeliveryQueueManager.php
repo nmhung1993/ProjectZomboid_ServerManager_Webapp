@@ -66,7 +66,7 @@ class DeliveryQueueManager
      */
     public function readQueue(): array
     {
-        return $this->readJsonFile($this->queuePath, ['version' => 1, 'updated_at' => '', 'entries' => []]);
+        return JsonFile::read($this->queuePath, ['version' => 1, 'updated_at' => '', 'entries' => []]);
     }
 
     /**
@@ -76,7 +76,7 @@ class DeliveryQueueManager
      */
     public function readResults(): array
     {
-        return $this->readJsonFile($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
+        return JsonFile::read($this->resultsPath, ['version' => 1, 'updated_at' => '', 'results' => []]);
     }
 
     /**
@@ -84,7 +84,7 @@ class DeliveryQueueManager
      */
     public function cleanupQueue(): bool
     {
-        return $this->writeJsonFileAtomic($this->queuePath, [
+        return JsonFile::writeAtomic($this->queuePath, [
             'version' => 1,
             'updated_at' => date('c'),
             'entries' => [],
@@ -96,7 +96,7 @@ class DeliveryQueueManager
      */
     public function cleanupResults(): bool
     {
-        return $this->writeJsonFileAtomic($this->resultsPath, [
+        return JsonFile::writeAtomic($this->resultsPath, [
             'version' => 1,
             'updated_at' => date('c'),
             'results' => [],
@@ -177,50 +177,8 @@ class DeliveryQueueManager
         $queue['entries'][] = $entry;
         $queue['updated_at'] = date('c');
 
-        $this->writeJsonFileAtomic($this->queuePath, $queue);
+        JsonFile::writeAtomic($this->queuePath, $queue);
 
         return $entry;
-    }
-
-    /**
-     * Read and decode a JSON file, returning default on failure.
-     */
-    private function readJsonFile(string $path, array $default): array
-    {
-        if (! file_exists($path)) {
-            return $default;
-        }
-
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return $default;
-        }
-
-        $data = json_decode($content, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return $default;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Write JSON data atomically using temp file + rename.
-     */
-    private function writeJsonFileAtomic(string $path, array $data): bool
-    {
-        $dir = dirname($path);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $tmpPath = $path.'.tmp.'.getmypid().'.'.bin2hex(random_bytes(4));
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if (file_put_contents($tmpPath, $json) === false) {
-            return false;
-        }
-
-        return rename($tmpPath, $path);
     }
 }

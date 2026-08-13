@@ -60,18 +60,6 @@ return [
         'center_y' => 14322.0,
         // Maps are generated into the Docker named volume and served locally.
         'proxy_url' => env('PZ_MAP_PROXY_URL', ''),
-        'proxy_tile_size' => 2048,
-        // Remote URL template for downloading pre-rendered map tiles.
-        // Default: B42 vanilla map from map.projectzomboid.com
-        'download_url' => env('PZ_MAP_DOWNLOAD_URL', 'https://map.projectzomboid.com/maps/42.20.0/base/layer0_files/{z}/{x}_{y}.jpg'),
-        'proxy_max_zoom' => (int) env('PZ_MAP_PROXY_MAX_ZOOM', 22),
-        'proxy_dzi' => [
-            'width' => 2318656,
-            'height' => 1019040,
-            'x0' => 1040384,
-            'y0' => -139296,
-            'sqr' => 128,
-        ],
     ],
 
     /*
@@ -122,16 +110,6 @@ return [
         'deposit_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/deposit_requests.json',
         'deposit_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/deposit_results.json',
         'export_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/export_requests.json',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Money Deposit — In-game money to wallet conversion
-    |--------------------------------------------------------------------------
-    */
-    'money_deposit' => [
-        'money_value' => (int) env('PZ_MONEY_VALUE', 1),
-        'stack_value' => (int) env('PZ_MONEY_STACK_VALUE', 10),
     ],
 
     /*
