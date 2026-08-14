@@ -57,7 +57,7 @@ const DISCORD_REMINDER_OPTIONS = [
 ] as const;
 
 const TIMEZONE_OPTIONS = [
-    'Asia/Tbilisi',
+    'Asia/Ho_Chi_Minh',
     'Europe/Moscow',
     'Europe/London',
     'Europe/Berlin',
@@ -66,7 +66,6 @@ const TIMEZONE_OPTIONS = [
     'America/Chicago',
     'America/Los_Angeles',
     'Asia/Tokyo',
-    'Asia/Ho_Chi_Minh',
     'Australia/Sydney',
     'UTC',
 ] as const;

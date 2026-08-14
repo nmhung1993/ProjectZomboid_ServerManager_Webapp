@@ -1255,5 +1255,21 @@
     "wallet.no_transactions": "No transactions yet.",
     "wallet.recent_transactions": "Recent transactions",
     "wallet.title": "My Wallet",
-    "wallet.transaction_history": "Transaction History"
+    "wallet.transaction_history": "Transaction History",
+    "nav.server_player_stats": "Player Statistics",
+    "admin.server_player_stats.title": "Player Statistics",
+    "admin.server_player_stats.subtitle": "Track online players, peak concurrency, and total play hours over time",
+    "admin.server_player_stats.current_online": "Currently Online",
+    "admin.server_player_stats.peak": "Peak Online",
+    "admin.server_player_stats.total_hours": "Total Play Hours",
+    "admin.server_player_stats.data_points": "Data Points",
+    "admin.server_player_stats.online_chart": "Online Players",
+    "admin.server_player_stats.online_chart_description": "Online player count over the selected period",
+    "admin.server_player_stats.hours_chart": "Total Play Hours",
+    "admin.server_player_stats.hours_chart_description": "Cumulative play hours across all players",
+    "admin.server_player_stats.period_hour": "Hour",
+    "admin.server_player_stats.period_day": "Day",
+    "admin.server_player_stats.period_week": "Week",
+    "admin.server_player_stats.period_month": "Month",
+    "admin.server_player_stats.period_year": "Year"
 }

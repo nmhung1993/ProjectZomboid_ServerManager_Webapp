@@ -48,7 +48,7 @@ class AutoRestartCheck extends Command
             return self::SUCCESS;
         }
 
-        $tz = $settings->timezone ?? 'Asia/Tbilisi';
+        $tz = $settings->timezone ?? 'Asia/Ho_Chi_Minh';
         $restartInTz = $nextRestart->copy()->setTimezone($tz);
         $dateKey = $restartInTz->format('Y-m-d');
         $timeKey = $restartInTz->format('H:i');

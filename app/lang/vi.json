@@ -1255,5 +1255,21 @@
     "wallet.no_transactions": "Chưa có giao dịch nào.",
     "wallet.recent_transactions": "Giao dịch gần đây",
     "wallet.title": "Ví của tôi",
-    "wallet.transaction_history": "Lịch sử giao dịch"
+    "wallet.transaction_history": "Lịch sử giao dịch",
+    "nav.server_player_stats": "Thống kê người chơi",
+    "admin.server_player_stats.title": "Thống kê người chơi",
+    "admin.server_player_stats.subtitle": "Theo dõi người chơi trực tuyến, số peak và tổng giờ chơi theo thời gian",
+    "admin.server_player_stats.current_online": "Đang online",
+    "admin.server_player_stats.peak": "Peak online",
+    "admin.server_player_stats.total_hours": "Tổng giờ chơi",
+    "admin.server_player_stats.data_points": "Điểm dữ liệu",
+    "admin.server_player_stats.online_chart": "Người chơi online",
+    "admin.server_player_stats.online_chart_description": "Số người chơi online trong khoảng thời gian đã chọn",
+    "admin.server_player_stats.hours_chart": "Tổng giờ chơi",
+    "admin.server_player_stats.hours_chart_description": "Tổng giờ chơi tích lũy của tất cả người chơi",
+    "admin.server_player_stats.period_hour": "Giờ",
+    "admin.server_player_stats.period_day": "Ngày",
+    "admin.server_player_stats.period_week": "Tuần",
+    "admin.server_player_stats.period_month": "Tháng",
+    "admin.server_player_stats.period_year": "Năm"
 }

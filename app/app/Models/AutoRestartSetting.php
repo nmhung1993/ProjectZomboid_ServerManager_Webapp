@@ -35,7 +35,7 @@ class AutoRestartSetting extends Model
         return static::query()->firstOrCreate([], [
             'enabled' => false,
             'warning_minutes' => 5,
-            'timezone' => 'Asia/Tbilisi',
+            'timezone' => 'Asia/Ho_Chi_Minh',
             'discord_reminder_minutes' => 30,
         ]);
     }
@@ -54,7 +54,7 @@ class AutoRestartSetting extends Model
             return null;
         }
 
-        $tz = $this->timezone ?? 'Asia/Tbilisi';
+        $tz = $this->timezone ?? 'Asia/Ho_Chi_Minh';
         $nowInTz = now($tz);
 
         // Find first time today that hasn't passed

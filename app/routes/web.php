@@ -98,6 +98,9 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::get('logs', [Admin\LogController::class, 'index'])->name('logs');
         Route::get('logs/fetch', [Admin\LogController::class, 'fetch'])->name('logs.fetch');
 
+        // Server Player Stats (charts)
+        Route::get('server-player-stats', [Admin\ServerPlayerStatsController::class, 'index'])->name('server-player-stats');
+
         // Discord Webhook
         Route::get('discord', [Admin\DiscordWebhookController::class, 'index'])->name('discord');
         Route::patch('discord', [Admin\DiscordWebhookController::class, 'update'])->name('discord.update');

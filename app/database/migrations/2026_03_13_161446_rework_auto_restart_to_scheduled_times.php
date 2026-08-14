@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('auto_restart_settings', function (Blueprint $table) {
             $table->dropColumn(['interval_hours', 'next_restart_at']);
-            $table->string('timezone', 50)->default('Asia/Tbilisi');
+            $table->string('timezone', 50)->default('Asia/Ho_Chi_Minh');
             $table->integer('discord_reminder_minutes')->default(30);
         });
 

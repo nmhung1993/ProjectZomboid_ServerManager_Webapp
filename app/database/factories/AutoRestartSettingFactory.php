@@ -17,7 +17,7 @@ class AutoRestartSettingFactory extends Factory
             'enabled' => false,
             'warning_minutes' => 5,
             'warning_message' => null,
-            'timezone' => 'Asia/Tbilisi',
+            'timezone' => 'Asia/Ho_Chi_Minh',
             'discord_reminder_minutes' => 30,
         ];
     }

@@ -27,8 +27,8 @@ class SecurityHeaders
 
         $scriptSrc = "'self' 'nonce-{$nonce}'";
         $connectSrc = "'self'";
-        $styleSrc = "'self' 'unsafe-inline'";
-        $fontSrc = "'self' data:";
+        $styleSrc = "'self' 'unsafe-inline' https://fonts.googleapis.com";
+        $fontSrc = "'self' data: https://fonts.gstatic.com";
         // Workshop preview thumbnails come from Steam's user-content and static CDNs.
         $imgSrc = "'self' data: https://*.steamusercontent.com https://*.steamstatic.com";
 

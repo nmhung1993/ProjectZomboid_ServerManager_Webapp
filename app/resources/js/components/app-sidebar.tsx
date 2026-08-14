@@ -10,6 +10,7 @@ import {
     Timer,
     Gamepad2,
     LayoutGrid,
+    LineChart,
     MapPin,
     Package,
     Palette,
@@ -63,6 +64,7 @@ export function AppSidebar() {
                 { title: t('nav.auto_restart'), href: '/admin/auto-restart', icon: Timer },
                 { title: t('nav.rcon_console'), href: '/admin/rcon', icon: Terminal },
                 { title: t('nav.server_logs'), href: '/admin/logs', icon: Activity },
+                { title: t('nav.server_player_stats'), href: '/admin/server-player-stats', icon: LineChart },
             ],
         },
         {

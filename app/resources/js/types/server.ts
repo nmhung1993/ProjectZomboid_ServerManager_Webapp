@@ -35,6 +35,21 @@ export type ServerStats = {
     most_popular_profession: string | null;
 };
 
+export type PlayerStatPeriod = 'hour' | 'day' | 'week' | 'month' | 'year';
+
+export type PlayerStatBucket = {
+    label: string;
+    player_count: number;
+    total_hours_survived: number;
+};
+
+export type ServerPlayerStats = {
+    current_online: number;
+    peak: Record<PlayerStatPeriod, number>;
+    total_hours_played: number;
+    series: Record<PlayerStatPeriod, PlayerStatBucket[]>;
+};
+
 export type ModStatus = 'active' | 'pending_restart' | 'stopped';
 
 export type ModEntry = {
