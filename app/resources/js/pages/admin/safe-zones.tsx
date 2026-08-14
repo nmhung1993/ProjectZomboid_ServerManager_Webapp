@@ -309,7 +309,7 @@ export default function SafeZones({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.safe_zones.title')} />
             <div className="flex min-h-full flex-1 flex-col gap-5 p-4 lg:p-6">
-                <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-blue-500/10 p-5 shadow-sm lg:p-6">
+                <section className="relative shrink-0 overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-blue-500/10 p-5 shadow-sm lg:p-6">
                     <div className="pointer-events-none absolute -top-20 right-4 size-60 rounded-full bg-blue-500/10 blur-3xl" />
                     <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
                         <div className="flex items-start gap-4">
@@ -383,7 +383,7 @@ export default function SafeZones({
                     </div>
                 </section>
 
-                <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+                <div className="grid shrink-0 gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
                     {/* Map */}
                     <Card className="h-[70svh] max-h-[52rem] min-h-[28rem] gap-0 overflow-hidden py-0">
                         <CardHeader className="py-6">
@@ -589,7 +589,7 @@ export default function SafeZones({
                 </div>
 
                 {/* Violations */}
-                <Card className="gap-0 overflow-hidden py-0">
+                <Card className="shrink-0 gap-0 overflow-hidden py-0">
                     <CardHeader className="border-b py-5">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div>

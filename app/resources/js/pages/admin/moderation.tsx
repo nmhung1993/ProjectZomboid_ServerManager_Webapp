@@ -216,7 +216,7 @@ export default function Moderation({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.moderation.title')} />
             <div className="flex min-h-full flex-1 flex-col gap-5 p-4 lg:p-6">
-                <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-orange-500/10 p-5 shadow-sm lg:p-6">
+                <section className="relative shrink-0 overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-orange-500/10 p-5 shadow-sm lg:p-6">
                     <div className="pointer-events-none absolute -top-24 right-8 size-64 rounded-full bg-orange-500/10 blur-3xl" />
                     <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                         <div className="flex items-start gap-4">
@@ -246,9 +246,9 @@ export default function Moderation({
                     </div>
                 </section>
 
-                <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
+                <div className="grid shrink-0 gap-5 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
                     {/* Filters */}
-                    <Card className="h-fit gap-4 py-5 xl:order-last xl:sticky xl:top-4">
+                    <Card className="h-fit gap-4 py-5 xl:sticky xl:top-4 xl:order-last">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Filter className="size-4" />
@@ -395,7 +395,7 @@ export default function Moderation({
                 </div>
 
                 {/* Events Table */}
-                <Card className="gap-0 overflow-hidden py-0">
+                <Card className="shrink-0 gap-0 overflow-hidden py-0">
                     <CardHeader className="border-b py-5">
                         <CardTitle className="flex items-center gap-2">
                             <Crosshair className="size-5" />
