@@ -103,74 +103,24 @@ function CopyField({ label, value }: { label: string; value: string }) {
 
 function HeroSection({
     hero,
-    server,
-    ping,
     connection,
-}: Pick<WelcomePageData, 'hero' | 'server' | 'connection'> & { ping: number | null }) {
+}: Pick<WelcomePageData, 'hero' | 'connection'>) {
     const { t } = useTranslation();
 
     return (
         <section className="relative overflow-hidden py-20 lg:py-28">
-            <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-emerald-500/10 blur-3xl" />
             <div className="pointer-events-none absolute bottom-0 left-0 size-72 rounded-full bg-primary/5 blur-3xl" />
             <div className="relative mx-auto max-w-7xl px-4 text-center">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground"
-                >
-                    <Globe className="size-4" />
-                    {hero.badge}
-                </motion.div>
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
+                    className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
                 >
                     {hero.title}
                     <br />
                     <span className="text-muted-foreground">{hero.subtitle}</span>
                 </motion.h1>
-
-                {/* Server status indicator */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="mb-6 flex flex-wrap items-center justify-center gap-2"
-                >
-                    <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium ${
-                            server.status === 'online'
-                                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                : server.status === 'starting'
-                                  ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                  : 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400'
-                        }`}
-                    >
-                        <span
-                            className={`size-2 rounded-full ${
-                                server.status === 'online'
-                                    ? 'animate-pulse bg-emerald-500'
-                                    : server.status === 'starting'
-                                      ? 'animate-pulse bg-amber-500'
-                                      : 'bg-red-500'
-                            }`}
-                        />
-                        {server.status === 'online'
-                            ? `${t('status.online')} — ${server.player_count} ${server.player_count !== 1 ? t('common.players') : t('common.player')}`
-                            : server.status === 'starting'
-                              ? t('status.starting')
-                              : t('status.offline')}
-                    </span>
-                    {ping !== null && server.status === 'online' && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-sm tabular-nums text-muted-foreground">
-                            {ping}ms
-                        </span>
-                    )}
-                </motion.div>
 
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
@@ -240,70 +190,128 @@ function HeroSection({
     );
 }
 
-function StatsSection({ server_stats, server }: Pick<WelcomePageData, 'server_stats' | 'server'>) {
+function StatsSection({
+    server_stats,
+    server,
+    ping,
+    connection,
+}: Pick<WelcomePageData, 'server_stats' | 'server' | 'connection'> & { ping: number | null }) {
     const { t } = useTranslation();
 
     return (
         <Deferred data="server_stats" fallback={
             <section className="py-8">
-                <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 rounded-2xl border bg-muted/20 px-4 py-6 sm:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="flex flex-col items-center gap-2">
-                            <Skeleton className="size-8 rounded" />
-                            <Skeleton className="h-7 w-16" />
-                            <Skeleton className="h-3 w-20" />
-                        </div>
-                    ))}
+                <div className="mx-auto max-w-7xl rounded-2xl border bg-muted/20 px-4 py-6">
+                    <div className="grid grid-cols-4 gap-6">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="flex flex-col items-center gap-2">
+                                <Skeleton className="size-8 rounded" />
+                                <Skeleton className="h-7 w-16" />
+                                <Skeleton className="h-3 w-20" />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="my-4 border-t border-border/40" />
+                    <Skeleton className="mx-auto h-5 w-48" />
+                    <div className="mt-3 flex justify-center">
+                        <Skeleton className="h-5 w-36" />
+                    </div>
                 </div>
             </section>
         }>
             {server_stats && (
                 <section className="py-8">
-                    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 rounded-2xl border bg-muted/20 px-4 py-6 sm:grid-cols-4 lg:grid-cols-5">
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10">
-                                <Users className="size-5 text-blue-500" />
+                    <div className="mx-auto max-w-7xl rounded-2xl border bg-muted/20 px-4 py-6">
+                        {/* Hàng 1: Stats */}
+                        <div className="grid grid-cols-4 gap-6">
+                            {/* Online Players */}
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10">
+                                    <Users className="size-5 text-blue-500" />
+                                </div>
+                                <span className="text-2xl font-bold tabular-nums">
+                                    {server.player_count}/{server_stats.total_players}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                    {t('status.players_online')}
+                                </span>
                             </div>
-                            <span className="text-2xl font-bold tabular-nums">
-                                <AnimatedCounter value={server_stats.total_players} />
-                            </span>
-                            <span className="text-xs text-muted-foreground">{t('status.total_players')}</span>
+                            {/* Hours Survived */}
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="flex size-10 items-center justify-center rounded-lg bg-green-500/10">
+                                    <Clock className="size-5 text-green-500" />
+                                </div>
+                                <span className="text-2xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_hours_survived} decimals={1} suffix="h" />
+                                </span>
+                                <span className="text-xs text-muted-foreground">{t('status.hours_survived')}</span>
+                            </div>
+                            {/* Zombie Kills */}
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="flex size-10 items-center justify-center rounded-lg bg-red-500/10">
+                                    <Sword className="size-5 text-red-500" />
+                                </div>
+                                <span className="text-2xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_zombie_kills} />
+                                </span>
+                                <span className="text-xs text-muted-foreground">{t('status.zombie_kills')}</span>
+                            </div>
+                            {/* Deaths */}
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="flex size-10 items-center justify-center rounded-lg bg-orange-500/10">
+                                    <Skull className="size-5 text-orange-500" />
+                                </div>
+                                <span className="text-2xl font-bold tabular-nums">
+                                    <AnimatedCounter value={server_stats.total_deaths} />
+                                </span>
+                                <span className="text-xs text-muted-foreground">{t('status.deaths')}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-red-500/10">
-                                <Skull className="size-5 text-red-500" />
+
+                        {/* Divider */}
+                        <div className="my-4 border-t border-border/40" />
+
+                        {/* Hàng 2: Server Address */}
+                        {connection.ip && (
+                            <div className="flex items-center justify-center gap-2">
+                                <Globe className="size-5 text-blue-500" />
+                                <code className="font-mono text-sm font-medium text-foreground">
+                                    {connection.ip}:{connection.port}
+                                </code>
                             </div>
-                            <span className="text-2xl font-bold tabular-nums">
-                                <AnimatedCounter value={server_stats.total_zombie_kills} />
+                        )}
+
+                        {/* Hàng 3: Status + Ping */}
+                        <div className="mt-3 flex items-center justify-center gap-2">
+                            <span
+                                className={`size-3 rounded-full ${
+                                    server.status === 'online'
+                                        ? 'animate-pulse bg-emerald-500'
+                                        : server.status === 'starting'
+                                          ? 'animate-pulse bg-amber-500'
+                                          : 'bg-red-500'
+                                }`}
+                            />
+                            <span
+                                className={`text-sm font-medium ${
+                                    server.status === 'online'
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : server.status === 'starting'
+                                          ? 'text-amber-600 dark:text-amber-400'
+                                          : 'text-red-600 dark:text-red-400'
+                                }`}
+                            >
+                                {server.status === 'online'
+                                    ? t('status.online')
+                                    : server.status === 'starting'
+                                      ? t('status.starting')
+                                      : t('status.offline')}
                             </span>
-                            <span className="text-xs text-muted-foreground">{t('status.zombie_kills')}</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-green-500/10">
-                                <Clock className="size-5 text-green-500" />
-                            </div>
-                            <span className="text-2xl font-bold tabular-nums">
-                                <AnimatedCounter value={server_stats.total_hours_survived} decimals={1} suffix="h" />
-                            </span>
-                            <span className="text-xs text-muted-foreground">{t('status.hours_survived')}</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-orange-500/10">
-                                <Skull className="size-5 text-orange-500" />
-                            </div>
-                            <span className="text-2xl font-bold tabular-nums">
-                                <AnimatedCounter value={server_stats.total_deaths} />
-                            </span>
-                            <span className="text-xs text-muted-foreground">{t('status.deaths')}</span>
-                        </div>
-                        <div className="hidden flex-col items-center gap-1 lg:flex">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                                <Users className="size-5 text-primary" />
-                            </div>
-                            <span className="text-2xl font-bold tabular-nums">
-                                {server.player_count}
-                            </span>
-                            <span className="text-xs text-muted-foreground">{t('status.players_online')}</span>
+                            {ping !== null && server.status === 'online' && (
+                                <span className="text-sm tabular-nums text-muted-foreground">
+                                    {ping}ms
+                                </span>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -504,8 +512,8 @@ export default function Welcome({
         .sort((a, b) => a.order - b.order);
 
     const sectionRenderers: Record<string, () => React.ReactNode> = {
-        hero: () => <HeroSection key="hero" hero={hero} server={server} ping={ping} connection={connection} />,
-        stats: () => <StatsSection key="stats" server_stats={server_stats} server={server} />,
+        hero: () => <HeroSection key="hero" hero={hero} connection={connection} />,
+        stats: () => <StatsSection key="stats" server_stats={server_stats} server={server} ping={ping} connection={connection} />,
         top_players: () => <TopPlayersSection key="top_players" top_players={top_players} />,
         features: () => <FeaturesSection key="features" features={features} />,
     };
