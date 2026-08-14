@@ -3,6 +3,7 @@ import type { VariantProps} from "class-variance-authority";
 import { cva } from "class-variance-authority"
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 import * as React from "react"
+import { usePage } from "@inertiajs/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -365,12 +366,29 @@ function SidebarSeparator({
 }
 
 function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const { url } = usePage()
+
+  // Restore the sidebar scroll position after navigation.
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const saved = sessionStorage.getItem("sidebar-scroll-top")
+    if (saved !== null) {
+      el.scrollTop = Number(saved)
+    }
+  }, [url])
+
   return (
     <div
+      ref={ref}
+      onScroll={(event) => {
+        sessionStorage.setItem("sidebar-scroll-top", String(event.currentTarget.scrollTop))
+      }}
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "scrollbar-none flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto",
         className
       )}
       {...props}

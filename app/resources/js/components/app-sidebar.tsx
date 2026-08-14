@@ -139,11 +139,11 @@ export function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon" variant="inset" className="border-sidebar-border/70 bg-sidebar">
-            <SidebarHeader className="border-b border-sidebar-border/60 px-5 py-5">
-                <SidebarMenu>
+            <SidebarHeader className="border-b border-sidebar-border/60 px-5 py-5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+                <SidebarMenu className="group-data-[collapsible=icon]:items-center">
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? dashboard() : '/portal'} prefetch className="group/logo">
+                            <Link href={isAdmin ? dashboard() : '/portal'} prefetch className="group/logo group-data-[collapsible=icon]:justify-center">
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

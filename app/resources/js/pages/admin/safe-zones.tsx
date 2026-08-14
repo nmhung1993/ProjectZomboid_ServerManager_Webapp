@@ -308,7 +308,7 @@ export default function SafeZones({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.safe_zones.title')} />
-            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto p-4 lg:p-6">
+            <div className="flex min-h-full flex-1 flex-col gap-5 p-4 lg:p-6">
                 <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-blue-500/10 p-5 shadow-sm lg:p-6">
                     <div className="pointer-events-none absolute -top-20 right-4 size-60 rounded-full bg-blue-500/10 blur-3xl" />
                     <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">

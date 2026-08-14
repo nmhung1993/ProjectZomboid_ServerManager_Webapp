@@ -215,7 +215,7 @@ export default function Moderation({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.moderation.title')} />
-            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-auto p-4 lg:p-6">
+            <div className="flex min-h-full flex-1 flex-col gap-5 p-4 lg:p-6">
                 <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-orange-500/10 p-5 shadow-sm lg:p-6">
                     <div className="pointer-events-none absolute -top-24 right-8 size-64 rounded-full bg-orange-500/10 blur-3xl" />
                     <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

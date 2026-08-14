@@ -87,7 +87,7 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.logs.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+            <div className="flex min-h-0 flex-1 flex-col gap-6 p-4 lg:p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">{t('admin.logs.title')}</h1>
@@ -125,7 +125,7 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
                     </div>
                 </div>
 
-                <Card className="flex flex-1 flex-col">
+                <Card className="flex min-h-0 flex-1 flex-col">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="flex items-center gap-2">
@@ -141,10 +141,10 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
                             </Badge>
                         )}
                     </CardHeader>
-                    <CardContent className="flex-1">
+                    <CardContent className="flex min-h-0 flex-1 flex-col px-6 pb-6">
                         <div
                             ref={outputRef}
-                            className="overflow-auto rounded-lg bg-zinc-950 p-4 font-mono text-xs leading-relaxed min-h-[500px] max-h-[70vh]"
+                            className="scrollbar-none min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-950 p-4 font-mono text-xs leading-relaxed"
                         >
                             {lines.length > 0 ? (
                                 lines.map((line, i) => {
