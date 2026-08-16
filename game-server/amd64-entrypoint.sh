@@ -1,7 +1,7 @@
 #!/bin/bash
 # Wrapper entrypoint for the AMD64 game server image (renegademaster).
 # Patches run_server.sh to run configure-server.sh AFTER SteamCMD validate
-# but BEFORE start_server.
+# but BEFORE every start_server call.
 #
 # ZomboidManager is loaded as a proper PZ mod (added to Mods= line by
 # configure-server.sh). This ensures both server and client Lua files are
@@ -26,6 +26,8 @@ if [ "$(id -u)" = "0" ]; then
 fi
 
 CONFIGURE_SCRIPT="/home/steam/configure-server.sh"
+RUN_SERVER_SCRIPT="/home/steam/run_server.sh"
+SSR_OVERRIDE_DIR="${SSR_OVERRIDE_DIR:-/opt/ssr-override}"
 
 # Clean up previously injected ZM files and empty mod directory from base game.
 # ZomboidManager is loaded from Zomboid/mods/, not the base game directory.
@@ -39,9 +41,14 @@ done
 # Note: ZomboidManager Workshop cache at steamapps/workshop/content/108600/3685323705
 # is populated by configure-server.sh — do NOT delete it here.
 
-if [ -f "$CONFIGURE_SCRIPT" ] && ! grep -q "configure-server.sh" /home/steam/run_server.sh; then
-    sed -i '/^start_server$/i bash '"$CONFIGURE_SCRIPT" /home/steam/run_server.sh
+if [ -f "$CONFIGURE_SCRIPT" ] && ! grep -q "configure-server.sh" "$RUN_SERVER_SCRIPT"; then
+    sed -i '/^    timeout "\$TIMEOUT"/i\    bash '"$CONFIGURE_SCRIPT" "$RUN_SERVER_SCRIPT"
     echo "[entrypoint] Patched run_server.sh to run configure-server.sh before start"
+fi
+
+if [ -f "$SSR_OVERRIDE_DIR/start-server-jm.sh" ] && [ -f "$SSR_OVERRIDE_DIR/java/zombie/SSROverride.class" ]; then
+    sed -i 's#"$BASE_GAME_DIR"/start-server.sh#"$BASE_GAME_DIR"/start-server-jm.sh#' "$RUN_SERVER_SCRIPT"
+    echo "[entrypoint] SSR Quest System Java override enabled"
 fi
 
 # Branch override from shared volume (written by web UI / setup wizard).

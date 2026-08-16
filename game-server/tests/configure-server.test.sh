@@ -78,6 +78,36 @@ assert_setting() {
     rm -rf "$cfg" "$install"
 }
 
+assert_ssr_override() {
+    local cfg install override ini out rc
+
+    cfg="$(mktemp -d)"
+    install="$(mktemp -d)"
+    override="$(mktemp -d)"
+    mkdir -p "$cfg/Server" "$override/java/zombie"
+    ini="$cfg/Server/ZomboidServer.ini"
+    seed_ini "$ini"
+    printf 'class' > "$override/java/zombie/SSROverride.class"
+    printf '#!/bin/bash\n' > "$override/start-server-jm.sh"
+
+    out="$(SSR_OVERRIDE_DIR="$override" PZ_CONFIG_DIR="$cfg" PZ_INSTALL_DIR="$install" \
+        SERVER_NAME="ZomboidServer" bash "$CONFIGURE" 2>&1)"
+    rc=$?
+
+    if [ "$rc" -eq 0 ] \
+        && cmp -s "$override/java/zombie/SSROverride.class" "$install/java/zombie/SSROverride.class" \
+        && [ -x "$install/start-server-jm.sh" ]; then
+        echo "PASS: SSR Java override is copied and launcher is executable"
+        pass=$((pass + 1))
+    else
+        echo "FAIL: SSR Java override installation"
+        echo "${out}" | sed 's/^/    /'
+        fail=$((fail + 1))
+    fi
+
+    rm -rf "$cfg" "$install" "$override"
+}
+
 echo "Running configure-server.sh precedence tests..."
 
 # --- MaxPlayers (issue #33) ---------------------------------------------------
@@ -101,6 +131,8 @@ ADMIN_PASSWORD="s3cret-admin" \
 
 RCON_PASSWORD="rcon-pw" \
     assert_setting "AMD64 RCON_PASSWORD is honoured when PZ_RCON_PASSWORD is unset" RCONPassword "rcon-pw"
+
+assert_ssr_override
 
 echo "----------------------------------------"
 echo "Passed: ${pass}, Failed: ${fail}"

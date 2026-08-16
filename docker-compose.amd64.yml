@@ -40,6 +40,7 @@ services:
       TZ: ${TZ:-Asia/Ho_Chi_Minh}
     volumes:
       - zomboid-server:/home/steam/ZomboidDedicatedServer
+      - ./game-server/ssr-override:/opt/ssr-override:ro
     healthcheck:
       # Check RCON TCP port in /proc/net — proves game server is fully loaded
       # (ss/netstat not available in renegademaster image)

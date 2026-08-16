@@ -38,6 +38,7 @@ db-backups/
 
 # Game server data (generated at runtime)
 game-server/data/
+game-server/ssr-override/
 backups/*.tar.gz
 
 # Node

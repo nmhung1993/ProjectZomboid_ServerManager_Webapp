@@ -18,6 +18,14 @@ SERVER_NAME="${SERVERNAME:-${SERVER_NAME:-${PZ_SERVER_NAME:-ZomboidServer}}}"
 # production behaviour is unchanged (these vars are never set in the images).
 PZ_CONFIG_DIR="${PZ_CONFIG_DIR:-/home/steam/Zomboid}"
 PZ_INSTALL_DIR="${PZ_INSTALL_DIR:-/home/steam/ZomboidDedicatedServer}"
+SSR_OVERRIDE_DIR="${SSR_OVERRIDE_DIR:-/opt/ssr-override}"
+
+if [ -f "$SSR_OVERRIDE_DIR/start-server-jm.sh" ] && [ -f "$SSR_OVERRIDE_DIR/java/zombie/SSROverride.class" ]; then
+    mkdir -p "$PZ_INSTALL_DIR"
+    cp -a "$SSR_OVERRIDE_DIR"/. "$PZ_INSTALL_DIR"/
+    chmod +x "$PZ_INSTALL_DIR/start-server-jm.sh"
+    echo "[configure-server] Installed SSR Quest System Java override"
+fi
 
 INI_DIR="${PZ_CONFIG_DIR}/Server"
 INI_FILE="${INI_DIR}/${SERVER_NAME}.ini"
