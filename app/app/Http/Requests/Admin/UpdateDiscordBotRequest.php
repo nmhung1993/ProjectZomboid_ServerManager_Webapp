@@ -30,6 +30,11 @@ class UpdateDiscordBotRequest extends FormRequest
             'role_ids.*' => ['string', 'max:30'],
             'enabled_events' => ['sometimes', 'array'],
             'enabled_events.*' => ['string', Rule::in($availableEvents)],
+            'notification_channels' => ['sometimes', 'array'],
+            'notification_channels.*.channel_id' => ['nullable', 'string', 'max:30'],
+            'notification_channels.*.thread_id' => ['nullable', 'string', 'max:30'],
+            'notification_channels.*.role_ids' => ['nullable', 'array'],
+            'notification_channels.*.role_ids.*' => ['string', 'max:30'],
         ];
     }
 

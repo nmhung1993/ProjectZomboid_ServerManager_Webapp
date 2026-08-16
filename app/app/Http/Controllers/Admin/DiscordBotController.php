@@ -35,6 +35,7 @@ class DiscordBotController extends Controller
                 'thread_id' => $settings->thread_id,
                 'role_ids' => $settings->role_ids ?? [],
                 'enabled_events' => $settings->enabled_events ?? [],
+                'notification_channels' => $settings->notification_channels ?? [],
             ],
             'available_events' => DiscordBotSetting::availableEvents(),
         ]);
@@ -72,6 +73,10 @@ class DiscordBotController extends Controller
 
         if (array_key_exists('enabled_events', $validated)) {
             $settings->enabled_events = $validated['enabled_events'];
+        }
+
+        if (array_key_exists('notification_channels', $validated)) {
+            $settings->notification_channels = $validated['notification_channels'];
         }
 
         $settings->save();

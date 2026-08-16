@@ -5,100 +5,47 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DiscordBotSetting extends Model
+class DiscordWebhookSetting extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'bot_token',
+        'webhook_url',
         'enabled',
-        'server_id',
-        'channel_id',
-        'thread_id',
-        'role_ids',
         'enabled_events',
-        'notification_channels',
     ];
 
     protected function casts(): array
     {
         return [
-            'bot_token' => 'encrypted',
+            'webhook_url' => 'encrypted',
             'enabled' => 'boolean',
-            'role_ids' => 'array',
             'enabled_events' => 'array',
-            'notification_channels' => 'array',
         ];
     }
 
-    /**
-     * Get the singleton settings instance, creating one if none exists.
-     */
     public static function instance(): static
     {
         return static::query()->firstOrCreate([], [
             'enabled' => false,
-            'role_ids' => [],
             'enabled_events' => [],
         ]);
     }
 
-    /**
-     * Get channel config for a group. Falls back to legacy columns if new JSON not set.
-     */
-    public function channelConfigFor(string $group): array
-    {
-        $channels = $this->notification_channels ?? [];
-
-        if (isset($channels[$group])) {
-            return $channels[$group];
-        }
-
-        // Legacy fallback
-        return [
-            'channel_id' => $this->channel_id,
-            'thread_id' => $this->thread_id,
-            'role_ids' => $this->role_ids ?? [],
-        ];
-    }
-
-    /**
-     * Map event key to group.
-     */
-    public static function groupForAction(string $action): string
-    {
-        if (str_starts_with($action, 'server.') || str_starts_with($action, 'respawn_delay.') || str_starts_with($action, 'safezone.') || str_starts_with($action, 'shop.')) {
-            return 'server';
-        }
-        if (str_starts_with($action, 'backup.')) {
-            return 'backup';
-        }
-        if (str_starts_with($action, 'player.')) {
-            return 'player';
-        }
-        return 'notification';
-    }
-
-    /**
-     * Check if a notification should be sent for the given action.
-     */
     public function shouldNotify(string $action): bool
     {
         return $this->enabled
-            && $this->bot_token
+            && $this->webhook_url
             && in_array($action, $this->enabled_events ?? [])
             && array_key_exists($action, static::availableEvents());
     }
 
     /**
-     * Get all available events with labels and default enabled state.
-     *
      * @return array<string, array{label: string, default: bool, group: string}>
      */
     public static function availableEvents(): array
     {
         return [
-            // Server
             'server.start' => ['label' => 'Server Started', 'default' => true, 'group' => 'server'],
             'server.stop' => ['label' => 'Server Stopped', 'default' => true, 'group' => 'server'],
             'server.stop.scheduled' => ['label' => 'Server Stop Scheduled', 'default' => true, 'group' => 'server'],

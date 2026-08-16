@@ -32,11 +32,14 @@ class AuditLogObserver
         $botSettings = DiscordBotSetting::instance();
 
         if ($botSettings->shouldNotify($auditLog->action)) {
+            $group = DiscordBotSetting::groupForAction($auditLog->action);
+            $cfg = $botSettings->channelConfigFor($group);
+
             SendDiscordBotNotification::dispatch(
                 $botSettings->bot_token,
-                $botSettings->channel_id,
-                $botSettings->thread_id,
-                $botSettings->role_ids ?? [],
+                $cfg['channel_id'] ?? $botSettings->channel_id,
+                $cfg['thread_id'] ?? $botSettings->thread_id,
+                $cfg['role_ids'] ?? $botSettings->role_ids ?? [],
                 $auditLog->id,
             );
         }
