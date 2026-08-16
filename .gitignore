@@ -39,7 +39,8 @@ db-backups/
 # Game server data (generated at runtime)
 game-server/data/
 game-server/ssr-override/
-backups/*.tar.gz
+/backups/*
+!/backups/.gitkeep
 
 # Node
 node_modules/
