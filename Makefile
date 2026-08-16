@@ -17,7 +17,7 @@ CADDY_HTTPS_PORT ?= 443
 
 FW_DISPATCH := bash scripts/firewall/dispatch.sh
 
-.PHONY: up down build restart logs ps stop pull migrate test test-game-server exec arch init setup db-check db-init db-reset db-backup db-restore nuke workshop-package update-version update \
+.PHONY: up down build restart logs ps stop pull migrate test test-game-server exec arch init setup db-check db-init db-reset db-backup db-restore wipe-pz nuke workshop-package update-version update \
 	admin-expose admin-hide expose hide info
 
 # ── First-run setup ──────────────────────────────────────────────────
@@ -108,6 +108,26 @@ down:
 VOLUMES := pz-postgres pz-app-storage \
 	pz-server-files pz-data pz-redis pz-backups pz-lua-bridge pz-map-tiles \
 	pz-caddy-data pz-caddy-config
+
+PZ_WIPE_VOLUMES := pz-app-storage pz-postgres pz-redis pz-backups \
+	pz-server-files pz-data pz-lua-bridge
+
+wipe-pz:
+	@echo "WARNING: This permanently deletes game saves, server config, app storage, database, Redis data, and backups."
+	@echo "Keeps .env, Caddy volumes, and bind-mounted map tiles."
+	@echo "Type WIPE_PZ_APP_GAME and press Enter to continue:"
+	@read confirm; \
+	if [ "$$confirm" != "WIPE_PZ_APP_GAME" ]; then \
+		echo "Cancelled."; \
+		exit 1; \
+	fi
+	$(COMPOSE) rm --stop --force game-server app queue db redis
+	@for vol in $(PZ_WIPE_VOLUMES); do \
+		if docker volume inspect $$vol >/dev/null 2>&1; then \
+			docker volume rm $$vol; \
+		fi; \
+	done
+	@echo "Wipe complete. Run 'make up' to create fresh game and app data."
 
 nuke:
 	@echo "WARNING: This will destroy ALL data (database, game saves, backups, config)."
@@ -379,6 +399,7 @@ help:
 	@echo "    update           - Pull latest code, rebuild, migrate, rebuild assets,"
 	@echo "                       and restart game-server (refuses if working tree dirty)"
 	@echo "    update-version   - Update game-version.conf after a PZ game update"
+	@echo "    wipe-pz          - Wipe game + app data; keep config/Caddy/maps (DANGER)"
 	@echo "    nuke             - Destroy ALL data and stop services (DANGER)"
 	@echo ""
 	@echo "  Supported firewall backends: firewalld (Fedora/RHEL), ufw (Ubuntu/Debian), manual"

@@ -77,5 +77,6 @@ make exec CMD="php artisan config:clear"
 | `make info` | `.\make.ps1 info` | Show URLs, public IP, and firewall status |
 | `make arch` | `.\make.ps1 arch` | Show detected CPU architecture |
 | `make update-version` | `.\make.ps1 update-version` | Update `game-version.conf` after a PZ game update |
+| `make wipe-pz` | `.\make.ps1 wipe-pz` | Wipe game + app data; keep config, Caddy, and bind-mounted map tiles (**danger**) |
 | `make nuke` | `.\make.ps1 nuke` | Destroy ALL data and stop services (**danger**) |
 | `make help` | `.\make.ps1 help` | Show all available commands |

@@ -51,6 +51,24 @@ class PlayerStatsService
         return $count;
     }
 
+    public function resetRankings(): void
+    {
+        if (is_file($this->statsPath) && ! unlink($this->statsPath)) {
+            throw new \RuntimeException("Unable to delete player stats snapshot: {$this->statsPath}");
+        }
+
+        DB::transaction(function (): void {
+            PlayerStat::query()->delete();
+            GameEvent::query()->delete();
+            DB::table('wallets')->update([
+                'balance' => 0,
+                'total_earned' => 0,
+                'total_spent' => 0,
+                'updated_at' => now(),
+            ]);
+        });
+    }
+
     /**
      * Get the top players by a given stat.
      *

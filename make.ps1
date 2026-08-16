@@ -44,6 +44,11 @@ $Volumes = @(
     "pz-map-tiles", "pz-caddy-data", "pz-caddy-config"
 )
 
+$WipePzVolumes = @(
+    "pz-app-storage", "pz-postgres", "pz-redis", "pz-backups",
+    "pz-server-files", "pz-data", "pz-lua-bridge"
+)
+
 # ── Helpers ─────────────────────────────────────────────────────────
 function Invoke-Compose {
     param([string[]]$Arguments)
@@ -418,6 +423,26 @@ function Do-Nuke {
     Write-Host "Nuke complete. All volumes and config removed." -ForegroundColor Green
 }
 
+function Do-WipePz {
+    Assert-DockerEnvironment
+    Write-Host "WARNING: This permanently deletes game saves, server config, app storage, database, Redis data, and backups." -ForegroundColor Red
+    Write-Host "Keeps .env, Caddy volumes, and bind-mounted map tiles." -ForegroundColor Yellow
+    $confirm = Read-Host "Type WIPE_PZ_APP_GAME and press Enter to continue"
+    if ($confirm -ne "WIPE_PZ_APP_GAME") {
+        Write-Host "Cancelled."
+        return
+    }
+
+    Invoke-Compose @("rm", "--stop", "--force", "game-server", "app", "queue", "db", "redis")
+    foreach ($vol in $WipePzVolumes) {
+        if (Test-VolumeExists $vol) {
+            docker volume rm $vol | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Could not remove volume $vol" }
+        }
+    }
+    Write-Host "Wipe complete. Run '.\make.ps1 up' to create fresh game and app data." -ForegroundColor Green
+}
+
 # ── Firewall (Windows Firewall via netsh) ───────────────────────────
 
 function Do-Expose {
@@ -569,6 +594,7 @@ function Do-Help {
     Write-Host "    .\make.ps1 info             Show URLs, IP, firewall status"
     Write-Host "    .\make.ps1 arch             Show detected CPU architecture"
     Write-Host "    .\make.ps1 update-version   Update game-version.conf"
+    Write-Host "    .\make.ps1 wipe-pz          Wipe game + app data; keep config/Caddy/maps (DANGER)"
     Write-Host "    .\make.ps1 nuke             Destroy ALL data (DANGER)"
     Write-Host ""
 }
@@ -596,6 +622,7 @@ switch ($Command) {
     "db-reset" { Do-DbReset }
     "db-backup" { Do-DbBackup }
     "db-restore" { Do-DbRestore }
+    "wipe-pz" { Do-WipePz }
     "nuke" { Do-Nuke }
     "expose" { Do-Expose }
     "hide" { Do-Hide }

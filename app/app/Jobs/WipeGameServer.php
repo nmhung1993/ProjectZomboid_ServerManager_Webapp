@@ -6,6 +6,7 @@ use App\Enums\BackupType;
 use App\Services\AuditLogger;
 use App\Services\BackupManager;
 use App\Services\DockerManager;
+use App\Services\PlayerStatsService;
 use App\Services\RconClient;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -25,8 +26,12 @@ class WipeGameServer implements ShouldQueue
         private readonly string $ip,
     ) {}
 
-    public function handle(RconClient $rcon, DockerManager $docker, BackupManager $backupManager): void
-    {
+    public function handle(
+        RconClient $rcon,
+        DockerManager $docker,
+        BackupManager $backupManager,
+        PlayerStatsService $playerStats,
+    ): void {
         Cache::forget('server.pending_action:wipe');
 
         // 1. Create pre-wipe backup
@@ -97,6 +102,15 @@ class WipeGameServer implements ShouldQueue
             Process::run(['rm', '-f', $serverDb]);
             Process::run(['rm', '-f', "{$serverDb}-shm", "{$serverDb}-wal"]);
             Log::info('Server player database deleted', ['path' => $serverDb]);
+        }
+
+        try {
+            $playerStats->resetRankings();
+            Log::info('Rankings reset after server wipe');
+        } catch (\Throwable $e) {
+            Log::error('Failed to reset rankings after server wipe', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // 4. Start server

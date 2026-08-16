@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\GameEvent;
 use App\Models\PlayerStat;
+use App\Models\User;
+use App\Models\Wallet;
 use App\Services\PlayerStatsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -37,6 +40,41 @@ test('sync returns 0 for empty players array', function () {
     $service = new PlayerStatsService($this->filePath);
 
     expect($service->sync())->toBe(0);
+});
+
+test('resetRankings clears ranking data but keeps users and wallets', function () {
+    file_put_contents($this->filePath, '{"players":[]}');
+    $user = User::factory()->create();
+    $wallet = Wallet::factory()->create([
+        'user_id' => $user->id,
+        'balance' => 100,
+        'total_earned' => 150,
+        'total_spent' => 50,
+    ]);
+
+    PlayerStat::query()->create([
+        'username' => 'Alice',
+        'zombie_kills' => 42,
+        'hours_survived' => 10,
+    ]);
+    GameEvent::query()->create([
+        'event_type' => 'death',
+        'player' => 'Alice',
+    ]);
+
+    $service = new PlayerStatsService($this->filePath);
+    $service->resetRankings();
+
+    expect(PlayerStat::query()->count())->toBe(0)
+        ->and(GameEvent::query()->count())->toBe(0)
+        ->and(User::query()->whereKey($user->id)->exists())->toBeTrue()
+        ->and(file_exists($this->filePath))->toBeFalse();
+
+    $wallet = $wallet->fresh();
+    expect($wallet)->not->toBeNull()
+        ->and((float) $wallet->balance)->toBe(0.0)
+        ->and((float) $wallet->total_earned)->toBe(0.0)
+        ->and((float) $wallet->total_spent)->toBe(0.0);
 });
 
 test('sync creates new player stat records', function () {
