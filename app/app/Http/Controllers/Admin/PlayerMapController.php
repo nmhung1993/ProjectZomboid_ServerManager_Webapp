@@ -107,6 +107,7 @@ class PlayerMapController extends Controller
         $mapConfig = $this->mapConfigBuilder->build();
         $safeZoneConfig = $this->safeZoneManager->getConfig();
         $factionTerritories = \App\Models\FactionTerritory::with('faction:id,name,tag,color')->get();
+        $vehicles = \App\Models\Vehicle::all();
 
         return Inertia::render('admin/player-map', [
             'markers' => $markers,
@@ -118,6 +119,7 @@ class PlayerMapController extends Controller
             'tilesGenerating' => false,
             'safeZones' => $safeZoneConfig['enabled'] ? $safeZoneConfig['zones'] : [],
             'factionTerritories' => $factionTerritories,
+            'vehicles' => $vehicles,
         ]);
     }
 

@@ -58,6 +58,14 @@ type Props = {
             color: string;
         };
     }>;
+    vehicles?: Array<{
+        id: number;
+        sql_id: number;
+        name: string;
+        owner_username: string | null;
+        x: number;
+        y: number;
+    }>;
 };
 
 const statusDotColor: Record<PlayerMarker['status'], string> = {
@@ -84,6 +92,7 @@ export default function PlayerMap({
     tileProgress,
     safeZones,
     factionTerritories = [],
+    vehicles = [],
 }: Props) {
     const { t } = useTranslation();
     const [isMapInteracting, setIsMapInteracting] = useState(false);
@@ -102,6 +111,7 @@ export default function PlayerMap({
                     'tileProgress',
                     'safeZones',
                     'factionTerritories',
+                    'vehicles',
                 ],
             });
         }, 5000);
@@ -336,6 +346,14 @@ export default function PlayerMap({
                             )}
                             <PzMap
                                 markers={markers}
+                                vehicleMarkers={vehicles.map((v) => ({
+                                    id: v.id,
+                                    sql_id: v.sql_id,
+                                    name: v.name,
+                                    owner: v.owner_username,
+                                    x: v.x,
+                                    y: v.y,
+                                }))}
                                 mapConfig={mapConfig}
                                 hasTiles={hasTiles}
                                 onMarkerAction={handleMarkerAction}

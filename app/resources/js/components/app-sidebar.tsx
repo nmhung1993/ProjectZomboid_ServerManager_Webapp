@@ -4,6 +4,7 @@ import {
     Archive,
     Bell,
     Bot,
+    Car,
     Coins,
     Crosshair,
     Languages,
@@ -18,6 +19,7 @@ import {
     Shield,
     ShieldAlert,
     ShoppingBag,
+    Sparkles,
     Store,
     Tag,
     Target,
@@ -77,6 +79,8 @@ export function AppSidebar() {
                 { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
                 { title: t('nav.factions'), href: '/admin/factions', icon: Users },
                 { title: t('nav.quests_bounties'), href: '/admin/quests', icon: Target },
+                { title: t('nav.vehicles'), href: '/admin/vehicles', icon: Car },
+                { title: t('nav.cleaner'), href: '/admin/cleaner', icon: Sparkles },
             ],
         },
         {
@@ -96,6 +100,7 @@ export function AppSidebar() {
             label: t('nav.group.menu'),
             items: [
                 { title: t('nav.player_portal'), href: '/portal', icon: Gamepad2 },
+                { title: t('nav.vehicles'), href: '/portal/vehicles', icon: Car },
                 { title: t('nav.quests_bounties'), href: '/portal/quests', icon: Target },
                 { title: t('nav.factions'), href: '/portal/factions', icon: Users },
                 { title: t('nav.my_wallet'), href: '/shop/my/wallet', icon: Coins },

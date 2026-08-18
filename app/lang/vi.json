@@ -1,6 +1,12 @@
 {
+    "nav.cleaner": "Dọn rác chống Lag",
     "nav.factions": "Bang hội (Factions)",
     "nav.quests_bounties": "Nhiệm vụ & Truy nã",
+    "nav.vehicles": "Phương tiện (Xe)",
+    "portal.vehicles.claimed_list": "Danh sách xe đã Claim",
+    "portal.vehicles.no_vehicles": "Bạn chưa sở hữu hoặc claim phương tiện nào trong game.",
+    "portal.vehicles.subtitle": "Theo dõi tọa độ, tình trạng xăng và bình ắc quy các xe đã Claim (AVCS).",
+    "portal.vehicles.title": "Phương tiện của tôi",
     "portal.quests.claim_btn": "Nhận thưởng",
     "portal.quests.claimed": "Đã nhận thưởng",
     "portal.quests.completed": "Đã hoàn thành",

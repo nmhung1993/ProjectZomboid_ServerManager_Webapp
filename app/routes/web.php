@@ -61,6 +61,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('bounties', [\App\Http\Controllers\Portal\QuestPortalController::class, 'storeBounty'])->name('bounties.store');
         Route::post('bounties/{bounty}/cancel', [\App\Http\Controllers\Portal\QuestPortalController::class, 'cancelBounty'])->name('bounties.cancel');
     });
+
+    // Player Vehicles Portal
+    Route::prefix('portal/vehicles')->name('portal.vehicles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\VehiclePortalController::class, 'index'])->name('index');
+    });
 });
 
 Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
@@ -177,6 +182,18 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('quests', [Admin\QuestAdminController::class, 'storeQuest'])->name('quests.store');
         Route::delete('quests/{quest}', [Admin\QuestAdminController::class, 'destroyQuest'])->name('quests.destroy');
         Route::post('quests/bounties/{bounty}/cancel', [Admin\QuestAdminController::class, 'cancelBounty'])->name('quests.bounties.cancel');
+
+        // Vehicles Management (admin)
+        Route::get('vehicles', [Admin\VehicleAdminController::class, 'index'])->name('vehicles');
+        Route::post('vehicles/{vehicle}/repair', [Admin\VehicleAdminController::class, 'repair'])->name('vehicles.repair');
+        Route::post('vehicles/{vehicle}/unclaim', [Admin\VehicleAdminController::class, 'unclaim'])->name('vehicles.unclaim');
+        Route::delete('vehicles/{vehicle}', [Admin\VehicleAdminController::class, 'destroy'])->name('vehicles.destroy');
+        Route::post('vehicles/cleanup-broken', [Admin\VehicleAdminController::class, 'cleanupBroken'])->name('vehicles.cleanup-broken');
+
+        // Auto Lag Cleaner (admin)
+        Route::get('cleaner', [Admin\CleanerAdminController::class, 'index'])->name('cleaner');
+        Route::post('cleaner/bodies', [Admin\CleanerAdminController::class, 'cleanBodies'])->name('cleaner.bodies');
+        Route::post('cleaner/items', [Admin\CleanerAdminController::class, 'cleanItems'])->name('cleaner.items');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

@@ -113,6 +113,10 @@ return [
         'export_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/export_requests.json',
         'anticheat_violations' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/anticheat_violations.json',
         'faction_config' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/faction_config.json',
+        'vehicles' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/vehicles.json',
+        'vehicle_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/vehicle_commands.json',
+        'cleaner_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_commands.json',
+        'cleaner_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_results.json',
     ],
 
     /*

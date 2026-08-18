@@ -1,6 +1,12 @@
 {
+    "nav.cleaner": "Lag Cleaner",
     "nav.factions": "Factions",
     "nav.quests_bounties": "Quests & Bounties",
+    "nav.vehicles": "Vehicles",
+    "portal.vehicles.claimed_list": "My Claimed Vehicles",
+    "portal.vehicles.no_vehicles": "You do not own any claimed vehicles yet.",
+    "portal.vehicles.subtitle": "Track location, fuel level, and condition of your claimed vehicles (AVCS).",
+    "portal.vehicles.title": "My Vehicles",
     "portal.quests.claim_btn": "Claim Reward",
     "portal.quests.claimed": "Claimed",
     "portal.quests.completed": "Completed",

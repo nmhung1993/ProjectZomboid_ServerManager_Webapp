@@ -16,6 +16,8 @@ require("ZM_PvpTracker")
 require("ZM_MoneyDeposit")
 require("ZM_AntiCheat")
 require("ZM_Faction")
+require("ZM_Vehicles")
+require("ZM_Cleaner")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -126,6 +128,12 @@ local function onEveryOneMinute()
 
     -- Faction: reload config and cache
     ZM_Faction.tick()
+
+    -- Vehicles: export vehicles and process commands
+    ZM_Vehicles.tick()
+
+    -- Cleaner: process cleanup requests
+    ZM_Cleaner.tick()
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
@@ -144,6 +152,12 @@ local function onServerStarted()
 
     -- Initialize faction system
     ZM_Faction.init()
+
+    -- Initialize vehicles system
+    ZM_Vehicles.init()
+
+    -- Initialize cleaner
+    ZM_Cleaner.init()
 
     -- Initialize money deposit system
     ZM_MoneyDeposit.init()

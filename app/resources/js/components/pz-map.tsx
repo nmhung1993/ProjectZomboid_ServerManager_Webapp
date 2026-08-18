@@ -35,8 +35,18 @@ export type EventMarker = {
     label: string;
 };
 
+export type VehicleMarker = {
+    id: number;
+    sql_id: number;
+    name: string;
+    owner: string | null;
+    x: number;
+    y: number;
+};
+
 type PzMapProps = {
     markers?: PlayerMarker[];
+    vehicleMarkers?: VehicleMarker[];
     mapConfig: MapConfig;
     hasTiles: boolean;
     className?: string;
@@ -332,6 +342,7 @@ export default function PzMap({
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
     const markersLayerRef = useRef<L.LayerGroup | null>(null);
+    const vehiclesLayerRef = useRef<L.LayerGroup | null>(null);
     const zonesLayerRef = useRef<L.LayerGroup | null>(null);
     const eventsLayerRef = useRef<L.LayerGroup | null>(null);
     const drawStateRef = useRef<{
@@ -480,6 +491,9 @@ export default function PzMap({
 
         const markersLayer = L.layerGroup().addTo(map);
         markersLayerRef.current = markersLayer;
+
+        const vehiclesLayer = L.layerGroup().addTo(map);
+        vehiclesLayerRef.current = vehiclesLayer;
 
         const zonesLayer = L.layerGroup().addTo(map);
         zonesLayerRef.current = zonesLayer;
@@ -667,6 +681,30 @@ export default function PzMap({
             }
         });
     }, [markers, onMarkerClick, onMarkerAction]);
+
+    // Update vehicle markers
+    useEffect(() => {
+        const layer = vehiclesLayerRef.current;
+        if (!layer) return;
+
+        layer.clearLayers();
+        if (!vehicleMarkers) return;
+
+        vehicleMarkers.forEach((vm) => {
+            const marker = L.circleMarker([-vm.y, vm.x], {
+                radius: 7,
+                color: '#2563eb',
+                fillColor: vm.owner ? '#3b82f6' : '#94a3b8',
+                fillOpacity: 0.85,
+                weight: 2,
+            }).addTo(layer);
+
+            marker.bindTooltip(`🚗 ${vm.name} #${vm.sql_id}${vm.owner ? ` (${vm.owner})` : ' (Vô chủ)'}`, {
+                permanent: false,
+                direction: 'top',
+            });
+        });
+    }, [vehicleMarkers]);
 
     // Update zone overlays
     useEffect(() => {
