@@ -20,6 +20,7 @@ import {
     ShoppingBag,
     Store,
     Tag,
+    Target,
     Terminal,
     Trophy,
     User,
@@ -75,6 +76,7 @@ export function AppSidebar() {
                 { title: t('nav.anticheat'), href: '/admin/anticheat', icon: ShieldAlert },
                 { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
                 { title: t('nav.factions'), href: '/admin/factions', icon: Users },
+                { title: t('nav.quests_bounties'), href: '/admin/quests', icon: Target },
             ],
         },
         {
@@ -94,6 +96,7 @@ export function AppSidebar() {
             label: t('nav.group.menu'),
             items: [
                 { title: t('nav.player_portal'), href: '/portal', icon: Gamepad2 },
+                { title: t('nav.quests_bounties'), href: '/portal/quests', icon: Target },
                 { title: t('nav.factions'), href: '/portal/factions', icon: Users },
                 { title: t('nav.my_wallet'), href: '/shop/my/wallet', icon: Coins },
                 { title: t('nav.shop'), href: '/shop', icon: ShoppingBag },

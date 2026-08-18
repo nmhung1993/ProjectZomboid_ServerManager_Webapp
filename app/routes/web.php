@@ -53,6 +53,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('{faction}/leave', [\App\Http\Controllers\Portal\FactionPortalController::class, 'leave'])->name('leave');
         Route::post('{faction}/disband', [\App\Http\Controllers\Portal\FactionPortalController::class, 'disband'])->name('disband');
     });
+
+    // Player Quests & Bounties Portal
+    Route::prefix('portal/quests')->name('portal.quests.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\QuestPortalController::class, 'index'])->name('index');
+        Route::post('{quest}/claim', [\App\Http\Controllers\Portal\QuestPortalController::class, 'claimReward'])->name('claim');
+        Route::post('bounties', [\App\Http\Controllers\Portal\QuestPortalController::class, 'storeBounty'])->name('bounties.store');
+        Route::post('bounties/{bounty}/cancel', [\App\Http\Controllers\Portal\QuestPortalController::class, 'cancelBounty'])->name('bounties.cancel');
+    });
 });
 
 Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
@@ -163,6 +171,12 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('factions/sync', [Admin\FactionAdminController::class, 'sync'])->name('factions.sync');
         Route::patch('factions/{faction}/bank', [Admin\FactionAdminController::class, 'updateBank'])->name('factions.bank');
         Route::delete('factions/{faction}', [Admin\FactionAdminController::class, 'destroy'])->name('factions.destroy');
+
+        // Quests & Bounties (admin)
+        Route::get('quests', [Admin\QuestAdminController::class, 'index'])->name('quests');
+        Route::post('quests', [Admin\QuestAdminController::class, 'storeQuest'])->name('quests.store');
+        Route::delete('quests/{quest}', [Admin\QuestAdminController::class, 'destroyQuest'])->name('quests.destroy');
+        Route::post('quests/bounties/{bounty}/cancel', [Admin\QuestAdminController::class, 'cancelBounty'])->name('quests.bounties.cancel');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

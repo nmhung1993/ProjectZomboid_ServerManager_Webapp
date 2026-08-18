@@ -31,11 +31,16 @@ class ImportPvpKills extends Command
         }
 
         $count = 0;
+        $bountyManager = app(\App\Services\BountyManager::class);
+
         foreach ($data['kills'] as $kill) {
+            $killer = $kill['killer'] ?? 'unknown';
+            $victim = $kill['victim'] ?? 'unknown';
+
             GameEvent::query()->create([
                 'event_type' => 'pvp_kill',
-                'player' => $kill['killer'] ?? 'unknown',
-                'target' => $kill['victim'] ?? 'unknown',
+                'player' => $killer,
+                'target' => $victim,
                 'x' => $kill['killer_x'] ?? null,
                 'y' => $kill['killer_y'] ?? null,
                 'details' => [
@@ -47,6 +52,9 @@ class ImportPvpKills extends Command
                     ? Carbon::createFromTimestamp($kill['occurred_at'])
                     : now(),
             ]);
+
+            $bountyManager->processPvpKill($killer, $victim);
+
             $count++;
         }
 
