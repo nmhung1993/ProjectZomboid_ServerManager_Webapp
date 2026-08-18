@@ -208,7 +208,7 @@ fi
 # prune Mods= back to empty on its next ini rewrite.
 PZ_WORKSHOP_APP_ID="108600"
 WORKSHOP_CACHE_ROOT="${PZ_INSTALL_DIR}/steamapps/workshop/content/${PZ_WORKSHOP_APP_ID}"
-ZM_WORKSHOP_ID_EARLY="3685323705"
+ZM_WORKSHOP_ID_EARLY="3785748904"
 
 # Re-read the final WorkshopItems= so we cover every restore path above.
 CURRENT_WORKSHOP_LINE=$(grep -m1 "^WorkshopItems=" "$INI_FILE" | sed 's/^WorkshopItems=//' || true)
@@ -302,7 +302,7 @@ echo "[configure-server] Set DoLuaChecksum=false (required for ZomboidManager mo
 # PZ B42 dedicated servers only load mods registered via Workshop (WorkshopItems= line).
 # Local mods in Zomboid/mods/ or ZomboidDedicatedServer/mods/ are NOT scanned.
 # We create a fake Workshop cache entry so PZ discovers our mod through its Workshop scanner.
-ZM_WORKSHOP_ID="3685323705"
+ZM_WORKSHOP_ID="3785748904"
 ZM_SOURCE="${PZ_CONFIG_DIR}/mods/ZomboidManager"
 WORKSHOP_MOD_DIR="${PZ_INSTALL_DIR}/steamapps/workshop/content/108600/${ZM_WORKSHOP_ID}/mods/ZomboidManager"
 
@@ -325,18 +325,18 @@ fi
 # Remove any stale ZomboidManager from install dir (shadows Workshop version)
 rm -rf "${PZ_INSTALL_DIR}/mods/ZomboidManager"
 
-# Ensure ZomboidManager is in the Mods= list.
+# Ensure ZomboidManager / SWTServerAddon is in the Mods= list.
 CURRENT_MODS=$(grep -m1 "^Mods=" "$INI_FILE" | sed 's/^Mods=//' || true)
-if ! echo "$CURRENT_MODS" | grep -q "ZomboidManager"; then
+if ! echo "$CURRENT_MODS" | grep -q "SWTServerAddon" && ! echo "$CURRENT_MODS" | grep -q "ZomboidManager"; then
     if [ -n "$CURRENT_MODS" ]; then
-        apply_setting "Mods" "${CURRENT_MODS};ZomboidManager" "$INI_FILE"
+        apply_setting "Mods" "${CURRENT_MODS};SWTServerAddon" "$INI_FILE"
     else
-        apply_setting "Mods" "ZomboidManager" "$INI_FILE"
+        apply_setting "Mods" "SWTServerAddon" "$INI_FILE"
     fi
-    echo "[configure-server] Added ZomboidManager to Mods list"
+    echo "[configure-server] Added SWTServerAddon to Mods list"
 fi
 
-# Ensure ZomboidManager workshop ID is in WorkshopItems= list.
+# Ensure workshop ID is in WorkshopItems= list.
 CURRENT_WORKSHOP=$(grep -m1 "^WorkshopItems=" "$INI_FILE" | sed 's/^WorkshopItems=//' || true)
 if ! echo "$CURRENT_WORKSHOP" | grep -q "$ZM_WORKSHOP_ID"; then
     if [ -n "$CURRENT_WORKSHOP" ]; then
@@ -344,7 +344,7 @@ if ! echo "$CURRENT_WORKSHOP" | grep -q "$ZM_WORKSHOP_ID"; then
     else
         apply_setting "WorkshopItems" "${ZM_WORKSHOP_ID}" "$INI_FILE"
     fi
-    echo "[configure-server] Added ZomboidManager workshop ID $ZM_WORKSHOP_ID"
+    echo "[configure-server] Added manager workshop ID $ZM_WORKSHOP_ID"
 fi
 
 # Snapshot the post-restore INI mods to .mod_state on first boot. PZ rewrites

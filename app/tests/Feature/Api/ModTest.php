@@ -120,11 +120,11 @@ it('removes a mod', function () {
             'restart_required' => true,
         ]);
 
-    // Hydrocraft survives + auto-attached ZomboidManager
+    // Hydrocraft survives + auto-attached SWTServerAddon
     $response = $this->getJson('/api/config/mods', modApiHeaders())->assertOk();
     expect($response->json('mods'))->toHaveCount(2)
         ->and($response->json('mods.0.workshop_id'))->toBe('2286126274')
-        ->and($response->json('mods.1.mod_id'))->toBe('ZomboidManager');
+        ->and($response->json('mods.1.mod_id'))->toBe('SWTServerAddon');
 
     expect(AuditLog::where('action', 'mod.remove')->exists())->toBeTrue();
 });
@@ -183,25 +183,25 @@ it('returns JSON 500 with error message when state file write fails', function (
 
 // ── Protected (required) mod ────────────────────────────────────────
 
-it('refuses to remove the required ZomboidManager mod', function () {
+it('refuses to remove the required SWTServerAddon mod', function () {
     file_put_contents($this->iniPath, str_replace(
         ['Mods=SuperSurvivors;Hydrocraft', 'WorkshopItems=2561774086;2286126274'],
-        ['Mods=ZomboidManager;SuperSurvivors', 'WorkshopItems=3685323705;2561774086'],
+        ['Mods=SWTServerAddon;SuperSurvivors', 'WorkshopItems=3785748904;2561774086'],
         file_get_contents($this->iniPath),
     ));
 
-    $this->deleteJson('/api/config/mods/3685323705', [], modApiHeaders())
+    $this->deleteJson('/api/config/mods/3785748904', [], modApiHeaders())
         ->assertStatus(422)
         ->assertJsonStructure(['error']);
 
     $response = $this->getJson('/api/config/mods', modApiHeaders())->assertOk();
-    expect($response->json('mods.0.workshop_id'))->toBe('3685323705');
+    expect($response->json('mods.0.workshop_id'))->toBe('3785748904');
 });
 
 it('refuses to reorder if the required mod is dropped', function () {
     file_put_contents($this->iniPath, str_replace(
         ['Mods=SuperSurvivors;Hydrocraft', 'WorkshopItems=2561774086;2286126274'],
-        ['Mods=ZomboidManager;SuperSurvivors', 'WorkshopItems=3685323705;2561774086'],
+        ['Mods=SWTServerAddon;SuperSurvivors', 'WorkshopItems=3785748904;2561774086'],
         file_get_contents($this->iniPath),
     ));
 
