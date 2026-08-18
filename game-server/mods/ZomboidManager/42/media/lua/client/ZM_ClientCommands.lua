@@ -10,17 +10,33 @@ local function reportPlayerProfile()
     local player = getSpecificPlayer(0)
     if not player then return end
 
-    -- Extract Profession
+    -- 1. Extract Profession (B42 + B41 fallback)
     local prof = "unemployed"
+
+    -- B42 CharacterProfessionDefinition
     if player.getDescriptor then
-        local ok, desc = pcall(player.getDescriptor, player)
-        if ok and desc then
-            if desc.getProfession then
+        local okDesc, desc = pcall(player.getDescriptor, player)
+        if okDesc and desc then
+            if desc.getCharacterProfession and CharacterProfessionDefinition and CharacterProfessionDefinition.getCharacterProfessionDefinition then
+                local okProf, charProf = pcall(desc.getCharacterProfession, desc)
+                if okProf and charProf then
+                    local okDef, def = pcall(CharacterProfessionDefinition.getCharacterProfessionDefinition, charProf)
+                    if okDef and def and def.getUIName then
+                        local okName, name = pcall(def.getUIName, def)
+                        if okName and name and tostring(name) ~= "" then
+                            prof = tostring(name)
+                        end
+                    end
+                end
+            end
+
+            if prof == "unemployed" and desc.getProfession then
                 local okP, p = pcall(desc.getProfession, desc)
                 if okP and p and tostring(p) ~= "" and tostring(p) ~= "nil" then
                     prof = tostring(p)
                 end
             end
+
             if prof == "unemployed" and desc.getProfessionName then
                 local okP, p = pcall(desc.getProfessionName, desc)
                 if okP and p and tostring(p) ~= "" and tostring(p) ~= "nil" then
@@ -29,6 +45,7 @@ local function reportPlayerProfile()
             end
         end
     end
+
     if prof == "unemployed" and player.getProfession then
         local okP, p = pcall(player.getProfession, player)
         if okP and p and tostring(p) ~= "" and tostring(p) ~= "nil" then
@@ -36,8 +53,8 @@ local function reportPlayerProfile()
         end
     end
 
-    -- Resolve profession display name if ProfessionFactory available on client
-    if prof and ProfessionFactory and ProfessionFactory.getProfession then
+    -- Resolve profession display name if ProfessionFactory available
+    if prof and prof ~= "unemployed" and ProfessionFactory and ProfessionFactory.getProfession then
         local ok, profObj = pcall(ProfessionFactory.getProfession, prof)
         if ok and profObj and profObj.getName then
             local okN, name = pcall(profObj.getName, profObj)
@@ -47,108 +64,60 @@ local function reportPlayerProfile()
         end
     end
 
-    -- Extract Traits
+    -- 2. Extract Traits (B42 CharacterTraitDefinition + B41 fallback)
     local traits = {}
     local seen = {}
 
     local function addTrait(t)
         if not t then return end
-        local s = nil
-        if type(t) == "userdata" then
-            if t.getType then
-                local ok, res = pcall(t.getType, t)
-                if ok and res and res ~= "" then s = tostring(res) end
-            end
-            if not s and t.getLabel then
-                local ok, res = pcall(t.getLabel, t)
-                if ok and res and res ~= "" then s = tostring(res) end
-            end
-            if not s and t.getName then
-                local ok, res = pcall(t.getName, t)
-                if ok and res and res ~= "" then s = tostring(res) end
-            end
-            if not s then s = tostring(t) end
-        else
-            s = tostring(t)
-        end
-
+        local s = tostring(t)
         if s and s ~= "" and s ~= "nil" and not seen[s] then
             seen[s] = true
             table.insert(traits, s)
         end
     end
 
-    -- 1. Check TraitFactory against player:HasTrait / hasTrait on client
-    if TraitFactory and TraitFactory.getTraits then
-        local ok, allTraits = pcall(TraitFactory.getTraits)
-        if ok and allTraits then
-            local function checkObj(traitObj)
-                if not traitObj then return end
-                local tType = nil
-                if traitObj.getType then
-                    local okT, t = pcall(traitObj.getType, traitObj)
-                    if okT and t and t ~= "" then tType = tostring(t) end
-                end
-                local tLabel = nil
-                if traitObj.getLabel then
-                    local okL, l = pcall(traitObj.getLabel, traitObj)
-                    if okL and l and l ~= "" then tLabel = tostring(l) end
-                end
-
-                local has = false
-                if tType then
-                    if player.HasTrait then
-                        local okH, h = pcall(player.HasTrait, player, tType)
-                        if okH and h then has = true end
+    -- B42 CharacterTraits.getKnownTraits() + CharacterTraitDefinition
+    if player.getCharacterTraits then
+        local okCt, ct = pcall(player.getCharacterTraits, player)
+        if okCt and ct and ct.getKnownTraits then
+            local okKnown, known = pcall(ct.getKnownTraits, ct)
+            if okKnown and known and known.size then
+                for i = 0, known:size() - 1 do
+                    local tKey = known:get(i)
+                    if tKey then
+                        local added = false
+                        if CharacterTraitDefinition and CharacterTraitDefinition.getCharacterTraitDefinition then
+                            local okDef, def = pcall(CharacterTraitDefinition.getCharacterTraitDefinition, tKey)
+                            if okDef and def and def.getLabel then
+                                local okLbl, lbl = pcall(def.getLabel, def)
+                                if okLbl and lbl and tostring(lbl) ~= "" then
+                                    addTrait(tostring(lbl))
+                                    added = true
+                                end
+                            end
+                        end
+                        if not added then
+                            addTrait(tostring(tKey))
+                        end
                     end
-                    if not has and player.hasTrait then
-                        local okH, h = pcall(player.hasTrait, player, tType)
-                        if okH and h then has = true end
-                    end
-                end
-                if not has and tLabel then
-                    if player.HasTrait then
-                        local okH, h = pcall(player.HasTrait, player, tLabel)
-                        if okH and h then has = true end
-                    end
-                    if not has and player.hasTrait then
-                        local okH, h = pcall(player.hasTrait, player, tLabel)
-                        if okH and h then has = true end
-                    end
-                end
-
-                if has then
-                    addTrait(tType or tLabel)
-                end
-            end
-
-            if allTraits.size and allTraits.get then
-                for i = 0, allTraits:size() - 1 do
-                    local okGet, tObj = pcall(allTraits.get, allTraits, i)
-                    if okGet and tObj then checkObj(tObj) end
-                end
-            elseif allTraits.iterator then
-                local okIter, iter = pcall(allTraits.iterator, allTraits)
-                if okIter and iter then
-                    while iter:hasNext() do checkObj(iter:next()) end
                 end
             end
         end
     end
 
-    -- 2. Fallback: player:getTraits() on client
-    if #traits == 0 and player.getTraits then
-        local ok, tl = pcall(player.getTraits, player)
-        if ok and tl then
-            if tl.size and tl.get then
-                for i = 0, tl:size() - 1 do
-                    local okGet, t = pcall(tl.get, tl, i)
-                    if okGet and t then addTrait(t) end
-                end
-            elseif tl.iterator then
-                local okIter, iter = pcall(tl.iterator, tl)
-                if okIter and iter then
-                    while iter:hasNext() do addTrait(iter:next()) end
+    -- B41 TraitFactory fallback
+    if #traits == 0 and TraitFactory and TraitFactory.getTraits then
+        local ok, allTraits = pcall(TraitFactory.getTraits)
+        if ok and allTraits and allTraits.size then
+            for i = 0, allTraits:size() - 1 do
+                local tObj = allTraits:get(i)
+                if tObj then
+                    local tType = tObj.getType and tObj:getType() or tostring(tObj)
+                    local tLabel = tObj.getLabel and tObj:getLabel() or tType
+                    if (player.HasTrait and player:HasTrait(tType)) or (player.hasTrait and player:hasTrait(tType)) then
+                        addTrait(tLabel)
+                    end
                 end
             end
         end
