@@ -35,6 +35,7 @@ import { usePing } from '@/hooks/use-ping';
 import { useTranslation } from '@/hooks/use-translation';
 import PublicLayout from '@/layouts/public-layout';
 import { formatHours } from '@/lib/hours-format';
+import { resolvePzTrait } from '@/lib/pz-traits';
 import type { LeaderboardEntry, StatusOnlinePlayer, StatusPageData } from '@/types';
 
 type StatusTone = 'online' | 'starting' | 'offline';
@@ -276,6 +277,7 @@ export default function Status({
                                                     <TableHead className="w-16 text-center">Hạng</TableHead>
                                                     <TableHead>Người chơi</TableHead>
                                                     <TableHead className="hidden sm:table-cell">Nghề nghiệp</TableHead>
+                                                    <TableHead className="hidden md:table-cell">Đặc điểm (Traits)</TableHead>
                                                     <TableHead className="text-right">
                                                         <span className="inline-flex items-center gap-1">
                                                             <Crosshair className="size-3.5 text-red-500" />
@@ -291,42 +293,82 @@ export default function Status({
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {normalizedPlayers.map((player, idx) => (
-                                                    <TableRow
-                                                        key={player.username}
-                                                        className="hover:bg-muted/40 transition-colors"
-                                                    >
-                                                        <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                                                            {idx + 1}
-                                                        </TableCell>
-                                                        <TableCell className="text-center">
-                                                            <MiniRankBadge rank={player.rank} />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Link
-                                                                href={`/rankings/${player.username}`}
-                                                                className="inline-flex items-center gap-2 font-medium hover:underline hover:text-primary transition-colors"
-                                                            >
-                                                                <Circle className="size-2 shrink-0 fill-emerald-500 text-emerald-500" />
-                                                                <span className="font-semibold">{player.username}</span>
-                                                                {player.is_dead && (
-                                                                    <Skull className="size-3.5 text-red-500" title="Dead" />
+                                                {normalizedPlayers.map((player, idx) => {
+                                                    const rawTraits: string[] = (player as any).traits ?? [];
+                                                    const traitsList = rawTraits.map(resolvePzTrait);
+
+                                                    return (
+                                                        <TableRow
+                                                            key={player.username}
+                                                            className="hover:bg-muted/40 transition-colors"
+                                                        >
+                                                            <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                                                                {idx + 1}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <MiniRankBadge rank={player.rank} />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Link
+                                                                    href={`/rankings/${player.username}`}
+                                                                    className="inline-flex items-center gap-2 font-medium hover:underline hover:text-primary transition-colors"
+                                                                >
+                                                                    <Circle className="size-2 shrink-0 fill-emerald-500 text-emerald-500" />
+                                                                    <span className="font-semibold">{player.username}</span>
+                                                                    {player.is_dead && (
+                                                                        <Skull className="size-3.5 text-red-500" title="Dead" />
+                                                                    )}
+                                                                </Link>
+                                                            </TableCell>
+                                                            <TableCell className="hidden sm:table-cell">
+                                                                <Badge variant="outline" className="text-xs font-normal">
+                                                                    {formatProfession(player.profession)}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="hidden md:table-cell">
+                                                                {traitsList.length > 0 ? (
+                                                                    <div className="flex items-center gap-1 flex-wrap max-w-xs">
+                                                                        {traitsList.slice(0, 8).map((t) => (
+                                                                            <TooltipProvider key={t.key}>
+                                                                                <Tooltip>
+                                                                                    <TooltipTrigger asChild>
+                                                                                        <div className="p-0.5 rounded-sm bg-muted/60 border hover:scale-125 transition-transform cursor-pointer">
+                                                                                            <img
+                                                                                                src={t.iconUrl}
+                                                                                                alt={t.label}
+                                                                                                className="size-4.5 object-contain"
+                                                                                                onError={(e) => {
+                                                                                                    (e.target as HTMLElement).style.display = 'none';
+                                                                                                }}
+                                                                                            />
+                                                                                        </div>
+                                                                                    </TooltipTrigger>
+                                                                                    <TooltipContent className="text-xs">
+                                                                                        <p className="font-bold">{t.label}</p>
+                                                                                        {t.desc && <p className="text-[11px] text-muted-foreground">{t.desc}</p>}
+                                                                                    </TooltipContent>
+                                                                                </Tooltip>
+                                                                            </TooltipProvider>
+                                                                        ))}
+                                                                        {traitsList.length > 8 && (
+                                                                            <span className="text-[10px] text-muted-foreground font-semibold">
+                                                                                +{traitsList.length - 8}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-xs text-muted-foreground italic">—</span>
                                                                 )}
-                                                            </Link>
-                                                        </TableCell>
-                                                        <TableCell className="hidden sm:table-cell">
-                                                            <Badge variant="outline" className="text-xs font-normal">
-                                                                {formatProfession(player.profession)}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-semibold tabular-nums text-red-500/90">
-                                                            {(player.zombie_kills ?? 0).toLocaleString()}
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-                                                            {formatHours(player.hours_survived ?? 0, 'real', day_length_minutes)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
+                                                            </TableCell>
+                                                            <TableCell className="text-right font-semibold tabular-nums text-red-500/90">
+                                                                {(player.zombie_kills ?? 0).toLocaleString()}
+                                                            </TableCell>
+                                                            <TableCell className="text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                                                {formatHours(player.hours_survived ?? 0, 'real', day_length_minutes)}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
                                             </TableBody>
                                         </Table>
                                     </div>
