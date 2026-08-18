@@ -34,6 +34,7 @@ return [
         'sandbox_lua' => env('PZ_DATA_PATH', '/pz-data').'/Server/'.env('PZ_SERVER_NAME', 'ZomboidServer').'_SandboxVars.lua',
         'db' => env('PZ_DATA_PATH', '/pz-data').'/db/serverPZ.db',
         'players_db' => env('PZ_DATA_PATH', '/pz-data').'/Saves/Multiplayer/'.env('PZ_SERVER_NAME', 'ZomboidServer').'/players.db',
+        'workshop_acf' => env('PZ_SERVER_PATH', '/pz-server').'/steamapps/workshop/appworkshop_108600.acf',
     ],
 
     /*

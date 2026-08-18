@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ImportModsRequest;
 use App\Http\Requests\Admin\LookupWorkshopModRequest;
+use App\Models\ModUpdateSetting;
 use App\Services\AuditLogger;
 use App\Services\DockerManager;
 use App\Services\ModManager;
 use App\Services\SteamWorkshopClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -53,6 +55,7 @@ class ModController extends Controller
             'protectedWorkshopIds' => array_keys(ModManager::PROTECTED_MODS),
             'pendingRestart' => $pendingRestart,
             'serverRunning' => $serverRunning,
+            'updateSettings' => ModUpdateSetting::instance(),
         ]);
     }
 
@@ -327,5 +330,47 @@ class ModController extends Controller
             'summary' => $summary,
             'restart_required' => true,
         ], 201);
+    }
+
+    public function updateSettings(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'check_interval_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
+            'notify_discord' => ['required', 'boolean'],
+            'auto_restart' => ['required', 'boolean'],
+            'restart_delay_minutes' => ['required', 'integer', 'min:1', 'max:60'],
+            'skip_if_scheduled_within_minutes' => ['required', 'integer', 'min:0', 'max:120'],
+        ]);
+
+        $settings = ModUpdateSetting::instance();
+        $settings->update($validated);
+
+        $this->auditLogger->log(
+            actor: $request->user()->name ?? 'admin',
+            action: 'mod.update_settings.update',
+            target: 'mod_update_settings',
+            details: $validated,
+            ip: $request->ip(),
+        );
+
+        return response()->json([
+            'message' => 'Mod update settings saved successfully',
+            'settings' => $settings->fresh(),
+        ]);
+    }
+
+    public function checkUpdates(Request $request): JsonResponse
+    {
+        Artisan::call('zomboid:check-mod-updates', ['--force' => true]);
+        $output = Artisan::output();
+
+        $settings = ModUpdateSetting::instance()->fresh();
+
+        return response()->json([
+            'message' => 'Mod update check completed',
+            'output' => trim($output),
+            'settings' => $settings,
+        ]);
     }
 }

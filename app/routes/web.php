@@ -71,6 +71,8 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('mods', [Admin\ModController::class, 'store'])->name('mods.store');
         Route::post('mods/import', [Admin\ModController::class, 'import'])->name('mods.import');
         Route::put('mods/order', [Admin\ModController::class, 'reorder'])->name('mods.reorder');
+        Route::patch('mods/update-settings', [Admin\ModController::class, 'updateSettings'])->name('mods.update-settings');
+        Route::post('mods/check-updates', [Admin\ModController::class, 'checkUpdates'])->name('mods.check-updates');
         Route::delete('mods/{workshopId}', [Admin\ModController::class, 'destroy'])->name('mods.destroy');
         Route::put('mods/{workshopId}', [Admin\ModController::class, 'update'])->name('mods.update');
 

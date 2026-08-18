@@ -3,7 +3,7 @@ import type {DragEndEvent} from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router } from '@inertiajs/react';
-import { AlertTriangle, CheckCircle2, Clock, FileUp, GripVertical, Loader2, Package, Pencil, Plus, RotateCcw, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, FileUp, GripVertical, Loader2, Package, Pencil, Plus, RefreshCw, RotateCcw, Search, Settings, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
     Select,
     SelectContent,
@@ -203,16 +204,28 @@ function SortableModRow({
     );
 }
 
+export type ModUpdateSettingsData = {
+    enabled: boolean;
+    check_interval_minutes: number;
+    notify_discord: boolean;
+    auto_restart: boolean;
+    restart_delay_minutes: number;
+    skip_if_scheduled_within_minutes: number;
+    last_checked_at?: string | null;
+};
+
 export default function Mods({
     mods,
     protectedWorkshopIds = [],
     pendingRestart = false,
     serverRunning = false,
+    updateSettings,
 }: {
     mods: ModEntry[];
     protectedWorkshopIds?: string[];
     pendingRestart?: boolean;
     serverRunning?: boolean;
+    updateSettings?: ModUpdateSettingsData;
 }) {
     const { t } = useTranslation();
     const protectedSet = useMemo(() => new Set(protectedWorkshopIds), [protectedWorkshopIds]);
@@ -232,6 +245,74 @@ export default function Mods({
     const [restarting, setRestarting] = useState(false);
     const [search, setSearch] = useState('');
     const [orderedMods, setOrderedMods] = useState(mods);
+
+    const [showUpdateSettings, setShowUpdateSettings] = useState(false);
+    const [settingsData, setSettingsData] = useState<ModUpdateSettingsData>(() => ({
+        enabled: updateSettings?.enabled ?? true,
+        check_interval_minutes: updateSettings?.check_interval_minutes ?? 15,
+        notify_discord: updateSettings?.notify_discord ?? true,
+        auto_restart: updateSettings?.auto_restart ?? true,
+        restart_delay_minutes: updateSettings?.restart_delay_minutes ?? 5,
+        skip_if_scheduled_within_minutes: updateSettings?.skip_if_scheduled_within_minutes ?? 30,
+        last_checked_at: updateSettings?.last_checked_at ?? null,
+    }));
+    const [savingSettings, setSavingSettings] = useState(false);
+    const [checkingUpdates, setCheckingUpdates] = useState(false);
+
+    useEffect(() => {
+        if (updateSettings) {
+            setSettingsData({
+                enabled: updateSettings.enabled ?? true,
+                check_interval_minutes: updateSettings.check_interval_minutes ?? 15,
+                notify_discord: updateSettings.notify_discord ?? true,
+                auto_restart: updateSettings.auto_restart ?? true,
+                restart_delay_minutes: updateSettings.restart_delay_minutes ?? 5,
+                skip_if_scheduled_within_minutes: updateSettings.skip_if_scheduled_within_minutes ?? 30,
+                last_checked_at: updateSettings.last_checked_at ?? null,
+            });
+        }
+    }, [updateSettings]);
+
+    async function handleSaveSettings() {
+        setSavingSettings(true);
+        try {
+            const res = await fetchAction('/admin/mods/update-settings', {
+                method: 'PATCH',
+                data: settingsData,
+            });
+            if (res) {
+                toast.success(t('admin.mods.toast_settings_saved'));
+                setShowUpdateSettings(false);
+            }
+        } finally {
+            setSavingSettings(false);
+        }
+    }
+
+    async function handleCheckUpdates() {
+        setCheckingUpdates(true);
+        try {
+            const res = (await fetchAction('/admin/mods/check-updates', {
+                method: 'POST',
+            })) as { message?: string; output?: string; settings?: ModUpdateSettingsData } | null;
+            if (res) {
+                if (res.output) {
+                    toast.info(res.output);
+                } else {
+                    toast.success(t('admin.mods.check_updates') + ': ' + (res.message || 'OK'));
+                }
+                if (res.settings) {
+                    setSettingsData((prev) => ({
+                        ...prev,
+                        ...res.settings,
+                    }));
+                }
+                router.reload({ only: ['mods', 'pendingRestart', 'serverRunning', 'updateSettings'] });
+            }
+        } finally {
+            setCheckingUpdates(false);
+        }
+    }
 
     useEffect(() => {
         setOrderedMods(mods);
@@ -689,7 +770,24 @@ export default function Mods({
                             {t('admin.mods.mods_installed', { count: String(mods.length) })}
                         </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={handleCheckUpdates}
+                            disabled={checkingUpdates}
+                            data-testid="check-mod-updates-button"
+                        >
+                            <RefreshCw className={`mr-1.5 size-4 ${checkingUpdates ? 'animate-spin' : ''}`} />
+                            {checkingUpdates ? t('admin.mods.checking_updates') : t('admin.mods.check_updates')}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowUpdateSettings(true)}
+                            data-testid="mod-update-settings-button"
+                        >
+                            <Settings className="mr-1.5 size-4" />
+                            {t('admin.mods.update_settings')}
+                        </Button>
                         <Button variant="outline" onClick={openBulk} data-testid="bulk-import-button">
                             <FileUp className="mr-1.5 size-4" />
                             {t('admin.mods.bulk_import')}
@@ -1392,6 +1490,121 @@ export default function Mods({
                         >
                             {t('admin.mods.delete_dialog_title')}
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Mod Update Settings Dialog */}
+            <Dialog open={showUpdateSettings} onOpenChange={setShowUpdateSettings}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Settings className="size-5" />
+                            {t('admin.mods.update_settings_dialog_title')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t('admin.mods.update_settings_dialog_description')}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-2">
+                        <div className="flex items-center justify-between space-x-2 rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                                <Label className="text-sm font-medium">{t('admin.mods.auto_check_enabled')}</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    {t('admin.mods.last_checked')}: {settingsData.last_checked_at ? new Date(settingsData.last_checked_at).toLocaleString() : t('admin.mods.never_checked')}
+                                </p>
+                            </div>
+                            <Switch
+                                checked={settingsData.enabled}
+                                onCheckedChange={(checked) => setSettingsData((prev) => ({ ...prev, enabled: checked }))}
+                                data-testid="mod-update-enabled-switch"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="check_interval_minutes">{t('admin.mods.auto_check_interval')}</Label>
+                            <Input
+                                id="check_interval_minutes"
+                                type="number"
+                                min={1}
+                                max={1440}
+                                value={settingsData.check_interval_minutes}
+                                onChange={(e) => setSettingsData((prev) => ({ ...prev, check_interval_minutes: Number(e.target.value) || 15 }))}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between space-x-2 rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                                <Label className="text-sm font-medium">{t('admin.mods.notify_discord')}</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Webhook & Bot
+                                </p>
+                            </div>
+                            <Switch
+                                checked={settingsData.notify_discord}
+                                onCheckedChange={(checked) => setSettingsData((prev) => ({ ...prev, notify_discord: checked }))}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between space-x-2 rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                                <Label className="text-sm font-medium">{t('admin.mods.auto_restart_on_update')}</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Broadcast in-game warning
+                                </p>
+                            </div>
+                            <Switch
+                                checked={settingsData.auto_restart}
+                                onCheckedChange={(checked) => setSettingsData((prev) => ({ ...prev, auto_restart: checked }))}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="restart_delay_minutes">{t('admin.mods.restart_delay')}</Label>
+                                <Input
+                                    id="restart_delay_minutes"
+                                    type="number"
+                                    min={1}
+                                    max={60}
+                                    value={settingsData.restart_delay_minutes}
+                                    onChange={(e) => setSettingsData((prev) => ({ ...prev, restart_delay_minutes: Number(e.target.value) || 5 }))}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="skip_if_scheduled_within_minutes">{t('admin.mods.skip_if_scheduled')}</Label>
+                                <Input
+                                    id="skip_if_scheduled_within_minutes"
+                                    type="number"
+                                    min={0}
+                                    max={120}
+                                    value={settingsData.skip_if_scheduled_within_minutes}
+                                    onChange={(e) => setSettingsData((prev) => ({ ...prev, skip_if_scheduled_within_minutes: Number(e.target.value) || 30 }))}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="flex flex-row items-center justify-between sm:justify-between">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={handleCheckUpdates}
+                            disabled={checkingUpdates}
+                        >
+                            <RefreshCw className={`mr-1.5 size-4 ${checkingUpdates ? 'animate-spin' : ''}`} />
+                            {t('admin.mods.check_now')}
+                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setShowUpdateSettings(false)}>
+                                {t('common.cancel')}
+                            </Button>
+                            <Button onClick={handleSaveSettings} disabled={savingSettings}>
+                                {savingSettings ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
+                                {t('common.save')}
+                            </Button>
+                        </div>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -769,4 +769,37 @@ class ModManager
             fn ($v) => $v !== '',
         ));
     }
+
+    /**
+     * Read and parse the installed workshop items and their timeupdated timestamps
+     * directly from the game server's appworkshop_108600.acf file.
+     *
+     * @param string|null $acfPath
+     * @return array<string, int> Map of workshop_id => timeupdated timestamp
+     */
+    public function getInstalledWorkshopTimestamps(?string $acfPath = null): array
+    {
+        $path = $acfPath ?? config('zomboid.paths.workshop_acf', config('zomboid.game_server_path').'/steamapps/workshop/appworkshop_108600.acf');
+
+        if (! file_exists($path) || ! is_readable($path)) {
+            return [];
+        }
+
+        $content = file_get_contents($path);
+        if ($content === false) {
+            return [];
+        }
+
+        $installed = [];
+        if (preg_match('/"WorkshopItemsInstalled"\s*\{(?P<items>.*?)\}\s*"WorkshopItemDetails"/s', $content, $m)) {
+            $section = $m['items'];
+            if (preg_match_all('/"(\d+)"\s*\{[^}]*?"timeupdated"\s*"(\d+)"/s', $section, $itemMatches, PREG_SET_ORDER)) {
+                foreach ($itemMatches as $item) {
+                    $installed[$item[1]] = (int) $item[2];
+                }
+            }
+        }
+
+        return $installed;
+    }
 }

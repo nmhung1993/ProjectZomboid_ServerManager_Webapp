@@ -578,3 +578,51 @@ it('does not misalign subsequent unmapped workshop items when earlier items have
     $standalone = collect($mods)->firstWhere('workshop_id', '');
     expect($standalone)->toBeNull();
 });
+
+it('parses installed workshop timestamps from appworkshop acf file', function () {
+    $acfContent = <<<VDF
+"AppWorkshop"
+{
+	"appid"		"108600"
+	"WorkshopItemsInstalled"
+	{
+		"3785620377"
+		{
+			"size"		"192373"
+			"timeupdated"		"1787041664"
+			"manifest"		"8033202405367379429"
+		}
+		"3785748904"
+		{
+			"size"		"88483"
+			"timeupdated"		"1787072224"
+			"manifest"		"8871823418421442721"
+		}
+	}
+	"WorkshopItemDetails"
+	{
+		"3785620377"
+		{
+			"manifest"		"8033202405367379429"
+			"timeupdated"		"1787041664"
+		}
+	}
+}
+VDF;
+
+    $acfPath = $this->tempDir.'/appworkshop_108600.acf';
+    file_put_contents($acfPath, $acfContent);
+
+    $timestamps = $this->manager->getInstalledWorkshopTimestamps($acfPath);
+
+    expect($timestamps)->toBe([
+        '3785620377' => 1787041664,
+        '3785748904' => 1787072224,
+    ]);
+});
+
+it('returns empty array when appworkshop acf file is missing or unreadable', function () {
+    $timestamps = $this->manager->getInstalledWorkshopTimestamps('/non/existent/path/appworkshop.acf');
+    expect($timestamps)->toBe([]);
+});
+

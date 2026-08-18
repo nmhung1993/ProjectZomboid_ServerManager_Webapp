@@ -28,6 +28,8 @@ class SteamWorkshopClient
      *     title: string,
      *     description: string,
      *     preview_url: ?string,
+     *     time_updated: int,
+     *     time_created: int,
      *     mod_ids: list<string>,
      *     map_folders: list<string>,
      * }|null  Null when Steam returns a non-success status or the file is missing.
@@ -47,11 +49,80 @@ class SteamWorkshopClient
     }
 
     /**
+     * Fetch Workshop metadata for multiple IDs in a single HTTP request.
+     *
+     * @param list<string> $workshopIds
+     * @return array<string, array{
+     *     workshop_id: string,
+     *     title: string,
+     *     description: string,
+     *     preview_url: ?string,
+     *     time_updated: int,
+     *     time_created: int,
+     *     mod_ids: list<string>,
+     *     map_folders: list<string>,
+     * }>
+     */
+    public function getBulkDetails(array $workshopIds): array
+    {
+        $validIds = array_values(array_filter(
+            array_unique(array_map('trim', $workshopIds)),
+            fn ($id) => $id !== '' && ctype_digit($id)
+        ));
+
+        if (empty($validIds)) {
+            return [];
+        }
+
+        $params = ['itemcount' => count($validIds)];
+        foreach ($validIds as $idx => $id) {
+            $params["publishedfileids[{$idx}]"] = $id;
+        }
+
+        try {
+            $response = Http::timeout($this->timeoutSeconds)
+                ->asForm()
+                ->post(self::ENDPOINT, $params);
+
+            if (! $response->successful()) {
+                return [];
+            }
+
+            $files = $response->json('response.publishedfiledetails');
+            if (! is_array($files)) {
+                return [];
+            }
+
+            $results = [];
+            foreach ($files as $file) {
+                if (! is_array($file) || ($file['result'] ?? 0) !== 1) {
+                    continue;
+                }
+
+                $wId = (string) ($file['publishedfileid'] ?? '');
+                if ($wId === '') {
+                    continue;
+                }
+
+                $parsed = $this->parseFileDetails($file, $wId);
+                $results[$wId] = $parsed;
+                Cache::put("steam_workshop:details:{$wId}", $parsed, self::CACHE_TTL_SECONDS);
+            }
+
+            return $results;
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
      * @return array{
      *     workshop_id: string,
      *     title: string,
      *     description: string,
      *     preview_url: ?string,
+     *     time_updated: int,
+     *     time_created: int,
      *     mod_ids: list<string>,
      *     map_folders: list<string>,
      * }|null
@@ -78,6 +149,26 @@ class SteamWorkshopClient
             return null;
         }
 
+        return $this->parseFileDetails($file, $workshopId);
+    }
+
+    /**
+     * Parse raw Steam API item object.
+     *
+     * @param array<string, mixed> $file
+     * @return array{
+     *     workshop_id: string,
+     *     title: string,
+     *     description: string,
+     *     preview_url: ?string,
+     *     time_updated: int,
+     *     time_created: int,
+     *     mod_ids: list<string>,
+     *     map_folders: list<string>,
+     * }
+     */
+    private function parseFileDetails(array $file, string $workshopId): array
+    {
         $title = (string) ($file['title'] ?? '');
         $description = (string) ($file['description'] ?? '');
 
@@ -86,6 +177,8 @@ class SteamWorkshopClient
             'title' => $title,
             'description' => $description,
             'preview_url' => isset($file['preview_url']) ? (string) $file['preview_url'] : null,
+            'time_updated' => (int) ($file['time_updated'] ?? 0),
+            'time_created' => (int) ($file['time_created'] ?? 0),
             'mod_ids' => $this->extractMatches('/Mod\s*ID\s*:\s*([^\r\n]+)/i', $description),
             'map_folders' => $this->extractMatches('/Map\s*Folder\s*:\s*([^\r\n]+)/i', $description),
         ];

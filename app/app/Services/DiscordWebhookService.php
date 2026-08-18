@@ -55,6 +55,8 @@ class DiscordWebhookService
         'backup.delete' => ['icon' => '🗑️', 'title' => 'Đã xóa bản sao lưu'],
         'player.kick' => ['icon' => '👢', 'title' => 'Đã kick người chơi'],
         'player.ban' => ['icon' => '🔨', 'title' => 'Đã cấm người chơi'],
+        'mod.update.detected' => ['icon' => '📦', 'title' => 'Phát hiện bản cập nhật mod'],
+        'mod.update.restart_scheduled' => ['icon' => '⏰', 'title' => 'Lên lịch khởi động lại do mod cập nhật'],
         'discord.webhook.update' => ['icon' => '⚙️', 'title' => 'Cập nhật cài đặt webhook'],
         'discord.bot.update' => ['icon' => '⚙️', 'title' => 'Cập nhật cài đặt bot'],
     ];
