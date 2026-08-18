@@ -15,6 +15,7 @@ import {
     MapPin,
     Package,
     Palette,
+    Radio,
     Scale,
     ScrollText,
     Shield,
@@ -76,6 +77,7 @@ export function AppSidebar() {
             items: [
                 { title: t('nav.whitelist'), href: '/admin/whitelist', icon: Shield },
                 { title: t('nav.anticheat'), href: '/admin/anticheat', icon: ShieldAlert },
+                { title: t('nav.events'), href: '/admin/events', icon: Radio },
                 { title: t('nav.moderation'), href: '/admin/moderation', icon: Crosshair },
                 { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
                 { title: t('nav.factions'), href: '/admin/factions', icon: Users },
@@ -102,6 +104,7 @@ export function AppSidebar() {
             label: t('nav.group.menu'),
             items: [
                 { title: t('nav.player_portal'), href: '/portal', icon: Gamepad2 },
+                { title: t('nav.events'), href: '/portal/events', icon: Radio },
                 { title: t('nav.marketplace'), href: '/portal/market', icon: Scale },
                 { title: t('nav.vehicles'), href: '/portal/vehicles', icon: Car },
                 { title: t('nav.quests_bounties'), href: '/portal/quests', icon: Target },

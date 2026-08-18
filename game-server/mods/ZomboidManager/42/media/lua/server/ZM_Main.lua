@@ -19,6 +19,7 @@ require("ZM_Faction")
 require("ZM_Vehicles")
 require("ZM_Cleaner")
 require("ZM_Delivery")
+require("ZM_Events")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -138,6 +139,9 @@ local function onEveryOneMinute()
 
     -- Delivery: process item deliveries to online players
     if ZM_Delivery and ZM_Delivery.tick then ZM_Delivery.tick() end
+
+    -- World Events: process active airdrops, heli crashes, invasions
+    if ZM_Events and ZM_Events.tick then ZM_Events.tick() end
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
@@ -165,6 +169,9 @@ local function onServerStarted()
 
     -- Initialize delivery system
     if ZM_Delivery and ZM_Delivery.init then ZM_Delivery.init() end
+
+    -- Initialize world events system
+    if ZM_Events and ZM_Events.init then ZM_Events.init() end
 
     -- Initialize money deposit system
     if ZM_MoneyDeposit and ZM_MoneyDeposit.init then ZM_MoneyDeposit.init() end

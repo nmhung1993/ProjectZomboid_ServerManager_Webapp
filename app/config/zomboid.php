@@ -118,6 +118,8 @@ return [
         'cleaner_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_commands.json',
         'cleaner_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_results.json',
         'pending_deliveries' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/pending_deliveries.json',
+        'world_events' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/world_events.json',
+        'event_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/event_results.json',
     ],
 
     /*

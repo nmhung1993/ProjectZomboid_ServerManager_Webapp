@@ -75,6 +75,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('{listing}/bid', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'bid'])->name('bid');
         Route::post('{listing}/cancel', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'cancel'])->name('cancel');
     });
+
+    // Player Dynamic World Events Portal
+    Route::prefix('portal/events')->name('portal.events.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\WorldEventPortalController::class, 'index'])->name('index');
+    });
 });
 
 Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
@@ -207,6 +212,12 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         // P2P Marketplace Management (admin)
         Route::get('market', [Admin\MarketAdminController::class, 'index'])->name('market');
         Route::post('market/{listing}/cancel', [Admin\MarketAdminController::class, 'cancelListing'])->name('market.cancel');
+
+        // Dynamic World Events Management (admin)
+        Route::get('events', [Admin\WorldEventAdminController::class, 'index'])->name('events');
+        Route::post('events/airdrop', [Admin\WorldEventAdminController::class, 'spawnAirdrop'])->name('events.airdrop');
+        Route::post('events/heli-crash', [Admin\WorldEventAdminController::class, 'spawnHeliCrash'])->name('events.heli-crash');
+        Route::post('events/{event}/cancel', [Admin\WorldEventAdminController::class, 'cancel'])->name('events.cancel');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

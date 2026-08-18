@@ -319,6 +319,9 @@ const eventTypeColors: Record<string, string> = {
     death: '#9ca3af',
     connect: '#22c55e',
     disconnect: '#f59e0b',
+    airdrop: '#f59e0b',
+    heli_crash: '#ef4444',
+    zombie_invasion: '#a855f7',
 };
 
 export default function PzMap({

@@ -66,6 +66,14 @@ type Props = {
         x: number;
         y: number;
     }>;
+    worldEvents?: Array<{
+        id: number;
+        event_type: string;
+        title: string;
+        x: number;
+        y: number;
+        location_name?: string | null;
+    }>;
 };
 
 const statusDotColor: Record<PlayerMarker['status'], string> = {
@@ -353,6 +361,15 @@ export default function PlayerMap({
                                     owner: v.owner_username,
                                     x: v.x,
                                     y: v.y,
+                                }))}
+                                eventMarkers={(worldEvents || []).map((e) => ({
+                                    id: e.id,
+                                    x: e.x,
+                                    y: e.y,
+                                    type: e.event_type,
+                                    player: e.title,
+                                    target: e.location_name || null,
+                                    label: e.title,
                                 }))}
                                 mapConfig={mapConfig}
                                 hasTiles={hasTiles}
