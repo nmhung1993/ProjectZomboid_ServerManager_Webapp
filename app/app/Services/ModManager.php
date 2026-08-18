@@ -189,6 +189,8 @@ class ModManager
         if ($serverRunning && $applied !== null) {
             $intentWorkshopIds = array_filter(array_column($mods, 'workshop_id'));
             $removedSinceStart = array_diff($appliedWorkshopIds, $intentWorkshopIds);
+            // Ignore legacy / obsolete manager workshop IDs (e.g. 3685323705) during migration
+            $removedSinceStart = array_filter($removedSinceStart, fn ($wid) => $wid !== '3685323705' && $wid !== '');
             if (! empty($removedSinceStart)) {
                 $pendingRestart = true;
             }
