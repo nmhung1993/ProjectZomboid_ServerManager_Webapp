@@ -22,170 +22,138 @@ local function getTimestamp()
         cal:get(Calendar.HOUR_OF_DAY), cal:get(Calendar.MINUTE), cal:get(Calendar.SECOND))
 end
 
---- Get the player's profession
+--- Get the player's profession (B42 + B41 fallback)
 local function getProfession(player)
     if not player then return "unemployed" end
-    local prof = nil
+
+    -- Check client profile cache if available
+    local username = player:getUsername()
+    if username and ZM_PlayerStats and ZM_PlayerStats.clientProfiles and ZM_PlayerStats.clientProfiles[username] then
+        local cp = ZM_PlayerStats.clientProfiles[username]
+        if cp.profession and cp.profession ~= "unemployed" then
+            return cp.profession
+        end
+    end
+
+    local prof = "unemployed"
     if player.getDescriptor then
-        local desc = player:getDescriptor()
-        if desc then
-            if desc.getProfession then
-                local ok, p = pcall(desc.getProfession, desc)
-                if ok and p and p ~= "" then
-                    prof = p
+        local okDesc, desc = pcall(player.getDescriptor, player)
+        if okDesc and desc then
+            -- B42 CharacterProfessionDefinition
+            if desc.getCharacterProfession and CharacterProfessionDefinition and CharacterProfessionDefinition.getCharacterProfessionDefinition then
+                local okProf, charProf = pcall(desc.getCharacterProfession, desc)
+                if okProf and charProf then
+                    local okDef, def = pcall(CharacterProfessionDefinition.getCharacterProfessionDefinition, charProf)
+                    if okDef and def and def.getUIName then
+                        local okName, name = pcall(def.getUIName, def)
+                        if okName and name and tostring(name) ~= "" then
+                            prof = tostring(name)
+                        end
+                    end
                 end
             end
-            if not prof and desc.getProfessionName then
-                local ok, p = pcall(desc.getProfessionName, desc)
-                if ok and p and p ~= "" then
-                    prof = p
+
+            if prof == "unemployed" and desc.getProfession then
+                local okP, p = pcall(desc.getProfession, desc)
+                if okP and p and tostring(p) ~= "" and tostring(p) ~= "nil" then
+                    prof = tostring(p)
+                end
+            end
+
+            if prof == "unemployed" and desc.getProfessionName then
+                local okP, p = pcall(desc.getProfessionName, desc)
+                if okP and p and tostring(p) ~= "" and tostring(p) ~= "nil" then
+                    prof = tostring(p)
                 end
             end
         end
     end
-    if not prof and player.getSurvivorDesc then
-        local desc = player:getSurvivorDesc()
-        if desc then
-            if desc.getProfession then
-                local ok, p = pcall(desc.getProfession, desc)
-                if ok and p and p ~= "" then
-                    prof = p
-                end
-            end
-            if not prof and desc.getProfessionName then
-                local ok, p = pcall(desc.getProfessionName, desc)
-                if ok and p and p ~= "" then
-                    prof = p
-                end
+
+    if prof == "unemployed" and player.getProfession then
+        local okP, p = pcall(player.getProfession, player)
+        if okP and p and tostring(p) ~= "" and tostring(p) ~= "nil" then
+            prof = tostring(p)
+        end
+    end
+
+    if prof and prof ~= "unemployed" and ProfessionFactory and ProfessionFactory.getProfession then
+        local ok, profObj = pcall(ProfessionFactory.getProfession, prof)
+        if ok and profObj and profObj.getName then
+            local okN, name = pcall(profObj.getName, profObj)
+            if okN and name and name ~= "" then
+                prof = tostring(name)
             end
         end
     end
-    if not prof and player.getProfession then
-        local ok, p = pcall(player.getProfession, player)
-        if ok and p and p ~= "" then
-            prof = p
-        end
-    end
-    return prof or "unemployed"
+
+    return prof
 end
 
---- Collect all traits for a player
+--- Collect all traits for a player (B42 + B41 fallback)
 local function getTraits(player)
     local traits = {}
     if not player then return traits end
-    local seen = {}
 
+    -- Check client profile cache if available
+    local username = player:getUsername()
+    if username and ZM_PlayerStats and ZM_PlayerStats.clientProfiles and ZM_PlayerStats.clientProfiles[username] then
+        local cp = ZM_PlayerStats.clientProfiles[username]
+        if cp.traits and #cp.traits > 0 then
+            return cp.traits
+        end
+    end
+
+    local seen = {}
     local function addTrait(t)
         if not t then return end
         local s = tostring(t)
-        if s and s ~= "" and not seen[s] then
+        if s and s ~= "" and s ~= "nil" and not seen[s] then
             seen[s] = true
             table.insert(traits, s)
         end
     end
 
-    -- Method 1: Check all registered traits in TraitFactory
-    if TraitFactory and TraitFactory.getTraits then
+    -- B42 CharacterTraits.getKnownTraits() + CharacterTraitDefinition
+    if player.getCharacterTraits then
+        local okCt, ct = pcall(player.getCharacterTraits, player)
+        if okCt and ct and ct.getKnownTraits then
+            local okKnown, known = pcall(ct.getKnownTraits, ct)
+            if okKnown and known and known.size then
+                for i = 0, known:size() - 1 do
+                    local tKey = known:get(i)
+                    if tKey then
+                        local added = false
+                        if CharacterTraitDefinition and CharacterTraitDefinition.getCharacterTraitDefinition then
+                            local okDef, def = pcall(CharacterTraitDefinition.getCharacterTraitDefinition, tKey)
+                            if okDef and def and def.getLabel then
+                                local okLbl, lbl = pcall(def.getLabel, def)
+                                if okLbl and lbl and tostring(lbl) ~= "" then
+                                    addTrait(tostring(lbl))
+                                    added = true
+                                end
+                            end
+                        end
+                        if not added then
+                            addTrait(tostring(tKey))
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- B41 TraitFactory fallback
+    if #traits == 0 and TraitFactory and TraitFactory.getTraits then
         local ok, allTraits = pcall(TraitFactory.getTraits)
         if ok and allTraits and allTraits.size then
             for i = 0, allTraits:size() - 1 do
-                local traitObj = allTraits:get(i)
-                if traitObj then
-                    local tType = nil
-                    if traitObj.getType then
-                        local okT, t = pcall(traitObj.getType, traitObj)
-                        if okT and t and t ~= "" then tType = tostring(t) end
+                local tObj = allTraits:get(i)
+                if tObj then
+                    local tType = tObj.getType and tObj:getType() or tostring(tObj)
+                    local tLabel = tObj.getLabel and tObj:getLabel() or tType
+                    if (player.HasTrait and player:HasTrait(tType)) or (player.hasTrait and player:hasTrait(tType)) then
+                        addTrait(tLabel)
                     end
-                    local tLabel = nil
-                    if traitObj.getLabel then
-                        local okL, l = pcall(traitObj.getLabel, traitObj)
-                        if okL and l and l ~= "" then tLabel = tostring(l) end
-                    end
-
-                    local has = false
-                    if tType then
-                        if player.HasTrait then
-                            local okH, h = pcall(player.HasTrait, player, tType)
-                            if okH and h then has = true end
-                        end
-                        if not has and player.hasTrait then
-                            local okH, h = pcall(player.hasTrait, player, tType)
-                            if okH and h then has = true end
-                        end
-                    end
-                    if not has and tLabel then
-                        if player.HasTrait then
-                            local okH, h = pcall(player.HasTrait, player, tLabel)
-                            if okH and h then has = true end
-                        end
-                        if not has and player.hasTrait then
-                            local okH, h = pcall(player.hasTrait, player, tLabel)
-                            if okH and h then has = true end
-                        end
-                    end
-
-                    if has then
-                        addTrait(tType or tLabel)
-                    end
-                end
-            end
-        end
-    end
-
-    -- Method 2: player:getTraits()
-    if player.getTraits then
-        local ok, traitList = pcall(player.getTraits, player)
-        if ok and traitList then
-            if traitList.size then
-                for i = 0, traitList:size() - 1 do
-                    local okGet, t = pcall(traitList.get, traitList, i)
-                    if okGet and t then
-                        if type(t) == "userdata" and t.getType then
-                            local okType, tType = pcall(t.getType, t)
-                            if okType and tType then addTrait(tType) else addTrait(t) end
-                        else
-                            addTrait(t)
-                        end
-                    end
-                end
-            elseif type(traitList) == "table" then
-                for _, t in pairs(traitList) do
-                    addTrait(t)
-                end
-            end
-        end
-    end
-
-    -- Method 3: player:getCharacterTraits()
-    if player.getCharacterTraits then
-        local ok, ct = pcall(player.getCharacterTraits, player)
-        if ok and ct then
-            if ct.getTraits then
-                local ok2, inner = pcall(ct.getTraits, ct)
-                if ok2 and inner and inner.size then
-                    for i = 0, inner:size() - 1 do
-                        local okGet, t = pcall(inner.get, inner, i)
-                        if okGet and t then addTrait(t) end
-                    end
-                end
-            elseif ct.size then
-                for i = 0, ct:size() - 1 do
-                    local okGet, t = pcall(ct.get, ct, i)
-                    if okGet and t then addTrait(t) end
-                end
-            end
-        end
-    end
-
-    -- Method 4: Descriptor CharacterTraits
-    if player.getDescriptor then
-        local desc = player:getDescriptor()
-        if desc and desc.getCharacterTraits then
-            local ok, ct = pcall(desc.getCharacterTraits, desc)
-            if ok and ct and ct.size then
-                for i = 0, ct:size() - 1 do
-                    local okGet, t = pcall(ct.get, ct, i)
-                    if okGet and t then addTrait(t) end
                 end
             end
         end

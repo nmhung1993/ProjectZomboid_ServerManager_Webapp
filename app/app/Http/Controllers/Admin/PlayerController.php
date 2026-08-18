@@ -64,6 +64,14 @@ class PlayerController extends Controller
                 $stats = $statsMap->get($user->username);
                 $live = $liveMap[$user->username] ?? null;
 
+                $profession = (! empty($live['profession']) && $live['profession'] !== 'unemployed')
+                    ? $live['profession']
+                    : ($stats->profession ?? $live['profession'] ?? 'unemployed');
+
+                $traits = (! empty($live['traits']))
+                    ? $live['traits']
+                    : ($stats->traits ?? []);
+
                 return [
                     'id' => $user->id,
                     'username' => $user->username,
@@ -74,9 +82,9 @@ class PlayerController extends Controller
                     'stats' => ($stats || $live) ? [
                         'zombie_kills' => $stats->zombie_kills ?? 0,
                         'hours_survived' => (float) ($stats->hours_survived ?? 0),
-                        'profession' => $live['profession'] ?? $stats->profession ?? 'unemployed',
+                        'profession' => $profession,
                         'skills' => $stats->skills ?? [],
-                        'traits' => $live['traits'] ?? $stats->traits ?? [],
+                        'traits' => $traits,
                         'is_dead' => (bool) ($live['is_dead'] ?? $stats->is_dead ?? false),
                     ] : null,
                     'live' => $live ? [
@@ -95,6 +103,14 @@ class PlayerController extends Controller
                 $stats = $statsMap->get($name);
                 $live = $liveMap[$name] ?? null;
 
+                $profession = (! empty($live['profession']) && $live['profession'] !== 'unemployed')
+                    ? $live['profession']
+                    : ($stats->profession ?? $live['profession'] ?? 'unemployed');
+
+                $traits = (! empty($live['traits']))
+                    ? $live['traits']
+                    : ($stats->traits ?? []);
+
                 $players[] = [
                     'id' => null,
                     'username' => $name,
@@ -105,9 +121,9 @@ class PlayerController extends Controller
                     'stats' => ($stats || $live) ? [
                         'zombie_kills' => $stats->zombie_kills ?? 0,
                         'hours_survived' => (float) ($stats->hours_survived ?? 0),
-                        'profession' => $live['profession'] ?? $stats->profession ?? 'unemployed',
+                        'profession' => $profession,
                         'skills' => $stats->skills ?? [],
-                        'traits' => $live['traits'] ?? $stats->traits ?? [],
+                        'traits' => $traits,
                         'is_dead' => (bool) ($live['is_dead'] ?? $stats->is_dead ?? false),
                     ] : null,
                     'live' => $live ? [

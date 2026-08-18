@@ -152,7 +152,9 @@ const TRAITS_DATA: Record<string, TraitInfo> = {
     Unlucky: { label: 'Xui xẻo', type: 'negative', desc: 'Giảm tỉ lệ tìm thấy đồ quý' },
     VeryUnderweight: { label: 'Rất thiếu cân', type: 'negative', desc: '-2 Thể lực, -2 Sức mạnh' },
     Weak: { label: 'Yếu như sên', type: 'negative', desc: '-5 Sức mạnh, mang vác ít' },
+    Inventive: { label: 'Sáng tạo (Inventive)', type: 'positive', desc: 'Có thể chế tạo các công cụ và thiết bị độc đáo' },
     WeakStomach: { label: 'Bụng yếu', type: 'negative', desc: 'Dễ bị ngộ độc thực phẩm nặng' },
+    ShortOfBreath: { label: 'Hụt hơi (Short of Breath)', type: 'negative', desc: 'Dễ hụt hơi khi vận động mạnh' },
 };
 
 function resolveTraitInfo(traitKey: string): { key: string; label: string; type: 'positive' | 'negative' | 'neutral'; desc?: string } {
@@ -161,9 +163,10 @@ function resolveTraitInfo(traitKey: string): { key: string; label: string; type:
     if (TRAITS_DATA[cleanKey]) {
         return { key: cleanKey, ...TRAITS_DATA[cleanKey] };
     }
-    // Case-insensitive match
+    // Normalized alphanumeric match
+    const norm = cleanKey.toLowerCase().replace(/[\s_-]/g, '');
     for (const [k, val] of Object.entries(TRAITS_DATA)) {
-        if (k.toLowerCase() === cleanKey.toLowerCase()) {
+        if (k.toLowerCase().replace(/[\s_-]/g, '') === norm) {
             return { key: k, ...val };
         }
     }

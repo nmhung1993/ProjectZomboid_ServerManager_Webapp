@@ -55,13 +55,21 @@ class StatusController extends Controller
                 if ($stat) {
                     $rank = PlayerStat::query()->where('zombie_kills', '>', $stat->zombie_kills)->count() + 1;
                 }
-                $profession = $live['profession'] ?? $stat?->profession ?? 'unemployed';
+                $profession = (! empty($live['profession']) && $live['profession'] !== 'unemployed')
+                    ? $live['profession']
+                    : ($stat?->profession ?? $live['profession'] ?? 'unemployed');
+
+                $traits = (! empty($live['traits']))
+                    ? $live['traits']
+                    : ($stat?->traits ?? []);
+
                 $onlinePlayersData[] = [
                     'username' => $username,
                     'rank' => $rank,
                     'zombie_kills' => $stat?->zombie_kills ?? 0,
                     'hours_survived' => (float) ($stat?->hours_survived ?? 0),
                     'profession' => $profession,
+                    'traits' => $traits,
                     'is_dead' => (bool) ($live['is_dead'] ?? $stat?->is_dead ?? false),
                 ];
             }
