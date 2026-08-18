@@ -243,14 +243,15 @@ describe('Rollback with countdown', function () {
 // ── Bulk Delete ──────────────────────────────────────────────────────
 
 describe('Bulk delete backups', function () {
-    it('deletes multiple backups at once', function () {
+    it('deletes multiple backups at once when super admin', function () {
         $backupManager = Mockery::mock(BackupManager::class);
         $backupManager->shouldReceive('deleteBackup')->times(3);
         app()->instance(BackupManager::class, $backupManager);
 
+        $superAdmin = User::factory()->superAdmin()->create();
         $backups = Backup::factory()->count(3)->create();
 
-        $this->actingAs($this->admin)
+        $this->actingAs($superAdmin)
             ->deleteJson(route('admin.backups.destroy-bulk'), [
                 'ids' => $backups->pluck('id')->all(),
             ])
@@ -261,7 +262,9 @@ describe('Bulk delete backups', function () {
     });
 
     it('rejects empty ids array', function () {
-        $this->actingAs($this->admin)
+        $superAdmin = User::factory()->superAdmin()->create();
+
+        $this->actingAs($superAdmin)
             ->deleteJson(route('admin.backups.destroy-bulk'), [
                 'ids' => [],
             ])
@@ -270,7 +273,9 @@ describe('Bulk delete backups', function () {
     });
 
     it('rejects invalid backup ids', function () {
-        $this->actingAs($this->admin)
+        $superAdmin = User::factory()->superAdmin()->create();
+
+        $this->actingAs($superAdmin)
             ->deleteJson(route('admin.backups.destroy-bulk'), [
                 'ids' => ['not-a-valid-uuid'],
             ])
@@ -278,7 +283,17 @@ describe('Bulk delete backups', function () {
             ->assertJsonValidationErrors('ids.0');
     });
 
-    it('requires admin authentication for bulk delete', function () {
+    it('forbids normal admin from bulk deleting backups', function () {
+        $backups = Backup::factory()->count(2)->create();
+
+        $this->actingAs($this->admin)
+            ->deleteJson(route('admin.backups.destroy-bulk'), [
+                'ids' => $backups->pluck('id')->all(),
+            ])
+            ->assertForbidden();
+    });
+
+    it('requires authentication for bulk delete', function () {
         $player = User::factory()->create(['role' => UserRole::Player]);
         $backups = Backup::factory()->count(2)->create();
 

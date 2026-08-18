@@ -1,7 +1,8 @@
 import { Head, Link, usePoll } from '@inertiajs/react';
-import { Backpack, Ban, Circle, Clock, KeyRound, Search, ShieldCheck, Skull, TimerReset, UserX } from 'lucide-react';
+import { Backpack, Ban, Circle, Clock, Info, KeyRound, Search, ShieldCheck, Skull, TimerReset, UserX } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import PlayerActionDialogs from '@/components/player-action-dialogs';
+import PlayerInfoDialog, { type PlayerInfoData } from '@/components/player-info-dialog';
 import { SortIcon } from '@/components/sort-icon';
 import { useTableSort } from '@/hooks/use-table-sort';
 import { Badge } from '@/components/ui/badge';
@@ -20,18 +21,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
-type Player = {
-    id: number | null;
-    username: string;
-    role: string;
-    isOnline: boolean;
-    createdAt: string | null;
-    stats: {
-        zombie_kills: number;
-        hours_survived: number;
-        profession: string | null;
-    } | null;
-};
+type Player = PlayerInfoData;
 
 type RespawnCooldown = {
     death_time: number;
@@ -59,9 +49,15 @@ type PlayersProps = {
     players: Player[];
     respawn_cooldowns: Record<string, RespawnCooldown>;
     respawn_config: RespawnConfig;
+    day_length_minutes?: number;
 };
 
-export default function Players({ players, respawn_cooldowns = {}, respawn_config }: PlayersProps) {
+export default function Players({
+    players,
+    respawn_cooldowns = {},
+    respawn_config,
+    day_length_minutes = 60,
+}: PlayersProps) {
     const { t } = useTranslation();
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -78,6 +74,7 @@ export default function Players({ players, respawn_cooldowns = {}, respawn_confi
     const [accessTarget, setAccessTarget] = useState<string | null>(null);
     const [resetTimerTarget, setResetTimerTarget] = useState<string | null>(null);
     const [passwordTarget, setPasswordTarget] = useState<string | null>(null);
+    const [infoTarget, setInfoTarget] = useState<Player | null>(null);
 
     usePoll(5000, { only: ['players'] });
 
@@ -247,6 +244,14 @@ export default function Players({ players, respawn_cooldowns = {}, respawn_confi
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setInfoTarget(player)}
+                                                        title={t('admin.players.tooltip_info')}
+                                                    >
+                                                        <Info className="size-3.5 text-blue-500" />
+                                                    </Button>
                                                     {player.isOnline && (
                                                         <Button variant="ghost" size="sm" asChild title={t('admin.players.tooltip_inventory')}>
                                                             <Link href={`/admin/players/${player.username}/inventory`}>
@@ -318,6 +323,12 @@ export default function Players({ players, respawn_cooldowns = {}, respawn_confi
                     </CardContent>
                 </Card>
             </div>
+
+            <PlayerInfoDialog
+                player={infoTarget}
+                dayLengthMinutes={day_length_minutes}
+                onClose={() => setInfoTarget(null)}
+            />
 
             <PlayerActionDialogs
                 kickTarget={kickTarget}

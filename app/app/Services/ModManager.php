@@ -13,7 +13,7 @@ class ModManager
      * and write paths re-attach them automatically if they go missing.
      */
     public const PROTECTED_MODS = [
-        '3685323705' => 'ZomboidManager',
+        '3785748904' => 'SWTServerAddon',
     ];
 
     public function __construct(
@@ -506,9 +506,9 @@ class ModManager
         $newModIds = [];
         foreach ($orderedMods as $m) {
             $wId = $m['workshop_id'];
-            $wModList = $mapping[$wId] ?? (isset($m['mod_id']) ? $this->splitList($m['mod_id']) : []);
+            $wModList = $mapping[$wId] ?? ($m['mod_ids'] ?? (isset($m['mod_id']) && $m['mod_id'] !== '' ? $this->splitList($m['mod_id']) : []));
             foreach ($wModList as $modName) {
-                if (! in_array($modName, $newModIds, true)) {
+                if ($modName !== '' && ! in_array($modName, $newModIds, true)) {
                     $newModIds[] = $modName;
                 }
             }

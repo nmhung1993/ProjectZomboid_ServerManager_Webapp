@@ -90,6 +90,16 @@ class ModController extends Controller
 
         $modIds = $validated['mod_ids'] ?? (isset($validated['mod_id']) && $validated['mod_id'] !== '' ? [$validated['mod_id']] : []);
         if (empty($modIds)) {
+            $details = $this->workshopClient->getDetails($validated['workshop_id']);
+            if ($details && ! empty($details['mod_ids'])) {
+                $modIds = $details['mod_ids'];
+                if (empty($validated['map_folder']) && ! empty($details['map_folders'])) {
+                    $validated['map_folder'] = $details['map_folders'][0];
+                }
+            }
+        }
+
+        if (empty($modIds)) {
             return response()->json([
                 'error' => 'At least one Mod ID is required.',
             ], 422);
@@ -134,6 +144,13 @@ class ModController extends Controller
         ]);
 
         $modIds = $validated['mod_ids'] ?? (isset($validated['mod_id']) && $validated['mod_id'] !== '' ? [$validated['mod_id']] : []);
+        if (empty($modIds)) {
+            $details = $this->workshopClient->getDetails($workshopId);
+            if ($details && ! empty($details['mod_ids'])) {
+                $modIds = $details['mod_ids'];
+            }
+        }
+
         if (empty($modIds)) {
             return response()->json([
                 'error' => 'At least one Mod ID is required.',
@@ -213,7 +230,9 @@ class ModController extends Controller
         $validated = $request->validate([
             'mods' => 'required|array',
             'mods.*.workshop_id' => 'required|string',
-            'mods.*.mod_id' => 'required|string',
+            'mods.*.mod_id' => 'nullable|string',
+            'mods.*.mod_ids' => 'nullable|array',
+            'mods.*.mod_ids.*' => 'string',
         ]);
 
         try {
@@ -236,7 +255,13 @@ class ModController extends Controller
             ip: $request->ip(),
         );
 
-        $serverRunning = (bool) ($this->dockerManager->getContainerStatus()['running'] ?? false);
+        $serverRunning = false;
+        try {
+            $serverRunning = (bool) ($this->dockerManager->getContainerStatus()['running'] ?? false);
+        } catch (\Throwable) {
+            // Docker unreachable
+        }
+
         $status = $this->modManager->listWithStatus(
             config('zomboid.paths.server_ini'),
             $serverRunning,

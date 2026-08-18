@@ -18,6 +18,7 @@ class PlayerStat extends Model
         'hours_survived',
         'profession',
         'skills',
+        'traits',
         'is_dead',
     ];
 
@@ -30,6 +31,7 @@ class PlayerStat extends Model
             'zombie_kills' => 'integer',
             'hours_survived' => 'float',
             'skills' => 'array',
+            'traits' => 'array',
             'is_dead' => 'boolean',
         ];
     }

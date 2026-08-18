@@ -87,7 +87,7 @@ export default function Translations({ languages, keys, defaults, locale_default
         });
 
         setEditingCell(null);
-        router.reload({ only: ['overrides'] });
+        router.reload();
     }
 
     async function removeOverride(key: string, locale: string) {
@@ -96,7 +96,7 @@ export default function Translations({ languages, keys, defaults, locale_default
             data: { locale, key },
             successMessage: t('admin.translations.override_removed'),
         });
-        router.reload({ only: ['overrides'] });
+        router.reload();
     }
 
     async function addLanguage() {

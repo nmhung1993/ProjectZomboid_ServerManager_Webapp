@@ -53,6 +53,47 @@ local function getProfession(player)
     return prof or "unemployed"
 end
 
+--- Collect all traits for a player
+local function getTraits(player)
+    local traits = {}
+    if not player then return traits end
+
+    if player.getTraits then
+        local ok, traitList = pcall(player.getTraits, player)
+        if ok and traitList then
+            if traitList.size then
+                for i = 0, traitList:size() - 1 do
+                    local t = traitList:get(i)
+                    if t then
+                        table.insert(traits, tostring(t))
+                    end
+                end
+            elseif type(traitList) == "table" then
+                for _, t in pairs(traitList) do
+                    table.insert(traits, tostring(t))
+                end
+            end
+        end
+    end
+
+    if #traits == 0 and player.getCharacterTraits then
+        local ok, traitList = pcall(player.getCharacterTraits, player)
+        if ok and traitList and traitList.getTraits then
+            local ok2, inner = pcall(traitList.getTraits, traitList)
+            if ok2 and inner and inner.size then
+                for i = 0, inner:size() - 1 do
+                    local t = inner:get(i)
+                    if t then
+                        table.insert(traits, tostring(t))
+                    end
+                end
+            end
+        end
+    end
+
+    return traits
+end
+
 --- Export positions of all online players
 function ZM_PlayerTracker.exportPositions()
     local onlinePlayers = getOnlinePlayers()
@@ -67,6 +108,7 @@ function ZM_PlayerTracker.exportPositions()
             local entry = {
                 username = player:getUsername() or "unknown",
                 profession = getProfession(player),
+                traits = getTraits(player),
                 x = math.floor((player:getX() or 0) * 10) / 10,
                 y = math.floor((player:getY() or 0) * 10) / 10,
                 z = math.floor(player:getZ() or 0),

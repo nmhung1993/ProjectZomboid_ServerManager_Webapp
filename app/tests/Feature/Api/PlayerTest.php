@@ -220,7 +220,7 @@ it('syncs the registered user web role when setting access level', function () {
     expect($player->fresh()->role)->toBe(UserRole::Admin);
 });
 
-it('does not change the web role when the access command fails', function () {
+it('synchronizes role even when rcon is offline', function () {
     $player = User::factory()->create([
         'username' => 'Player1',
         'role' => UserRole::Player,
@@ -230,9 +230,9 @@ it('does not change the web role when the access command fails', function () {
     $this->postJson('/api/players/Player1/setaccess', [
         'level' => 'admin',
     ], playerApiHeaders())
-        ->assertStatus(503);
+        ->assertOk();
 
-    expect($player->fresh()->role)->toBe(UserRole::Player);
+    expect($player->fresh()->role)->toBe(UserRole::Admin);
 });
 
 // ── POST /api/players/{name}/teleport ────────────────────────────────

@@ -41,6 +41,7 @@ class PlayerStatsService
                     'hours_survived' => (float) ($playerData['hours_survived'] ?? 0),
                     'profession' => $playerData['profession'] ?? null,
                     'skills' => $playerData['skills'] ?? null,
+                    'traits' => $playerData['traits'] ?? null,
                     'is_dead' => (bool) ($playerData['is_dead'] ?? false),
                 ],
             );
@@ -293,6 +294,7 @@ class PlayerStatsService
             'hours_survived' => $player->hours_survived,
             'profession' => $player->profession,
             'skills' => $player->skills,
+            'traits' => $player->traits ?? [],
             'is_dead' => $player->is_dead,
             'ranks' => [
                 'kills' => $killsRank,

@@ -186,6 +186,7 @@ export type PlayerProfile = {
     hours_survived: number;
     profession: string | null;
     skills: Record<string, number> | null;
+    traits?: string[];
     is_dead: boolean;
     ranks: {
         kills: number;

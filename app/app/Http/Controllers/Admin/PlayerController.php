@@ -11,7 +11,9 @@ use App\Http\Requests\Admin\SetAccessLevelRequest;
 use App\Models\PlayerStat;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\GameTimeService;
 use App\Services\OnlinePlayersReader;
+use App\Services\PlayerPositionReader;
 use App\Services\PzPasswordSyncService;
 use App\Services\PzRoleSyncService;
 use App\Services\RconClient;
@@ -30,11 +32,22 @@ class PlayerController extends Controller
         private readonly RespawnDelayManager $respawnDelay,
         private readonly PzPasswordSyncService $pzPasswordSync,
         private readonly PzRoleSyncService $pzRoleSync,
+        private readonly PlayerPositionReader $positionReader,
+        private readonly GameTimeService $gameTime,
     ) {}
 
     public function index(): Response
     {
         $onlineNames = $this->onlinePlayers->getOnlineUsernames();
+        $livePositions = $this->positionReader->getLivePositions();
+        $liveMap = [];
+        if ($livePositions && ! empty($livePositions['players'])) {
+            foreach ($livePositions['players'] as $lp) {
+                if (! empty($lp['username'])) {
+                    $liveMap[$lp['username']] = $lp;
+                }
+            }
+        }
 
         $statsMap = PlayerStat::query()
             ->get()
@@ -43,23 +56,34 @@ class PlayerController extends Controller
         $registeredUsernames = [];
 
         $players = User::query()
-            ->select('id', 'username', 'role', 'created_at')
+            ->select('id', 'username', 'role', 'steam_id', 'created_at')
             ->orderBy('username')
             ->get()
-            ->map(function (User $user) use ($onlineNames, $statsMap, &$registeredUsernames) {
+            ->map(function (User $user) use ($onlineNames, $statsMap, $liveMap, &$registeredUsernames) {
                 $registeredUsernames[] = $user->username;
                 $stats = $statsMap->get($user->username);
+                $live = $liveMap[$user->username] ?? null;
 
                 return [
                     'id' => $user->id,
                     'username' => $user->username,
                     'role' => $user->role->value,
+                    'steam_id' => $user->steam_id,
                     'isOnline' => in_array($user->username, $onlineNames),
                     'createdAt' => $user->created_at->toISOString(),
                     'stats' => $stats ? [
                         'zombie_kills' => $stats->zombie_kills,
-                        'hours_survived' => $stats->hours_survived,
-                        'profession' => $stats->profession,
+                        'hours_survived' => (float) $stats->hours_survived,
+                        'profession' => $live['profession'] ?? $stats->profession ?? 'unemployed',
+                        'skills' => $stats->skills ?? [],
+                        'traits' => $live['traits'] ?? $stats->traits ?? [],
+                        'is_dead' => (bool) ($live['is_dead'] ?? $stats->is_dead ?? false),
+                    ] : null,
+                    'live' => $live ? [
+                        'x' => $live['x'] ?? null,
+                        'y' => $live['y'] ?? null,
+                        'z' => $live['z'] ?? null,
+                        'is_ghost' => (bool) ($live['is_ghost'] ?? false),
                     ] : null,
                 ];
             })
@@ -69,17 +93,28 @@ class PlayerController extends Controller
         foreach ($onlineNames as $name) {
             if (! in_array($name, $registeredUsernames)) {
                 $stats = $statsMap->get($name);
+                $live = $liveMap[$name] ?? null;
 
                 $players[] = [
                     'id' => null,
                     'username' => $name,
-                    'role' => 'unknown',
+                    'role' => 'player',
+                    'steam_id' => null,
                     'isOnline' => true,
                     'createdAt' => null,
                     'stats' => $stats ? [
                         'zombie_kills' => $stats->zombie_kills,
-                        'hours_survived' => $stats->hours_survived,
-                        'profession' => $stats->profession,
+                        'hours_survived' => (float) $stats->hours_survived,
+                        'profession' => $live['profession'] ?? $stats->profession ?? 'unemployed',
+                        'skills' => $stats->skills ?? [],
+                        'traits' => $live['traits'] ?? $stats->traits ?? [],
+                        'is_dead' => (bool) ($live['is_dead'] ?? $stats->is_dead ?? false),
+                    ] : null,
+                    'live' => $live ? [
+                        'x' => $live['x'] ?? null,
+                        'y' => $live['y'] ?? null,
+                        'z' => $live['z'] ?? null,
+                        'is_ghost' => (bool) ($live['is_ghost'] ?? false),
                     ] : null,
                 ];
             }
@@ -89,6 +124,7 @@ class PlayerController extends Controller
             'players' => $players,
             'respawn_cooldowns' => $this->respawnDelay->getActiveCooldowns(),
             'respawn_config' => $this->respawnDelay->getConfig(),
+            'day_length_minutes' => $this->gameTime->realMinutesPerInGameDay(),
         ]);
     }
 

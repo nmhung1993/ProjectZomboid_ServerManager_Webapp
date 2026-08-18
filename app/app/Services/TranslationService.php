@@ -61,15 +61,33 @@ class TranslationService
     }
 
     /**
-     * Get all known translation keys from the English JSON file.
+     * Get all known translation keys from all JSON lang files and DB overrides.
      *
      * @return array<int, string>
      */
     public static function allKeys(): array
     {
-        $defaults = self::loadJsonFile('en');
+        $keys = [];
+        $langDirectory = realpath(lang_path());
+        if ($langDirectory !== false) {
+            $files = glob($langDirectory.DIRECTORY_SEPARATOR.'*.json') ?: [];
+            foreach ($files as $file) {
+                $contents = file_get_contents($file);
+                if ($contents !== false) {
+                    $json = json_decode($contents, true);
+                    if (is_array($json)) {
+                        $keys = array_merge($keys, array_keys($json));
+                    }
+                }
+            }
+        }
 
-        return array_keys($defaults);
+        $dbKeys = Translation::query()->distinct()->pluck('key')->all();
+        $keys = array_merge($keys, $dbKeys);
+        $keys = array_values(array_unique($keys));
+        sort($keys);
+
+        return $keys;
     }
 
     /**

@@ -47,6 +47,8 @@ it('updates existing super admin on re-run', function () {
 });
 
 it('works without an email', function () {
+    config(['zomboid.admin.email' => null]);
+
     $this->artisan('zomboid:create-admin', [
         '--username' => 'noemail',
         '--password' => 'secret123',

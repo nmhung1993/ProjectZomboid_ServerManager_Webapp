@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Head, router } from '@inertiajs/react';
 import { AlertTriangle, CheckCircle2, Clock, FileUp, GripVertical, Loader2, Package, Pencil, Plus, RotateCcw, Search, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -104,8 +105,9 @@ function SortableModRow({
     isProtected: boolean;
 }) {
     const { t } = useTranslation();
+    const rowId = mod.workshop_id || (mod.mod_ids && mod.mod_ids[0]) || mod.mod_id || String(index);
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: mod.workshop_id || mod.mod_id || String(index),
+        id: rowId,
         disabled: isDragDisabled,
     });
 
@@ -230,6 +232,14 @@ export default function Mods({
     const [restarting, setRestarting] = useState(false);
     const [search, setSearch] = useState('');
     const [orderedMods, setOrderedMods] = useState(mods);
+
+    useEffect(() => {
+        setOrderedMods(mods);
+    }, [mods]);
+
+    const getModRowId = useCallback((m: ModEntry, index: number) => {
+        return m.workshop_id || (m.mod_ids && m.mod_ids[0]) || m.mod_id || `mod-${index}`;
+    }, []);
     const [lookup, setLookup] = useState<LookupState>({ status: 'idle' });
     const [manualOverride, setManualOverride] = useState(false);
     const lookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -443,7 +453,12 @@ export default function Mods({
     const filteredMods = useMemo(() => {
         if (!search) return orderedMods;
         const q = search.toLowerCase();
-        return orderedMods.filter((m) => m.mod_id.toLowerCase().includes(q) || m.workshop_id.toLowerCase().includes(q));
+        return orderedMods.filter(
+            (m) =>
+                m.mod_id.toLowerCase().includes(q) ||
+                m.workshop_id.toLowerCase().includes(q) ||
+                (m.mod_ids && m.mod_ids.some((id) => id.toLowerCase().includes(q))),
+        );
     }, [orderedMods, search]);
 
     const sensors = useSensors(
@@ -455,8 +470,8 @@ export default function Mods({
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
-        const oldIndex = orderedMods.findIndex((m) => (m.workshop_id || m.mod_id) === active.id);
-        const newIndex = orderedMods.findIndex((m) => (m.workshop_id || m.mod_id) === over.id);
+        const oldIndex = orderedMods.findIndex((m, idx) => getModRowId(m, idx) === active.id);
+        const newIndex = orderedMods.findIndex((m, idx) => getModRowId(m, idx) === over.id);
         if (oldIndex === -1 || newIndex === -1) return;
 
         const reordered = arrayMove(orderedMods, oldIndex, newIndex);
@@ -465,7 +480,11 @@ export default function Mods({
         await fetchAction('/admin/mods/order', {
             method: 'PUT',
             data: {
-                mods: reordered.map((m) => ({ workshop_id: m.workshop_id, mod_id: m.mod_id })),
+                mods: reordered.map((m) => ({
+                    workshop_id: m.workshop_id,
+                    mod_id: m.mod_id || (m.mod_ids && m.mod_ids.length > 0 ? m.mod_ids[0] : ''),
+                    mod_ids: m.mod_ids && m.mod_ids.length > 0 ? m.mod_ids : (m.mod_id ? [m.mod_id] : []),
+                })),
             },
             successMessage: t('admin.mods.toast_order_updated'),
         });
@@ -508,22 +527,38 @@ export default function Mods({
     }
 
     async function addMod() {
-        setLoading(true);
-        const finalModIds = manualOverride
-            ? modId.split(';').map((s) => s.trim()).filter(Boolean)
-            : (selectedModIds.length > 0 ? selectedModIds : (modId ? [modId] : []));
+        let finalModIds: string[] = [];
 
-        await fetchAction('/admin/mods', {
+        if (manualOverride) {
+            finalModIds = modId.split(';').map((s) => s.trim()).filter(Boolean);
+        } else {
+            const combined = [...selectedModIds];
+            if (customModInput.trim() && !combined.includes(customModInput.trim())) {
+                combined.push(customModInput.trim());
+            }
+            if (combined.length === 0 && modId.trim()) {
+                combined.push(...modId.split(';').map((s) => s.trim()).filter(Boolean));
+            }
+            if (combined.length === 0 && lookup.status === 'success' && lookup.modIds.length > 0) {
+                combined.push(...lookup.modIds);
+            }
+            finalModIds = combined;
+        }
+
+        setLoading(true);
+        const res = await fetchAction('/admin/mods', {
             data: {
-                workshop_id: workshopId,
-                mod_ids: finalModIds,
+                workshop_id: workshopId.trim(),
+                mod_ids: finalModIds.length > 0 ? finalModIds : null,
                 map_folder: mapFolder || null,
             },
             successMessage: t('admin.mods.toast_added', { mod_id: finalModIds.join(', ') || workshopId }),
         });
         setLoading(false);
-        closeAddDialog();
-        router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
+        if (res) {
+            closeAddDialog();
+            router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
+        }
     }
 
     // Edit Mod Handlers
@@ -587,27 +622,39 @@ export default function Mods({
 
     async function saveEditMod() {
         if (!editTarget) return;
+
+        let finalModIds: string[] = [];
+        if (editManualOverride) {
+            finalModIds = editManualText.split(';').map((s) => s.trim()).filter(Boolean);
+        } else {
+            const combined = [...editModIds];
+            if (editCustomModInput.trim() && !combined.includes(editCustomModInput.trim())) {
+                combined.push(editCustomModInput.trim());
+            }
+            if (combined.length === 0 && editLookup.status === 'success' && editLookup.modIds.length > 0) {
+                combined.push(...editLookup.modIds);
+            }
+            finalModIds = combined;
+        }
+
         setEditLoading(true);
-
-        const finalModIds = editManualOverride
-            ? editManualText.split(';').map((s) => s.trim()).filter(Boolean)
-            : editModIds;
-
-        await fetchAction(`/admin/mods/${editWorkshopId || editTarget.workshop_id}`, {
+        const res = await fetchAction(`/admin/mods/${editWorkshopId || editTarget.workshop_id}`, {
             method: 'PUT',
             data: {
-                mod_ids: finalModIds,
+                mod_ids: finalModIds.length > 0 ? finalModIds : null,
                 map_folder: editMapFolder || null,
             },
             successMessage: t('admin.mods.toast_updated', {
-                count: String(finalModIds.length),
+                count: String(finalModIds.length || 1),
                 workshop_id: editWorkshopId || editTarget.workshop_id,
             }),
         });
 
         setEditLoading(false);
-        closeEditDialog();
-        router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
+        if (res) {
+            closeEditDialog();
+            router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
+        }
     }
 
     async function removeMod(mod: ModEntry) {
@@ -622,21 +669,14 @@ export default function Mods({
     }
 
     const canSubmitAdd = useMemo(() => {
-        if (loading || lookup.status === 'loading') return false;
-        if (!workshopId.trim()) return false;
-        if (manualOverride) {
-            return modId.trim().length > 0;
-        }
-        return selectedModIds.length > 0 || modId.trim().length > 0;
-    }, [loading, lookup.status, workshopId, manualOverride, modId, selectedModIds]);
+        if (loading) return false;
+        return workshopId.trim().length > 0;
+    }, [loading, workshopId]);
 
     const canSubmitEdit = useMemo(() => {
         if (editLoading) return false;
-        if (editManualOverride) {
-            return editManualText.trim().length > 0;
-        }
-        return editModIds.length > 0;
-    }, [editLoading, editManualOverride, editManualText, editModIds]);
+        return true;
+    }, [editLoading]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -719,13 +759,13 @@ export default function Mods({
                                         </TableRow>
                                     </TableHeader>
                                     <SortableContext
-                                        items={filteredMods.map((m) => m.workshop_id || m.mod_id)}
+                                        items={filteredMods.map((m, idx) => getModRowId(m, idx))}
                                         strategy={verticalListSortingStrategy}
                                     >
                                         <TableBody>
                                             {filteredMods.map((mod, index) => (
                                                 <SortableModRow
-                                                    key={mod.workshop_id || mod.mod_id || index}
+                                                    key={getModRowId(mod, index)}
                                                     mod={mod}
                                                     index={index}
                                                     onEdit={openEdit}

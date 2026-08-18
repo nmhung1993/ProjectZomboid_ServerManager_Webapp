@@ -47,7 +47,6 @@ it('renders the status page without auth', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('status')
         ->has('server')
-        ->has('mods')
         ->has('server_name')
     );
 });
@@ -68,8 +67,9 @@ it('shows server as online with player data', function () {
         ->component('status')
         ->where('server.online', true)
         ->where('server.player_count', 2)
-        ->where('server.players', ['PlayerOne', 'PlayerTwo'])
-        ->has('mods', 1)
+        ->has('server.players', 2)
+        ->where('server.players.0.username', 'PlayerOne')
+        ->where('server.players.1.username', 'PlayerTwo')
     );
 });
 
