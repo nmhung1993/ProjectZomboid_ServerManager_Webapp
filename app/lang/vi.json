@@ -1,4 +1,5 @@
 {
+    "nav.achievements": "Thành tích & Danh hiệu",
     "nav.cleaner": "Dọn rác chống Lag",
     "nav.events": "Sự kiện Thế giới",
     "nav.factions": "Bang hội (Factions)",
@@ -6,6 +7,12 @@
     "nav.performance": "Hiệu năng Máy chủ (TPS)",
     "nav.quests_bounties": "Nhiệm vụ & Truy nã",
     "nav.vehicles": "Phương tiện (Xe)",
+    "portal.achievements.equipped_title": "Danh hiệu Đang Đeo",
+    "portal.achievements.my_titles": "Kho Danh Hiệu Của Tôi",
+    "portal.achievements.subtitle": "Hoàn thành các thử thách sinh tồn để mở khóa danh hiệu và nhận thưởng Coins.",
+    "portal.achievements.title": "Hệ thống Thành tích & Danh hiệu",
+    "portal.achievements.unequip": "Gỡ danh hiệu",
+    "portal.events.active_list": "Sự kiện Đang Diễn Ra",
     "portal.events.active_list": "Sự kiện Đang Diễn Ra",
     "portal.events.recent_looted": "Lịch sử Đoạt Thùng Hàng",
     "portal.events.subtitle": "Theo dõi các thùng hàng cứu trợ, hiện trường trực thăng rơi và quái vật tấn công.",

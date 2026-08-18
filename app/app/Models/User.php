@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'steam_id',
         'role',
+        'active_title',
     ];
 
     /**

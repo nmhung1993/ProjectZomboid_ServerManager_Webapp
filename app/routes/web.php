@@ -80,6 +80,13 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('portal/events')->name('portal.events.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Portal\WorldEventPortalController::class, 'index'])->name('index');
     });
+
+    // Player Achievements & Custom Titles Portal
+    Route::prefix('portal/achievements')->name('portal.achievements.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\AchievementPortalController::class, 'index'])->name('index');
+        Route::post('{achievement}/claim', [\App\Http\Controllers\Portal\AchievementPortalController::class, 'claim'])->name('claim');
+        Route::post('equip-title', [\App\Http\Controllers\Portal\AchievementPortalController::class, 'equip'])->name('equip');
+    });
 });
 
 Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
@@ -221,6 +228,11 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('events/airdrop', [Admin\WorldEventAdminController::class, 'spawnAirdrop'])->name('events.airdrop');
         Route::post('events/heli-crash', [Admin\WorldEventAdminController::class, 'spawnHeliCrash'])->name('events.heli-crash');
         Route::post('events/{event}/cancel', [Admin\WorldEventAdminController::class, 'cancel'])->name('events.cancel');
+
+        // Achievements Management (admin)
+        Route::get('achievements', [Admin\AchievementAdminController::class, 'index'])->name('achievements');
+        Route::post('achievements', [Admin\AchievementAdminController::class, 'store'])->name('achievements.store');
+        Route::delete('achievements/{achievement}', [Admin\AchievementAdminController::class, 'destroy'])->name('achievements.destroy');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

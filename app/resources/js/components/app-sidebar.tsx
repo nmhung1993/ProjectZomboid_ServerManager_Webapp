@@ -84,6 +84,7 @@ export function AppSidebar() {
                 { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
                 { title: t('nav.factions'), href: '/admin/factions', icon: Users },
                 { title: t('nav.quests_bounties'), href: '/admin/quests', icon: Target },
+                { title: t('nav.achievements'), href: '/admin/achievements', icon: Trophy },
                 { title: t('nav.vehicles'), href: '/admin/vehicles', icon: Car },
                 { title: t('nav.cleaner'), href: '/admin/cleaner', icon: Sparkles },
             ],
@@ -106,6 +107,7 @@ export function AppSidebar() {
             label: t('nav.group.menu'),
             items: [
                 { title: t('nav.player_portal'), href: '/portal', icon: Gamepad2 },
+                { title: t('nav.achievements'), href: '/portal/achievements', icon: Trophy },
                 { title: t('nav.events'), href: '/portal/events', icon: Radio },
                 { title: t('nav.marketplace'), href: '/portal/market', icon: Scale },
                 { title: t('nav.vehicles'), href: '/portal/vehicles', icon: Car },

@@ -1,4 +1,5 @@
 {
+    "nav.achievements": "Achievements & Titles",
     "nav.cleaner": "Lag Cleaner",
     "nav.events": "World Events",
     "nav.factions": "Factions",
@@ -6,6 +7,12 @@
     "nav.performance": "Server Health (TPS)",
     "nav.quests_bounties": "Quests & Bounties",
     "nav.vehicles": "Vehicles",
+    "portal.achievements.equipped_title": "Equipped Title",
+    "portal.achievements.my_titles": "My Unlocked Titles",
+    "portal.achievements.subtitle": "Complete survival milestones to unlock custom titles and earn Coins.",
+    "portal.achievements.title": "Player Achievements & Titles",
+    "portal.achievements.unequip": "Unequip Title",
+    "portal.events.active_list": "Active World Events",
     "portal.events.active_list": "Active World Events",
     "portal.events.recent_looted": "Recently Claimed Events",
     "portal.events.subtitle": "Track supply airdrops, heli crash sites, and zombie hordes in Knox County.",

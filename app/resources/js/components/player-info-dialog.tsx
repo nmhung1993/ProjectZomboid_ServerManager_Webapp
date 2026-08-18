@@ -244,8 +244,13 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
                             <UserIcon className="size-5 text-primary" />
                         </div>
                         <div>
-                            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                            <DialogTitle className="text-lg font-bold flex items-center gap-2 flex-wrap">
                                 <span>{player.username}</span>
+                                {(player as any).active_title && (
+                                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] font-bold">
+                                        ✨ {(player as any).active_title}
+                                    </Badge>
+                                )}
                                 <Badge variant={player.isOnline ? 'default' : 'outline'} className="text-[11px] gap-1 py-0">
                                     <Circle
                                         className={`size-1.5 ${player.isOnline ? 'fill-emerald-400 text-emerald-400 animate-pulse' : 'fill-muted-foreground text-muted-foreground'}`}
