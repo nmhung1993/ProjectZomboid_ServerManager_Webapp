@@ -49,17 +49,33 @@ end
 
 --- Get the player's profession
 local function getProfession(player)
-    local desc = player:getDescriptor()
-    if not desc or not desc.getProfession then
-        return nil
+    if not player then return "unemployed" end
+    local prof = nil
+    if player.getDescriptor then
+        local desc = player:getDescriptor()
+        if desc and desc.getProfession then
+            local ok, p = pcall(desc.getProfession, desc)
+            if ok and p and p ~= "" then
+                prof = p
+            end
+        end
     end
-
-    local ok, prof = pcall(desc.getProfession, desc)
-    if ok and prof and prof ~= "" then
-        return prof
+    if not prof and player.getSurvivorDesc then
+        local desc = player:getSurvivorDesc()
+        if desc and desc.getProfession then
+            local ok, p = pcall(desc.getProfession, desc)
+            if ok and p and p ~= "" then
+                prof = p
+            end
+        end
     end
-
-    return nil
+    if not prof and player.getProfession then
+        local ok, p = pcall(player.getProfession, player)
+        if ok and p and p ~= "" then
+            prof = p
+        end
+    end
+    return prof or "unemployed"
 end
 
 --- Export stats for all online players

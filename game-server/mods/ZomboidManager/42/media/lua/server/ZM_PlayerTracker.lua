@@ -22,6 +22,37 @@ local function getTimestamp()
         cal:get(Calendar.HOUR_OF_DAY), cal:get(Calendar.MINUTE), cal:get(Calendar.SECOND))
 end
 
+--- Get the player's profession
+local function getProfession(player)
+    if not player then return "unemployed" end
+    local prof = nil
+    if player.getDescriptor then
+        local desc = player:getDescriptor()
+        if desc and desc.getProfession then
+            local ok, p = pcall(desc.getProfession, desc)
+            if ok and p and p ~= "" then
+                prof = p
+            end
+        end
+    end
+    if not prof and player.getSurvivorDesc then
+        local desc = player:getSurvivorDesc()
+        if desc and desc.getProfession then
+            local ok, p = pcall(desc.getProfession, desc)
+            if ok and p and p ~= "" then
+                prof = p
+            end
+        end
+    end
+    if not prof and player.getProfession then
+        local ok, p = pcall(player.getProfession, player)
+        if ok and p and p ~= "" then
+            prof = p
+        end
+    end
+    return prof or "unemployed"
+end
+
 --- Export positions of all online players
 function ZM_PlayerTracker.exportPositions()
     local onlinePlayers = getOnlinePlayers()
@@ -35,6 +66,7 @@ function ZM_PlayerTracker.exportPositions()
         if player then
             local entry = {
                 username = player:getUsername() or "unknown",
+                profession = getProfession(player),
                 x = math.floor((player:getX() or 0) * 10) / 10,
                 y = math.floor((player:getY() or 0) * 10) / 10,
                 z = math.floor(player:getZ() or 0),

@@ -12,6 +12,7 @@ use App\Http\Requests\Api\TeleportPlayerRequest;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\OnlinePlayersReader;
+use App\Services\PzRoleSyncService;
 use App\Services\RconClient;
 use App\Services\RconSanitizer;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,7 @@ class PlayerController
         private readonly RconClient $rcon,
         private readonly AuditLogger $auditLogger,
         private readonly OnlinePlayersReader $onlinePlayers,
+        private readonly PzRoleSyncService $pzRoleSync,
     ) {}
 
     public function index(): JsonResponse
@@ -114,41 +116,20 @@ class PlayerController
         $name = RconSanitizer::playerName($name);
         $level = RconSanitizer::accessLevel($request->validated('level'));
 
-        $response = $this->executePlayerCommand(
-            name: $name,
-            command: "setaccesslevel \"{$name}\" \"{$level}\"",
+        $this->pzRoleSync->sync($name, $level);
+
+        $this->auditLogger->log(
+            actor: request()->user()?->name ?? 'api',
             action: 'player.setaccess',
+            target: $name,
             details: ['level' => $level],
             ip: $request->ip(),
-            successMessage: "Access level for '{$name}' set to '{$level}'",
         );
 
-        if ($response->getStatusCode() === 200) {
-            $this->syncRoleFromAccessLevel($name, $level);
-        }
-
-        return $response;
-    }
-
-    /**
-     * Mirror a PZ access-level change onto the registered user's web role so the
-     * dashboard reflects it immediately. Unregistered (online-only) players have
-     * no row to update, and the primary super admin is never demoted to avoid
-     * locking out the dashboard.
-     */
-    private function syncRoleFromAccessLevel(string $name, string $level): void
-    {
-        $user = User::query()->where('username', $name)->first();
-
-        if ($user === null || $user->role === UserRole::SuperAdmin) {
-            return;
-        }
-
-        $newRole = UserRole::fromPzAccessLevel($level);
-
-        if ($user->role !== $newRole) {
-            $user->update(['role' => $newRole]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => "Access level for '{$name}' set to '{$level}'",
+        ]);
     }
 
     public function teleport(string $name, TeleportPlayerRequest $request): JsonResponse

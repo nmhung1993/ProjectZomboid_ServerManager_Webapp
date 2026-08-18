@@ -247,11 +247,13 @@ export default function Players({ players, respawn_cooldowns = {}, respawn_confi
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1">
-                                                    <Button variant="ghost" size="sm" asChild title={t('admin.players.tooltip_inventory')}>
-                                                        <Link href={`/admin/players/${player.username}/inventory`}>
-                                                            <Backpack className="size-3.5" />
-                                                        </Link>
-                                                    </Button>
+                                                    {player.isOnline && (
+                                                        <Button variant="ghost" size="sm" asChild title={t('admin.players.tooltip_inventory')}>
+                                                            <Link href={`/admin/players/${player.username}/inventory`}>
+                                                                <Backpack className="size-3.5" />
+                                                            </Link>
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"

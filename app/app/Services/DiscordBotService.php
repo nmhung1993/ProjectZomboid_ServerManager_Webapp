@@ -9,70 +9,70 @@ use Illuminate\Support\Facades\Log;
 class DiscordBotService
 {
     /**
-     * Maps audit actions to Discord embed configuration.
+     * Maps audit actions to Discord notification configuration.
      *
-     * @var array<string, array{color: int, title_vi: string}>
+     * @var array<string, array{icon: string, title: string}>
      */
     private const ACTION_CONFIG = [
         // Server
-        'server.start' => ['color' => 0x2ECC71, 'title_vi' => 'Máy chủ khởi động'],
-        'server.stop' => ['color' => 0xE74C3C, 'title_vi' => 'Máy chủ dừng'],
-        'server.stop.scheduled' => ['color' => 0xE67E22, 'title_vi' => 'Lên lịch dừng máy chủ'],
-        'server.stop.executed' => ['color' => 0xE74C3C, 'title_vi' => 'Đã dừng máy chủ'],
-        'server.restart' => ['color' => 0x3498DB, 'title_vi' => 'Khởi động lại máy chủ'],
-        'server.restart.scheduled' => ['color' => 0xE67E22, 'title_vi' => 'Lên lịch khởi động lại'],
-        'server.restart.executed' => ['color' => 0x3498DB, 'title_vi' => 'Đang khởi động lại'],
-        'server.start.completed' => ['color' => 0x2ECC71, 'title_vi' => 'Máy chủ sẵn sàng'],
-        'server.restart.completed' => ['color' => 0x2ECC71, 'title_vi' => 'Máy chủ sẵn sàng'],
-        'server.save' => ['color' => 0x2ECC71, 'title_vi' => 'Đã lưu thế giới'],
-        'server.wipe' => ['color' => 0xE74C3C, 'title_vi' => 'Bắt đầu xóa dữ liệu'],
-        'server.wipe.scheduled' => ['color' => 0xE67E22, 'title_vi' => 'Lên lịch xóa dữ liệu'],
-        'server.wipe.executed' => ['color' => 0xE74C3C, 'title_vi' => 'Đang xóa dữ liệu'],
-        'server.wipe.completed' => ['color' => 0x2ECC71, 'title_vi' => 'Máy chủ online (sau xóa dữ liệu)'],
-        'server.autorestart.upcoming' => ['color' => 0x3498DB, 'title_vi' => 'Sắp khởi động lại'],
-        'server.autorestart.scheduled' => ['color' => 0xE67E22, 'title_vi' => 'Đã lên lịch khởi động lại tự động'],
-        'server.update' => ['color' => 0x3498DB, 'title_vi' => 'Đang cập nhật máy chủ'],
-        'server.update.scheduled' => ['color' => 0xE67E22, 'title_vi' => 'Lên lịch cập nhật'],
-        'server.update.executed' => ['color' => 0x3498DB, 'title_vi' => 'Bắt đầu cập nhật'],
-        'server.update.completed' => ['color' => 0x2ECC71, 'title_vi' => 'Máy chủ online (sau cập nhật)'],
-        'server.branch.changed' => ['color' => 0x9B59B6, 'title_vi' => 'Đã đổi nhánh Steam'],
-        'respawn_delay.update' => ['color' => 0x9B59B6, 'title_vi' => 'Đã cập nhật thời gian hồi sinh'],
-        'respawn_delay.reset' => ['color' => 0x3498DB, 'title_vi' => 'Đã reset thời gian hồi sinh'],
-        'safezone.config.update' => ['color' => 0x9B59B6, 'title_vi' => 'Đã cập nhật cấu hình khu vực an toàn'],
-        'safezone.zone.create' => ['color' => 0x2ECC71, 'title_vi' => 'Đã tạo khu vực an toàn'],
-        'safezone.zone.delete' => ['color' => 0xE74C3C, 'title_vi' => 'Đã xóa khu vực an toàn'],
-        'safezone.violation.detected' => ['color' => 0xE74C3C, 'title_vi' => 'Phát hiện vi phạm PvP'],
-        'safezone.violation.dismissed' => ['color' => 0x95A5A6, 'title_vi' => 'Đã bỏ qua vi phạm PvP'],
-        'safezone.violation.actioned' => ['color' => 0xE74C3C, 'title_vi' => 'Đã xử lý vi phạm PvP'],
-        'shop.currency.awarded' => ['color' => 0xF1C40F, 'title_vi' => 'Đã thưởng tiền tệ'],
-        'shop.item.create' => ['color' => 0x2ECC71, 'title_vi' => 'Đã tạo vật phẩm cửa hàng'],
-        'shop.item.update' => ['color' => 0x3498DB, 'title_vi' => 'Đã cập nhật vật phẩm'],
-        'shop.item.delete' => ['color' => 0xE74C3C, 'title_vi' => 'Đã xóa vật phẩm'],
-        'shop.bundle.create' => ['color' => 0x2ECC71, 'title_vi' => 'Đã tạo gói'],
-        'shop.bundle.delete' => ['color' => 0xE74C3C, 'title_vi' => 'Đã xóa gói'],
-        'shop.promotion.create' => ['color' => 0x2ECC71, 'title_vi' => 'Đã tạo khuyến mãi'],
-        'shop.promotion.delete' => ['color' => 0xE74C3C, 'title_vi' => 'Đã xóa khuyến mãi'],
+        'server.start' => ['icon' => '🟢', 'title' => 'Máy chủ đang khởi động'],
+        'server.stop' => ['icon' => '🔴', 'title' => 'Máy chủ đã dừng'],
+        'server.stop.scheduled' => ['icon' => '⏰', 'title' => 'Lên lịch dừng máy chủ'],
+        'server.stop.executed' => ['icon' => '🔴', 'title' => 'Đã dừng máy chủ'],
+        'server.restart' => ['icon' => '🔄', 'title' => 'Khởi động lại máy chủ'],
+        'server.restart.scheduled' => ['icon' => '⏰', 'title' => 'Lên lịch khởi động lại'],
+        'server.restart.executed' => ['icon' => '🔄', 'title' => 'Đang khởi động lại máy chủ'],
+        'server.start.completed' => ['icon' => '✅', 'title' => 'Máy chủ đã sẵn sàng'],
+        'server.restart.completed' => ['icon' => '✅', 'title' => 'Máy chủ đã sẵn sàng'],
+        'server.save' => ['icon' => '💾', 'title' => 'Đã lưu thế giới'],
+        'server.wipe' => ['icon' => '⚠️', 'title' => 'Bắt đầu xóa dữ liệu'],
+        'server.wipe.scheduled' => ['icon' => '⏰', 'title' => 'Lên lịch xóa dữ liệu'],
+        'server.wipe.executed' => ['icon' => '🗑️', 'title' => 'Đang xóa dữ liệu'],
+        'server.wipe.completed' => ['icon' => '✅', 'title' => 'Máy chủ online (sau xóa dữ liệu)'],
+        'server.autorestart.upcoming' => ['icon' => '⚠️', 'title' => 'Máy chủ sắp tự động khởi động lại'],
+        'server.autorestart.scheduled' => ['icon' => '⏰', 'title' => 'Đã lên lịch tự động khởi động lại'],
+        'server.update' => ['icon' => '🔄', 'title' => 'Đang cập nhật máy chủ'],
+        'server.update.scheduled' => ['icon' => '⏰', 'title' => 'Lên lịch cập nhật'],
+        'server.update.executed' => ['icon' => '🔄', 'title' => 'Bắt đầu cập nhật'],
+        'server.update.completed' => ['icon' => '✅', 'title' => 'Máy chủ online (sau cập nhật)'],
+        'server.branch.changed' => ['icon' => '🌿', 'title' => 'Đã đổi nhánh Steam'],
+        'respawn_delay.update' => ['icon' => '⏱️', 'title' => 'Cập nhật thời gian hồi sinh'],
+        'respawn_delay.reset' => ['icon' => '🔄', 'title' => 'Reset thời gian hồi sinh'],
+        'safezone.config.update' => ['icon' => '🛡️', 'title' => 'Cập nhật khu vực an toàn'],
+        'safezone.zone.create' => ['icon' => '🛡️', 'title' => 'Đã tạo khu vực an toàn'],
+        'safezone.zone.delete' => ['icon' => '🛡️', 'title' => 'Đã xóa khu vực an toàn'],
+        'safezone.violation.detected' => ['icon' => '🚨', 'title' => 'Phát hiện vi phạm PvP'],
+        'safezone.violation.dismissed' => ['icon' => 'ℹ️', 'title' => 'Đã bỏ qua vi phạm PvP'],
+        'safezone.violation.actioned' => ['icon' => '🔨', 'title' => 'Đã xử lý vi phạm PvP'],
+        'shop.currency.awarded' => ['icon' => '💰', 'title' => 'Đã thưởng tiền tệ'],
+        'shop.item.create' => ['icon' => '🛒', 'title' => 'Tạo vật phẩm cửa hàng'],
+        'shop.item.update' => ['icon' => '🛒', 'title' => 'Cập nhật vật phẩm'],
+        'shop.item.delete' => ['icon' => '🛒', 'title' => 'Xóa vật phẩm'],
+        'shop.bundle.create' => ['icon' => '📦', 'title' => 'Tạo gói vật phẩm'],
+        'shop.bundle.delete' => ['icon' => '📦', 'title' => 'Xóa gói vật phẩm'],
+        'shop.promotion.create' => ['icon' => '🏷️', 'title' => 'Tạo khuyến mãi'],
+        'shop.promotion.delete' => ['icon' => '🏷️', 'title' => 'Xóa khuyến mãi'],
 
         // Backup
-        'backup.create' => ['color' => 0x2ECC71, 'title_vi' => 'Đang sao lưu'],
-        'backup.created' => ['color' => 0x2ECC71, 'title_vi' => 'Sao lưu hoàn tất'],
-        'backup.rollback.initiated' => ['color' => 0x9B59B6, 'title_vi' => 'Bắt đầu khôi phục'],
-        'backup.rollback' => ['color' => 0x9B59B6, 'title_vi' => 'Đã khôi phục'],
-        'backup.rollback.scheduled' => ['color' => 0xE67E22, 'title_vi' => 'Lên lịch khôi phục'],
-        'backup.rollback.executed' => ['color' => 0x9B59B6, 'title_vi' => 'Khôi phục hoàn tất'],
-        'backup.delete' => ['color' => 0xE74C3C, 'title_vi' => 'Đã xóa bản sao lưu'],
+        'backup.create' => ['icon' => '💾', 'title' => 'Đang tạo bản sao lưu'],
+        'backup.created' => ['icon' => '✅', 'title' => 'Sao lưu hoàn tất'],
+        'backup.rollback.initiated' => ['icon' => '🔄', 'title' => 'Bắt đầu khôi phục'],
+        'backup.rollback' => ['icon' => '🔄', 'title' => 'Đã khôi phục bản sao lưu'],
+        'backup.rollback.scheduled' => ['icon' => '⏰', 'title' => 'Lên lịch khôi phục'],
+        'backup.rollback.executed' => ['icon' => '✅', 'title' => 'Khôi phục hoàn tất'],
+        'backup.delete' => ['icon' => '🗑️', 'title' => 'Đã xóa bản sao lưu'],
 
         // Player
-        'player.kick' => ['color' => 0xE67E22, 'title_vi' => 'Đã đá người chơi'],
-        'player.ban' => ['color' => 0xE74C3C, 'title_vi' => 'Đã cấm người chơi'],
+        'player.kick' => ['icon' => '👢', 'title' => 'Đã kick người chơi'],
+        'player.ban' => ['icon' => '🔨', 'title' => 'Đã cấm người chơi'],
 
         // Notification
-        'discord.webhook.update' => ['color' => 0x3498DB, 'title_vi' => 'Đã cập nhật cài đặt webhook'],
-        'discord.bot.update' => ['color' => 0x3498DB, 'title_vi' => 'Đã cập nhật cài đặt bot'],
+        'discord.webhook.update' => ['icon' => '⚙️', 'title' => 'Cập nhật cài đặt webhook'],
+        'discord.bot.update' => ['icon' => '⚙️', 'title' => 'Cập nhật cài đặt bot'],
     ];
 
     /**
-     * Send a notification for an audit log entry, routing by group.
+     * Send a flat concise notification for an audit log entry.
      */
     public function sendNotification(
         string $botToken,
@@ -87,18 +87,12 @@ class DiscordBotService
             return;
         }
 
-        $content = $this->buildRoleMentions($roleIds);
-
-        // ponytail: one-line embed, no footer/timestamp/fields clutter
-        $embed = [
-            'title' => $config['title_vi'],
-            'color' => $config['color'],
-            'description' => $this->buildDescription($auditLog),
-        ];
+        $mentions = $this->buildRoleMentions($roleIds);
+        $flatMsg = $this->buildFlatMessage($auditLog, $config);
+        $content = $mentions ? "{$mentions} {$flatMsg}" : $flatMsg;
 
         $this->send($botToken, $channelId, $threadId, [
             'content' => $content,
-            'embeds' => [$embed],
         ]);
     }
 
@@ -113,44 +107,38 @@ class DiscordBotService
         ?string $threadId,
         array $roleIds = [],
     ): array {
-        $content = $this->buildRoleMentions($roleIds);
-
-        $embed = [
-            'title' => 'Kiểm tra kết nối Bot',
-            'description' => 'Kết nối Discord Bot thành công!',
-            'color' => 0x2ECC71,
-        ];
+        $mentions = $this->buildRoleMentions($roleIds);
+        $testMsg = '🔔 **Kiểm tra kết nối Discord Bot thành công!**';
+        $content = $mentions ? "{$mentions} {$testMsg}" : $testMsg;
 
         return $this->send($botToken, $channelId, $threadId, [
             'content' => $content,
-            'embeds' => [$embed],
         ]);
     }
 
     /**
-     * Build a short description line from audit log.
+     * Build a short flat line message from audit log.
      */
-    private function buildDescription(AuditLog $auditLog): string
+    public function buildFlatMessage(AuditLog $auditLog, ?array $config = null): string
     {
-        $parts = [];
+        $cfg = $config ?? self::ACTION_CONFIG[$auditLog->action] ?? ['icon' => '📢', 'title' => $auditLog->action];
+        $icon = $cfg['icon'] ?? '📢';
+        $title = $cfg['title'] ?? $auditLog->action;
 
-        $actor = $auditLog->actor ?? 'system';
-        $parts[] = "Người thực hiện: {$actor}";
+        $msg = "{$icon} **{$title}**";
 
         if ($auditLog->target) {
-            $parts[] = "Mục tiêu: {$auditLog->target}";
+            $msg .= ": `{$auditLog->target}`";
         }
 
         $details = $auditLog->details ?? [];
-        if (isset($details['reason'])) {
-            $parts[] = "Lý do: {$details['reason']}";
+        if (isset($details['message']) && $details['message'] !== '') {
+            $msg .= " — {$details['message']}";
+        } elseif (isset($details['reason']) && $details['reason'] !== '') {
+            $msg .= " — Lý do: {$details['reason']}";
         }
 
-        if (isset($details['message'])) {
-            $parts[] = "{$details['message']}";
-        }
-
-        return implode("\n", $parts);
+        return $msg;
     }
 
     /**

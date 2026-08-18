@@ -18,6 +18,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
@@ -94,6 +102,39 @@ function MiniRankBadge({ rank }: { rank?: number | null }) {
             #{rank}
         </span>
     );
+}
+
+const PROFESSION_NAMES: Record<string, string> = {
+    unemployed: 'Thất nghiệp',
+    fireofficer: 'Lính cứu hỏa',
+    policeofficer: 'Cảnh sát',
+    parkranger: 'Kiểm lâm',
+    constructionworker: 'Thợ xây dựng',
+    securityguard: 'Bảo vệ',
+    carpenter: 'Thợ mộc',
+    burglar: 'Trộm',
+    chef: 'Đầu bếp',
+    repairman: 'Thợ sửa chữa',
+    farmer: 'Nông dân',
+    fisherman: 'Ngư dân',
+    doctor: 'Bác sĩ',
+    nurse: 'Y tá',
+    lumberjack: 'Tiều phu',
+    fitnessInstructor: 'HLV thể hình',
+    electrician: 'Thợ điện',
+    engineer: 'Kỹ sư',
+    metalworker: 'Thợ kim khí',
+    mechanic: 'Thợ cơ khí',
+    veteran: 'Cựu chiến binh',
+};
+
+function formatProfession(prof?: string | null): string {
+    if (!prof) return 'Thất nghiệp';
+    const clean = prof.trim().toLowerCase();
+    for (const [key, label] of Object.entries(PROFESSION_NAMES)) {
+        if (key.toLowerCase() === clean) return label;
+    }
+    return prof.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim();
 }
 
 function normalizePlayer(p: string | StatusOnlinePlayer): StatusOnlinePlayer {
@@ -204,7 +245,7 @@ export default function Status({
                         </div>
                     )}
 
-                    {/* Online players (Full Width & Mini Ranking) */}
+                    {/* Online players (Table List) */}
                     <div className="mt-6">
                         <Card className="w-full shadow-sm">
                             <CardHeader className="border-b pb-4">
@@ -221,52 +262,69 @@ export default function Status({
                                     {t('admin.server_player_stats.subtitle')}
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="pt-6">
+                            <CardContent className="p-0">
                                 {normalizedPlayers.length > 0 ? (
-                                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                                        {normalizedPlayers.map((player) => (
-                                            <Link
-                                                key={player.username}
-                                                href={`/rankings/${player.username}`}
-                                                className="group relative flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card/60 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-muted/40 hover:shadow-md"
-                                            >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex items-center gap-2 min-w-0">
-                                                        <Circle className="size-2.5 shrink-0 fill-emerald-500 text-emerald-500 group-hover:animate-pulse" />
-                                                        <span className="truncate text-sm font-semibold group-hover:text-primary">
-                                                            {player.username}
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableHead className="w-12 text-center">#</TableHead>
+                                                    <TableHead className="w-16 text-center">Hạng</TableHead>
+                                                    <TableHead>Người chơi</TableHead>
+                                                    <TableHead className="hidden sm:table-cell">Nghề nghiệp</TableHead>
+                                                    <TableHead className="text-right">
+                                                        <span className="inline-flex items-center gap-1">
+                                                            <Crosshair className="size-3.5 text-red-500" />
+                                                            Zombie hạ gục
                                                         </span>
-                                                        {player.is_dead && (
-                                                            <Skull className="size-3.5 shrink-0 text-red-500" title="Dead" />
-                                                        )}
-                                                    </div>
-                                                    <MiniRankBadge rank={player.rank} />
-                                                </div>
-
-                                                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                                    <div className="flex items-center gap-1 rounded bg-background/80 px-2 py-0.5 border border-border/40">
-                                                        <Crosshair className="size-3 text-red-500" />
-                                                        <span className="font-semibold text-foreground tabular-nums">
+                                                    </TableHead>
+                                                    <TableHead className="text-right">
+                                                        <span className="inline-flex items-center gap-1">
+                                                            <Clock className="size-3.5 text-emerald-500" />
+                                                            Giờ sống (Realtime)
+                                                        </span>
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {normalizedPlayers.map((player, idx) => (
+                                                    <TableRow
+                                                        key={player.username}
+                                                        className="hover:bg-muted/40 transition-colors"
+                                                    >
+                                                        <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                                                            {idx + 1}
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            <MiniRankBadge rank={player.rank} />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Link
+                                                                href={`/rankings/${player.username}`}
+                                                                className="inline-flex items-center gap-2 font-medium hover:underline hover:text-primary transition-colors"
+                                                            >
+                                                                <Circle className="size-2 shrink-0 fill-emerald-500 text-emerald-500" />
+                                                                <span className="font-semibold">{player.username}</span>
+                                                                {player.is_dead && (
+                                                                    <Skull className="size-3.5 text-red-500" title="Dead" />
+                                                                )}
+                                                            </Link>
+                                                        </TableCell>
+                                                        <TableCell className="hidden sm:table-cell">
+                                                            <Badge variant="outline" className="text-xs font-normal">
+                                                                {formatProfession(player.profession)}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-semibold tabular-nums text-red-500/90">
                                                             {(player.zombie_kills ?? 0).toLocaleString()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 rounded bg-background/80 px-2 py-0.5 border border-border/40">
-                                                        <Clock className="size-3 text-emerald-500" />
-                                                        <span className="font-semibold text-foreground tabular-nums">
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
                                                             {formatHours(player.hours_survived ?? 0, 'real', day_length_minutes)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {player.profession && (
-                                                    <div className="pt-1">
-                                                        <Badge variant="outline" className="text-[10px] text-muted-foreground/90 font-normal">
-                                                            {player.profession}
-                                                        </Badge>
-                                                    </div>
-                                                )}
-                                            </Link>
-                                        ))}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">

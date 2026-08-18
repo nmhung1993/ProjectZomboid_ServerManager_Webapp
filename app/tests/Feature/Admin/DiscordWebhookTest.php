@@ -273,10 +273,10 @@ describe('AuditLog observer', function () {
     });
 });
 
-// ── Discord embed building ───────────────────────────────────────────
+// ── Discord message building ───────────────────────────────────────────
 
-describe('Discord embed building', function () {
-    it('builds correct embed for server start', function () {
+describe('Discord flat message building', function () {
+    it('builds correct flat message for server start', function () {
         Http::fake(['*' => Http::response(null, 204)]);
 
         $auditLog = AuditLog::factory()->create([
@@ -290,14 +290,13 @@ describe('Discord embed building', function () {
         );
 
         Http::assertSent(function ($request) {
-            $embed = $request->data()['embeds'][0] ?? [];
+            $content = $request->data()['content'] ?? '';
 
-            return str_contains($embed['title'] ?? '', 'Server Started')
-                && $embed['color'] === 0x2ECC71;
+            return str_contains($content, 'Máy chủ đang khởi động');
         });
     });
 
-    it('builds correct embed for player ban with details', function () {
+    it('builds correct flat message for player ban with details', function () {
         Http::fake(['*' => Http::response(null, 204)]);
 
         $auditLog = AuditLog::factory()->create([
@@ -312,17 +311,15 @@ describe('Discord embed building', function () {
         );
 
         Http::assertSent(function ($request) {
-            $embed = $request->data()['embeds'][0] ?? [];
-            $fieldNames = array_column($embed['fields'] ?? [], 'name');
+            $content = $request->data()['content'] ?? '';
 
-            return str_contains($embed['title'] ?? '', 'Player Banned')
-                && $embed['color'] === 0xE74C3C
-                && in_array('Target', $fieldNames)
-                && in_array('Reason', $fieldNames);
+            return str_contains($content, 'Đã cấm người chơi')
+                && str_contains($content, 'cheater123')
+                && str_contains($content, 'Cheating');
         });
     });
 
-    it('builds correct embed for restart completed', function () {
+    it('builds correct flat message for restart completed', function () {
         Http::fake(['*' => Http::response(null, 204)]);
 
         $auditLog = AuditLog::factory()->create([
@@ -336,74 +333,9 @@ describe('Discord embed building', function () {
         );
 
         Http::assertSent(function ($request) {
-            $embed = $request->data()['embeds'][0] ?? [];
+            $content = $request->data()['content'] ?? '';
 
-            return str_contains($embed['title'] ?? '', 'Server Ready')
-                && $embed['color'] === 0x2ECC71;
-        });
-    });
-
-    it('builds correct embed for start completed', function () {
-        Http::fake(['*' => Http::response(null, 204)]);
-
-        $auditLog = AuditLog::factory()->create([
-            'action' => 'server.start.completed',
-            'actor' => 'admin',
-        ]);
-
-        app(DiscordWebhookService::class)->sendNotification(
-            'https://discord.com/api/webhooks/123/token',
-            $auditLog,
-        );
-
-        Http::assertSent(function ($request) {
-            $embed = $request->data()['embeds'][0] ?? [];
-
-            return str_contains($embed['title'] ?? '', 'Server Ready')
-                && $embed['color'] === 0x2ECC71;
-        });
-    });
-
-    it('includes countdown in scheduled action embed', function () {
-        Http::fake(['*' => Http::response(null, 204)]);
-
-        $auditLog = AuditLog::factory()->create([
-            'action' => 'server.restart.scheduled',
-            'details' => ['countdown' => 60],
-        ]);
-
-        app(DiscordWebhookService::class)->sendNotification(
-            'https://discord.com/api/webhooks/123/token',
-            $auditLog,
-        );
-
-        Http::assertSent(function ($request) {
-            $fields = $request->data()['embeds'][0]['fields'] ?? [];
-            $countdownField = collect($fields)->firstWhere('name', 'Countdown');
-
-            return $countdownField && $countdownField['value'] === '60 seconds';
-        });
-    });
-
-    it('includes file size in backup embed', function () {
-        Http::fake(['*' => Http::response(null, 204)]);
-
-        $auditLog = AuditLog::factory()->create([
-            'action' => 'backup.created',
-            'target' => 'backup-2026.tar.gz',
-            'details' => ['size_bytes' => 52428800],
-        ]);
-
-        app(DiscordWebhookService::class)->sendNotification(
-            'https://discord.com/api/webhooks/123/token',
-            $auditLog,
-        );
-
-        Http::assertSent(function ($request) {
-            $fields = $request->data()['embeds'][0]['fields'] ?? [];
-            $sizeField = collect($fields)->firstWhere('name', 'Size');
-
-            return $sizeField && str_contains($sizeField['value'], 'MB');
+            return str_contains($content, 'Máy chủ đã sẵn sàng');
         });
     });
 

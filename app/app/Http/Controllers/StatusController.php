@@ -6,6 +6,7 @@ use App\Models\PlayerStat;
 use App\Models\SiteSetting;
 use App\Services\GameStateReader;
 use App\Services\GameTimeService;
+use App\Services\PlayerPositionReader;
 use App\Services\PlayerStatsService;
 use App\Services\ServerStatusResolver;
 use Inertia\Inertia;
@@ -18,6 +19,7 @@ class StatusController extends Controller
         private readonly GameStateReader $gameStateReader,
         private readonly PlayerStatsService $playerStats,
         private readonly GameTimeService $gameTime,
+        private readonly PlayerPositionReader $positionReader,
     ) {}
 
     public function __invoke(): Response
@@ -29,6 +31,16 @@ class StatusController extends Controller
         $resolved = $this->statusResolver->resolve();
         $rawUsernames = $resolved['players'] ?? [];
 
+        $livePositions = $this->positionReader->getLivePositions();
+        $liveMap = [];
+        if ($livePositions && ! empty($livePositions['players'])) {
+            foreach ($livePositions['players'] as $lp) {
+                if (! empty($lp['username'])) {
+                    $liveMap[$lp['username']] = $lp;
+                }
+            }
+        }
+
         $onlinePlayersData = [];
         if (! empty($rawUsernames)) {
             $statsRows = PlayerStat::query()
@@ -38,17 +50,19 @@ class StatusController extends Controller
 
             foreach ($rawUsernames as $username) {
                 $stat = $statsRows->get($username);
+                $live = $liveMap[$username] ?? null;
                 $rank = null;
                 if ($stat) {
                     $rank = PlayerStat::query()->where('zombie_kills', '>', $stat->zombie_kills)->count() + 1;
                 }
+                $profession = $live['profession'] ?? $stat?->profession ?? 'unemployed';
                 $onlinePlayersData[] = [
                     'username' => $username,
                     'rank' => $rank,
                     'zombie_kills' => $stat?->zombie_kills ?? 0,
                     'hours_survived' => (float) ($stat?->hours_survived ?? 0),
-                    'profession' => $stat?->profession,
-                    'is_dead' => (bool) ($stat?->is_dead ?? false),
+                    'profession' => $profession,
+                    'is_dead' => (bool) ($live['is_dead'] ?? $stat?->is_dead ?? false),
                 ];
             }
         }
