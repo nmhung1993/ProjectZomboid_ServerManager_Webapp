@@ -106,6 +106,7 @@ class PlayerMapController extends Controller
 
         $mapConfig = $this->mapConfigBuilder->build();
         $safeZoneConfig = $this->safeZoneManager->getConfig();
+        $factionTerritories = \App\Models\FactionTerritory::with('faction:id,name,tag,color')->get();
 
         return Inertia::render('admin/player-map', [
             'markers' => $markers,
@@ -116,6 +117,7 @@ class PlayerMapController extends Controller
             'tileProgress' => null,
             'tilesGenerating' => false,
             'safeZones' => $safeZoneConfig['enabled'] ? $safeZoneConfig['zones'] : [],
+            'factionTerritories' => $factionTerritories,
         ]);
     }
 

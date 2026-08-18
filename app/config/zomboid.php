@@ -112,6 +112,7 @@ return [
         'deposit_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/deposit_results.json',
         'export_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/export_requests.json',
         'anticheat_violations' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/anticheat_violations.json',
+        'faction_config' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/faction_config.json',
     ],
 
     /*

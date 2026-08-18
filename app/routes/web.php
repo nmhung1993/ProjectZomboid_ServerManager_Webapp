@@ -36,6 +36,23 @@ Route::middleware(['auth'])->group(function () {
         Route::post('bundle/{slug}/purchase', [ShopController::class, 'purchaseBundle'])->name('bundle.purchase')->middleware('throttle:10,1');
         Route::post('{slug}/purchase', [ShopController::class, 'purchaseItem'])->name('purchase')->middleware('throttle:10,1');
     });
+
+    // Player Factions Portal
+    Route::prefix('portal/factions')->name('portal.factions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\FactionPortalController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Portal\FactionPortalController::class, 'store'])->name('store');
+        Route::get('{faction}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'show'])->name('show');
+        Route::post('{faction}/deposit', [\App\Http\Controllers\Portal\FactionPortalController::class, 'deposit'])->name('deposit');
+        Route::post('{faction}/claim', [\App\Http\Controllers\Portal\FactionPortalController::class, 'claimTerritory'])->name('claim');
+        Route::delete('{faction}/territories/{territory}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'deleteTerritory'])->name('territories.destroy');
+        Route::post('{faction}/request-join', [\App\Http\Controllers\Portal\FactionPortalController::class, 'requestJoin'])->name('request-join');
+        Route::post('{faction}/invite', [\App\Http\Controllers\Portal\FactionPortalController::class, 'invite'])->name('invite');
+        Route::post('invitations/{invitation}/respond', [\App\Http\Controllers\Portal\FactionPortalController::class, 'respondInvitation'])->name('invitations.respond');
+        Route::post('{faction}/kick/{userId}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'kick'])->name('kick');
+        Route::post('{faction}/role/{userId}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'setRole'])->name('role');
+        Route::post('{faction}/leave', [\App\Http\Controllers\Portal\FactionPortalController::class, 'leave'])->name('leave');
+        Route::post('{faction}/disband', [\App\Http\Controllers\Portal\FactionPortalController::class, 'disband'])->name('disband');
+    });
 });
 
 Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
@@ -140,6 +157,12 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('safe-zones', [Admin\SafeZoneController::class, 'store'])->name('safe-zones.store');
         Route::delete('safe-zones/{zoneId}', [Admin\SafeZoneController::class, 'destroy'])->name('safe-zones.destroy');
         Route::post('safe-zones/violations/{id}/resolve', [Admin\SafeZoneController::class, 'resolveViolation'])->name('safe-zones.violations.resolve');
+
+        // Factions Management (admin)
+        Route::get('factions', [Admin\FactionAdminController::class, 'index'])->name('factions');
+        Route::post('factions/sync', [Admin\FactionAdminController::class, 'sync'])->name('factions.sync');
+        Route::patch('factions/{faction}/bank', [Admin\FactionAdminController::class, 'updateBank'])->name('factions.bank');
+        Route::delete('factions/{faction}', [Admin\FactionAdminController::class, 'destroy'])->name('factions.destroy');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

@@ -15,6 +15,7 @@ require("ZM_SafeZone")
 require("ZM_PvpTracker")
 require("ZM_MoneyDeposit")
 require("ZM_AntiCheat")
+require("ZM_Faction")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -122,6 +123,9 @@ local function onEveryOneMinute()
 
     -- AntiCheat: scan online players for godmode, noclip, and admin cheats
     ZM_AntiCheat.tick()
+
+    -- Faction: reload config and cache
+    ZM_Faction.tick()
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
@@ -137,6 +141,9 @@ local function onServerStarted()
 
     -- Initialize anticheat scanner
     ZM_AntiCheat.init()
+
+    -- Initialize faction system
+    ZM_Faction.init()
 
     -- Initialize money deposit system
     ZM_MoneyDeposit.init()

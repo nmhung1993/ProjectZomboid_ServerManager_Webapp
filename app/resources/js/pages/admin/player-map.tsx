@@ -44,6 +44,20 @@ type Props = {
     hasTiles: boolean;
     tileProgress: TileProgress | null;
     safeZones: SafeZone[];
+    factionTerritories?: Array<{
+        id: number;
+        name: string;
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        color?: string | null;
+        faction?: {
+            name: string;
+            tag: string;
+            color: string;
+        };
+    }>;
 };
 
 const statusDotColor: Record<PlayerMarker['status'], string> = {
@@ -69,6 +83,7 @@ export default function PlayerMap({
     hasTiles,
     tileProgress,
     safeZones,
+    factionTerritories = [],
 }: Props) {
     const { t } = useTranslation();
     const [isMapInteracting, setIsMapInteracting] = useState(false);
@@ -86,6 +101,7 @@ export default function PlayerMap({
                     'hasTiles',
                     'tileProgress',
                     'safeZones',
+                    'factionTerritories',
                 ],
             });
         }, 5000);
@@ -93,14 +109,24 @@ export default function PlayerMap({
         return () => window.clearInterval(timer);
     }, [isMapInteracting]);
 
-    const zoneOverlays: ZoneOverlay[] = useMemo(
-        () =>
-            safeZones.map((zone, i) => ({
-                ...zone,
-                color: ZONE_COLORS[i % ZONE_COLORS.length],
-            })),
-        [safeZones],
-    );
+    const zoneOverlays: ZoneOverlay[] = useMemo(() => {
+        const safe = safeZones.map((zone, i) => ({
+            ...zone,
+            color: ZONE_COLORS[i % ZONE_COLORS.length],
+        }));
+
+        const factions = factionTerritories.map((t) => ({
+            id: `faction-${t.id}`,
+            name: `[${t.faction?.tag || 'FACTION'}] ${t.name}`,
+            x1: t.x1,
+            y1: t.y1,
+            x2: t.x2,
+            y2: t.y2,
+            color: t.color || t.faction?.color || '#3b82f6',
+        }));
+
+        return [...safe, ...factions];
+    }, [safeZones, factionTerritories]);
 
     const [kickTarget, setKickTarget] = useState<string | null>(null);
     const [banTarget, setBanTarget] = useState<string | null>(null);

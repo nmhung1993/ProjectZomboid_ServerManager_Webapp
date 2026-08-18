@@ -74,6 +74,7 @@ export function AppSidebar() {
                 { title: t('nav.moderation'), href: '/admin/moderation', icon: Crosshair },
                 { title: t('nav.anticheat'), href: '/admin/anticheat', icon: ShieldAlert },
                 { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
+                { title: t('nav.factions'), href: '/admin/factions', icon: Users },
             ],
         },
         {
@@ -93,6 +94,7 @@ export function AppSidebar() {
             label: t('nav.group.menu'),
             items: [
                 { title: t('nav.player_portal'), href: '/portal', icon: Gamepad2 },
+                { title: t('nav.factions'), href: '/portal/factions', icon: Users },
                 { title: t('nav.my_wallet'), href: '/shop/my/wallet', icon: Coins },
                 { title: t('nav.shop'), href: '/shop', icon: ShoppingBag },
                 { title: t('nav.rankings'), href: '/rankings', icon: Trophy },
