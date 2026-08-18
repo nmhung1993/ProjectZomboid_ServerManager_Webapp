@@ -18,6 +18,7 @@ require("ZM_AntiCheat")
 require("ZM_Faction")
 require("ZM_Vehicles")
 require("ZM_Cleaner")
+require("ZM_Delivery")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -134,6 +135,9 @@ local function onEveryOneMinute()
 
     -- Cleaner: process cleanup requests
     ZM_Cleaner.tick()
+
+    -- Delivery: process item deliveries to online players
+    ZM_Delivery.tick()
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
@@ -158,6 +162,9 @@ local function onServerStarted()
 
     -- Initialize cleaner
     ZM_Cleaner.init()
+
+    -- Initialize delivery system
+    ZM_Delivery.init()
 
     -- Initialize money deposit system
     ZM_MoneyDeposit.init()

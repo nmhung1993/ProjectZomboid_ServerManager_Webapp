@@ -117,6 +117,7 @@ return [
         'vehicle_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/vehicle_commands.json',
         'cleaner_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_commands.json',
         'cleaner_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_results.json',
+        'pending_deliveries' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/pending_deliveries.json',
     ],
 
     /*

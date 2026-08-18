@@ -66,6 +66,15 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('portal/vehicles')->name('portal.vehicles.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Portal\VehiclePortalController::class, 'index'])->name('index');
     });
+
+    // Player P2P Marketplace & Auctions Portal
+    Route::prefix('portal/market')->name('portal.market.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'store'])->name('store');
+        Route::post('{listing}/buy', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'buy'])->name('buy');
+        Route::post('{listing}/bid', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'bid'])->name('bid');
+        Route::post('{listing}/cancel', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'cancel'])->name('cancel');
+    });
 });
 
 Route::middleware(['auth', 'admin', 'throttle:map-tiles'])
@@ -194,6 +203,10 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::get('cleaner', [Admin\CleanerAdminController::class, 'index'])->name('cleaner');
         Route::post('cleaner/bodies', [Admin\CleanerAdminController::class, 'cleanBodies'])->name('cleaner.bodies');
         Route::post('cleaner/items', [Admin\CleanerAdminController::class, 'cleanItems'])->name('cleaner.items');
+
+        // P2P Marketplace Management (admin)
+        Route::get('market', [Admin\MarketAdminController::class, 'index'])->name('market');
+        Route::post('market/{listing}/cancel', [Admin\MarketAdminController::class, 'cancelListing'])->name('market.cancel');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

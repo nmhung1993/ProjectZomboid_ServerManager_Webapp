@@ -15,6 +15,7 @@ import {
     MapPin,
     Package,
     Palette,
+    Scale,
     ScrollText,
     Shield,
     ShieldAlert,
@@ -87,6 +88,7 @@ export function AppSidebar() {
             label: t('nav.group.shop'),
             items: [
                 { title: t('nav.items_categories'), href: '/admin/shop', icon: Store },
+                { title: t('nav.marketplace'), href: '/admin/market', icon: Scale },
                 { title: t('nav.bundles'), href: '/admin/shop/bundles', icon: Package },
                 { title: t('nav.promotions'), href: '/admin/shop/promotions', icon: Tag },
                 { title: t('nav.purchases'), href: '/admin/shop/purchases', icon: ShoppingBag },
@@ -100,6 +102,7 @@ export function AppSidebar() {
             label: t('nav.group.menu'),
             items: [
                 { title: t('nav.player_portal'), href: '/portal', icon: Gamepad2 },
+                { title: t('nav.marketplace'), href: '/portal/market', icon: Scale },
                 { title: t('nav.vehicles'), href: '/portal/vehicles', icon: Car },
                 { title: t('nav.quests_bounties'), href: '/portal/quests', icon: Target },
                 { title: t('nav.factions'), href: '/portal/factions', icon: Users },
