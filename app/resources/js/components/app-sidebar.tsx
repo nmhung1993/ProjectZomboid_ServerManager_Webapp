@@ -75,8 +75,8 @@ export function AppSidebar() {
             label: t('nav.group.security'),
             items: [
                 { title: t('nav.whitelist'), href: '/admin/whitelist', icon: Shield },
-                { title: t('nav.moderation'), href: '/admin/moderation', icon: Crosshair },
                 { title: t('nav.anticheat'), href: '/admin/anticheat', icon: ShieldAlert },
+                { title: t('nav.moderation'), href: '/admin/moderation', icon: Crosshair },
                 { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
                 { title: t('nav.factions'), href: '/admin/factions', icon: Users },
                 { title: t('nav.quests_bounties'), href: '/admin/quests', icon: Target },
