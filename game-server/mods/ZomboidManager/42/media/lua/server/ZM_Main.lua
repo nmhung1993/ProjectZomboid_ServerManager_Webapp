@@ -21,16 +21,19 @@ print("[ZomboidManager] Initializing server-side bridge mod...")
 -- NOTE: PZ EveryOneMinute fires every ~2.5 real seconds (one in-game minute),
 -- NOT every 60 real seconds. Intervals below are in game-minute ticks.
 local positionTickCounter = 0
-local POSITION_EXPORT_INTERVAL = 12 -- ~30 real seconds
+local POSITION_EXPORT_INTERVAL = 4 -- ~10 real seconds
+
+local statsTickCounter = 0
+local STATS_EXPORT_INTERVAL = 6 -- ~15 real seconds
 
 local gameStateTickCounter = 0
 local GAME_STATE_EXPORT_INTERVAL = 24 -- ~1 real minute
 
 local deliveryTickCounter = 0
-local DELIVERY_PROCESS_INTERVAL = 6 -- ~15 real seconds
+local DELIVERY_PROCESS_INTERVAL = 1 -- ~2.5 real seconds (near instant)
 
 local depositTickCounter = 0
-local DEPOSIT_PROCESS_INTERVAL = 6 -- ~15 real seconds
+local DEPOSIT_PROCESS_INTERVAL = 1 -- ~2.5 real seconds (near instant)
 
 --- OnCreatePlayer — triggered when a player connects/spawns
 --- NOTE: On PZ dedicated servers, this event may not fire reliably.
@@ -44,13 +47,16 @@ local function onCreatePlayer(playerIndex, player)
     -- Export this player's inventory
     ZM_InventoryExporter.exportPlayer(player)
 
+    -- Export stats and positions immediately for fresh web display
+    ZM_PlayerStats.exportAll()
+    ZM_PlayerTracker.exportPositions()
+
     -- Process any pending deliveries for this player
     ZM_DeliveryQueue.process()
 end
 
---- EveryTenMinutes — heavy periodic exports (stats)
+--- EveryTenMinutes — periodic stats export fallback
 local function onEveryTenMinutes()
-    -- Export player stats (kills, hours, skills)
     local statsCount = ZM_PlayerStats.exportAll()
     if statsCount > 0 then
         print("[ZomboidManager] Exported stats for " .. statsCount .. " players")
@@ -63,7 +69,7 @@ local function onEveryOneMinute()
     -- Process on-demand export requests (lightweight file existence check every tick)
     ZM_InventoryExporter.processExportRequests()
 
-    -- Process delivery queue
+    -- Process delivery queue (near instant)
     deliveryTickCounter = deliveryTickCounter + 1
     if deliveryTickCounter >= DELIVERY_PROCESS_INTERVAL then
         deliveryTickCounter = 0
@@ -73,7 +79,7 @@ local function onEveryOneMinute()
         end
     end
 
-    -- Process money deposit requests
+    -- Process money deposit requests (near instant)
     depositTickCounter = depositTickCounter + 1
     if depositTickCounter >= DEPOSIT_PROCESS_INTERVAL then
         depositTickCounter = 0
@@ -88,6 +94,13 @@ local function onEveryOneMinute()
     if positionTickCounter >= POSITION_EXPORT_INTERVAL then
         positionTickCounter = 0
         ZM_PlayerTracker.exportPositions()
+    end
+
+    -- Export player stats periodically so web stats / traits are always real-time
+    statsTickCounter = statsTickCounter + 1
+    if statsTickCounter >= STATS_EXPORT_INTERVAL then
+        statsTickCounter = 0
+        ZM_PlayerStats.exportAll()
     end
 
     -- Export game state (time, weather, season)

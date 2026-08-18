@@ -126,6 +126,10 @@ const PROFESSION_NAMES: Record<string, string> = {
     metalworker: 'Thợ kim khí',
     mechanic: 'Thợ cơ khí',
     veteran: 'Cựu chiến binh',
+    diyexpert: 'Chuyên gia tự chế (DIY Expert)',
+    tailor: 'Thợ may',
+    blacksmith: 'Thợ rèn',
+    herbalist: 'Thầy thuốc thảo dược',
 };
 
 function formatProfession(prof?: string | null): string {

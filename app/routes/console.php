@@ -16,9 +16,9 @@ Schedule::job(new CreateBackupJob(BackupType::Scheduled))
 
 Schedule::command('pz:sync-accounts')->everyFiveMinutes();
 
-Schedule::command('zomboid:sync-player-stats')->everyTenMinutes();
+Schedule::command('zomboid:sync-player-stats')->everyMinute();
 
-Schedule::command('zomboid:capture-server-player-stats')->everyFiveMinutes();
+Schedule::command('zomboid:capture-server-player-stats')->everyMinute();
 
 Schedule::command('zomboid:auto-restart-check')->everyMinute();
 

@@ -71,9 +71,9 @@ class PlayerController extends Controller
                     'steam_id' => $user->steam_id,
                     'isOnline' => in_array($user->username, $onlineNames),
                     'createdAt' => $user->created_at->toISOString(),
-                    'stats' => $stats ? [
-                        'zombie_kills' => $stats->zombie_kills,
-                        'hours_survived' => (float) $stats->hours_survived,
+                    'stats' => ($stats || $live) ? [
+                        'zombie_kills' => $stats->zombie_kills ?? 0,
+                        'hours_survived' => (float) ($stats->hours_survived ?? 0),
                         'profession' => $live['profession'] ?? $stats->profession ?? 'unemployed',
                         'skills' => $stats->skills ?? [],
                         'traits' => $live['traits'] ?? $stats->traits ?? [],
@@ -102,9 +102,9 @@ class PlayerController extends Controller
                     'steam_id' => null,
                     'isOnline' => true,
                     'createdAt' => null,
-                    'stats' => $stats ? [
-                        'zombie_kills' => $stats->zombie_kills,
-                        'hours_survived' => (float) $stats->hours_survived,
+                    'stats' => ($stats || $live) ? [
+                        'zombie_kills' => $stats->zombie_kills ?? 0,
+                        'hours_survived' => (float) ($stats->hours_survived ?? 0),
                         'profession' => $live['profession'] ?? $stats->profession ?? 'unemployed',
                         'skills' => $stats->skills ?? [],
                         'traits' => $live['traits'] ?? $stats->traits ?? [],

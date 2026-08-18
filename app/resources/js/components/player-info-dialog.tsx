@@ -54,6 +54,10 @@ const PROFESSION_NAMES: Record<string, string> = {
     metalworker: 'Thợ kim khí',
     mechanic: 'Thợ cơ khí',
     veteran: 'Cựu chiến binh',
+    diyexpert: 'Chuyên gia tự chế (DIY Expert)',
+    tailor: 'Thợ may',
+    blacksmith: 'Thợ rèn',
+    herbalist: 'Thầy thuốc thảo dược',
 };
 
 type TraitInfo = {
@@ -105,7 +109,7 @@ const TRAITS_DATA: Record<string, TraitInfo> = {
     Sewer: { label: 'Thợ may', type: 'positive', desc: '+1 Điểm May vá' },
     SpeedDemon: { label: 'Tay lái lụa', type: 'positive', desc: 'Lái xe nhanh hơn, lùi xe khỏe' },
     Stout: { label: 'Vạm vỡ', type: 'positive', desc: '+2 Sức mạnh, đẩy lùi zombie tốt' },
-    Strong: { label: 'Khỏe như voi', type: 'positive', desc: '+4 Sức mạnh, sát thương tối đa' },
+    Strong: { label: 'Khỏe như voi (Strong)', type: 'positive', desc: '+4 Sức mạnh, sát thương tối đa' },
     Tailor: { label: 'Thợ may', type: 'positive', desc: '+1 Điểm May vá' },
     ThickSkinned: { label: 'Da dày', type: 'positive', desc: 'Giảm tỷ lệ bị cắn/cào rách da' },
     Wakeful: { label: 'Tỉnh táo', type: 'positive', desc: 'Cần ngủ ít hơn' },
@@ -123,8 +127,8 @@ const TRAITS_DATA: Record<string, TraitInfo> = {
     Emaciated: { label: 'Gầy còm', type: 'negative', desc: '-4 Sức mạnh, -4 Thể lực' },
     Feeble: { label: 'Yếu ớt', type: 'negative', desc: '-2 Sức mạnh' },
     HardOfHearing: { label: 'Lãng tai', type: 'negative', desc: 'Giảm tầm nghe và cảnh báo sau lưng' },
-    HeartyAppetite: { label: 'Ăn nhiều', type: 'negative', desc: 'Nhanh đói hơn bình thường' },
-    Hemophobic: { label: 'Sợ máu', type: 'negative', desc: 'Hoảng sợ khi người dính máu' },
+    Hemophobic: { label: 'Sợ máu (Fear of Blood)', type: 'negative', desc: 'Hoảng sợ khi người dính máu' },
+    FearOfBlood: { label: 'Sợ máu (Fear of Blood)', type: 'negative', desc: 'Hoảng sợ khi người dính máu' },
     HighThirst: { label: 'Uống nhiều', type: 'negative', desc: 'Nhanh khát nước gấp đôi' },
     Hypochondriac: { label: 'Ảo tưởng bệnh', type: 'negative', desc: 'Tự phát triển triệu chứng bệnh giả' },
     Illiterate: { label: 'Mù chữ', type: 'negative', desc: 'Không thể đọc sách/tạp chí' },
