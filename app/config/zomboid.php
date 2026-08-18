@@ -111,6 +111,7 @@ return [
         'deposit_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/deposit_requests.json',
         'deposit_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/deposit_results.json',
         'export_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/export_requests.json',
+        'anticheat_violations' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/anticheat_violations.json',
     ],
 
     /*

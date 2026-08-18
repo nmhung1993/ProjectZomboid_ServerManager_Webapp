@@ -129,6 +129,11 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         // Moderation
         Route::get('moderation', [Admin\ModerationController::class, 'index'])->name('moderation');
 
+        // AntiCheat
+        Route::get('anticheat', [Admin\AntiCheatController::class, 'index'])->name('anticheat');
+        Route::post('anticheat/{violation}/resolve', [Admin\AntiCheatController::class, 'resolve'])->name('anticheat.resolve');
+        Route::post('anticheat/sync', [Admin\AntiCheatController::class, 'sync'])->name('anticheat.sync');
+
         // Safe Zones
         Route::get('safe-zones', [Admin\SafeZoneController::class, 'index'])->name('safe-zones.index');
         Route::patch('safe-zones/config', [Admin\SafeZoneController::class, 'updateConfig'])->name('safe-zones.config.update');

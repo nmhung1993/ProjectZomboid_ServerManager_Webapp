@@ -24,6 +24,8 @@ Schedule::command('zomboid:auto-restart-check')->everyMinute();
 
 Schedule::command('zomboid:check-mod-updates')->everyFifteenMinutes();
 
+Schedule::command('zomboid:sync-anticheat')->everyMinute();
+
 Schedule::command('zomboid:import-pvp-violations')->everyFiveMinutes();
 
 Schedule::command('zomboid:import-pvp-kills')->everyFiveMinutes();

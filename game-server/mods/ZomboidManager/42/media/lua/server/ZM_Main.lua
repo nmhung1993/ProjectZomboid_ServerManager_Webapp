@@ -14,6 +14,7 @@ require("ZM_RespawnDelay")
 require("ZM_SafeZone")
 require("ZM_PvpTracker")
 require("ZM_MoneyDeposit")
+require("ZM_AntiCheat")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -118,6 +119,9 @@ local function onEveryOneMinute()
 
     -- PvP tracker: scan for kills, flush to disk
     ZM_PvpTracker.tick()
+
+    -- AntiCheat: scan online players for godmode, noclip, and admin cheats
+    ZM_AntiCheat.tick()
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
@@ -130,6 +134,9 @@ local function onServerStarted()
 
     -- Initialize PvP tracker
     ZM_PvpTracker.init()
+
+    -- Initialize anticheat scanner
+    ZM_AntiCheat.init()
 
     -- Initialize money deposit system
     ZM_MoneyDeposit.init()

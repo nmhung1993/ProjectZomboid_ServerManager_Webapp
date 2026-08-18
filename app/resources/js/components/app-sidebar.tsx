@@ -72,7 +72,8 @@ export function AppSidebar() {
             items: [
                 { title: t('nav.whitelist'), href: '/admin/whitelist', icon: Shield },
                 { title: t('nav.moderation'), href: '/admin/moderation', icon: Crosshair },
-                { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: ShieldAlert },
+                { title: t('nav.anticheat'), href: '/admin/anticheat', icon: ShieldAlert },
+                { title: t('nav.safe_zones'), href: '/admin/safe-zones', icon: MapPin },
             ],
         },
         {
