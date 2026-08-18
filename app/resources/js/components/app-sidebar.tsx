@@ -6,6 +6,7 @@ import {
     Bot,
     Car,
     Coins,
+    Cpu,
     Crosshair,
     Languages,
     Timer,
@@ -70,6 +71,7 @@ export function AppSidebar() {
                 { title: t('nav.rcon_console'), href: '/admin/rcon', icon: Terminal },
                 { title: t('nav.server_logs'), href: '/admin/logs', icon: Activity },
                 { title: t('nav.server_player_stats'), href: '/admin/server-player-stats', icon: LineChart },
+                { title: t('nav.performance'), href: '/admin/performance', icon: Cpu },
             ],
         },
         {

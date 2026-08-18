@@ -74,6 +74,14 @@ type Props = {
         y: number;
         location_name?: string | null;
     }>;
+    deathHeatmapPoints?: Array<{
+        id: number;
+        x: number;
+        y: number;
+        weight?: number;
+        cause?: string;
+        username?: string;
+    }>;
 };
 
 const statusDotColor: Record<PlayerMarker['status'], string> = {
@@ -371,6 +379,7 @@ export default function PlayerMap({
                                     target: e.location_name || null,
                                     label: e.title,
                                 }))}
+                                deathHeatmapPoints={deathHeatmapPoints}
                                 mapConfig={mapConfig}
                                 hasTiles={hasTiles}
                                 onMarkerAction={handleMarkerAction}

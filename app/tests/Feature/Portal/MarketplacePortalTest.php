@@ -47,7 +47,10 @@ it('creates fixed price listing via portal', function () {
 });
 
 it('buys fixed item via portal', function () {
-    $seller = User::factory()->create();
+    $seller = User::factory()->create([
+        'username' => 'seller_' . uniqid(),
+        'email' => 'seller_' . uniqid() . '@example.com',
+    ]);
     $listing = MarketListing::factory()->create([
         'seller_id' => $seller->id,
         'price' => 100,

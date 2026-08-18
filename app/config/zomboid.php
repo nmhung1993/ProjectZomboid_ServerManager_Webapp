@@ -120,6 +120,7 @@ return [
         'pending_deliveries' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/pending_deliveries.json',
         'world_events' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/world_events.json',
         'event_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/event_results.json',
+        'performance_metrics' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/performance_metrics.json',
     ],
 
     /*

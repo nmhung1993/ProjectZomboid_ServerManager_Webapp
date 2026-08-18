@@ -109,6 +109,7 @@ class PlayerMapController extends Controller
         $factionTerritories = \App\Models\FactionTerritory::with('faction:id,name,tag,color')->get();
         $vehicles = \App\Models\Vehicle::all();
         $worldEvents = \App\Models\WorldEvent::where('status', 'active')->get();
+        $deathHeatmapPoints = \App\Models\DeathRecord::orderByDesc('created_at')->limit(300)->get();
 
         return Inertia::render('admin/player-map', [
             'markers' => $markers,
@@ -122,6 +123,7 @@ class PlayerMapController extends Controller
             'factionTerritories' => $factionTerritories,
             'vehicles' => $vehicles,
             'worldEvents' => $worldEvents,
+            'deathHeatmapPoints' => $deathHeatmapPoints,
         ]);
     }
 

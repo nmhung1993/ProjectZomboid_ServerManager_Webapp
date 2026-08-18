@@ -20,6 +20,7 @@ require("ZM_Vehicles")
 require("ZM_Cleaner")
 require("ZM_Delivery")
 require("ZM_Events")
+require("ZM_Performance")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -142,6 +143,9 @@ local function onEveryOneMinute()
 
     -- World Events: process active airdrops, heli crashes, invasions
     if ZM_Events and ZM_Events.tick then ZM_Events.tick() end
+
+    -- Performance: monitor tick time, zombies, heap memory
+    if ZM_Performance and ZM_Performance.tick then ZM_Performance.tick() end
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
@@ -172,6 +176,9 @@ local function onServerStarted()
 
     -- Initialize world events system
     if ZM_Events and ZM_Events.init then ZM_Events.init() end
+
+    -- Initialize performance monitor
+    if ZM_Performance and ZM_Performance.init then ZM_Performance.init() end
 
     -- Initialize money deposit system
     if ZM_MoneyDeposit and ZM_MoneyDeposit.init then ZM_MoneyDeposit.init() end

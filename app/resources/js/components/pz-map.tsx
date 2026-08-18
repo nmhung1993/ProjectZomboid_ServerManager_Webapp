@@ -44,9 +44,19 @@ export type VehicleMarker = {
     y: number;
 };
 
+export type DeathPoint = {
+    id: number;
+    x: number;
+    y: number;
+    weight?: number;
+    cause?: string;
+    username?: string;
+};
+
 type PzMapProps = {
     markers?: PlayerMarker[];
     vehicleMarkers?: VehicleMarker[];
+    deathHeatmapPoints?: DeathPoint[];
     mapConfig: MapConfig;
     hasTiles: boolean;
     className?: string;
@@ -327,6 +337,7 @@ const eventTypeColors: Record<string, string> = {
 export default function PzMap({
     markers = [],
     vehicleMarkers = [],
+    deathHeatmapPoints = [],
     mapConfig,
     hasTiles,
     className = '',
@@ -347,6 +358,7 @@ export default function PzMap({
     const mapRef = useRef<L.Map | null>(null);
     const markersLayerRef = useRef<L.LayerGroup | null>(null);
     const vehiclesLayerRef = useRef<L.LayerGroup | null>(null);
+    const deathsLayerRef = useRef<L.LayerGroup | null>(null);
     const zonesLayerRef = useRef<L.LayerGroup | null>(null);
     const eventsLayerRef = useRef<L.LayerGroup | null>(null);
     const drawStateRef = useRef<{
@@ -498,6 +510,9 @@ export default function PzMap({
 
         const vehiclesLayer = L.layerGroup().addTo(map);
         vehiclesLayerRef.current = vehiclesLayer;
+
+        const deathsLayer = L.layerGroup().addTo(map);
+        deathsLayerRef.current = deathsLayer;
 
         const zonesLayer = L.layerGroup().addTo(map);
         zonesLayerRef.current = zonesLayer;
@@ -709,6 +724,32 @@ export default function PzMap({
             });
         });
     }, [vehicleMarkers]);
+
+    // Update death heatmap points
+    useEffect(() => {
+        const layer = deathsLayerRef.current;
+        if (!layer) return;
+
+        layer.clearLayers();
+        if (!deathHeatmapPoints || deathHeatmapPoints.length === 0) return;
+
+        deathHeatmapPoints.forEach((dp) => {
+            const isPvp = dp.cause === 'pvp';
+            const radius = Math.min(24, Math.max(8, (dp.weight || 1) * 8));
+            const circle = L.circleMarker([-dp.y, dp.x], {
+                radius,
+                color: isPvp ? '#dc2626' : '#ea580c',
+                fillColor: isPvp ? '#ef4444' : '#f97316',
+                fillOpacity: 0.4,
+                weight: 1.5,
+            }).addTo(layer);
+
+            circle.bindTooltip(`💀 ${dp.username || 'Survivor'} (${isPvp ? 'PvP Tử Trận' : 'Tử vong'})`, {
+                permanent: false,
+                direction: 'top',
+            });
+        });
+    }, [deathHeatmapPoints]);
 
     // Update zone overlays
     useEffect(() => {

@@ -148,6 +148,9 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         // Server Player Stats (charts)
         Route::get('server-player-stats', [Admin\ServerPlayerStatsController::class, 'index'])->name('server-player-stats');
 
+        // Server Performance & TPS Monitor (admin)
+        Route::get('performance', [Admin\PerformanceAdminController::class, 'index'])->name('performance');
+
         // Discord Webhook
         Route::get('discord', [Admin\DiscordWebhookController::class, 'index'])->name('discord');
         Route::patch('discord', [Admin\DiscordWebhookController::class, 'update'])->name('discord.update');
