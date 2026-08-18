@@ -3,12 +3,13 @@ import type {DragEndEvent} from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router } from '@inertiajs/react';
-import { AlertTriangle, CheckCircle2, Clock, FileUp, GripVertical, Loader2, Package, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, FileUp, GripVertical, Loader2, Package, Pencil, Plus, RotateCcw, Search, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -90,19 +91,21 @@ function StatusBadge({ status }: { status: ModEntry['status'] }) {
 function SortableModRow({
     mod,
     index,
+    onEdit,
     onDelete,
     isDragDisabled,
     isProtected,
 }: {
     mod: ModEntry;
     index: number;
+    onEdit: (mod: ModEntry) => void;
     onDelete: (mod: ModEntry) => void;
     isDragDisabled: boolean;
     isProtected: boolean;
 }) {
     const { t } = useTranslation();
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: mod.workshop_id,
+        id: mod.workshop_id || mod.mod_id || String(index),
         disabled: isDragDisabled,
     });
 
@@ -111,6 +114,16 @@ function SortableModRow({
         transition,
         opacity: isDragging ? 0.5 : undefined,
     };
+
+    const modIdList = useMemo(() => {
+        if (mod.mod_ids && mod.mod_ids.length > 0) {
+            return mod.mod_ids;
+        }
+        if (mod.mod_id) {
+            return mod.mod_id.split(';').map((s) => s.trim()).filter(Boolean);
+        }
+        return [];
+    }, [mod.mod_ids, mod.mod_id]);
 
     return (
         <TableRow ref={setNodeRef} style={style} className={isDragging ? 'bg-muted' : undefined}>
@@ -130,34 +143,59 @@ function SortableModRow({
                 )}
             </TableCell>
             <TableCell className="font-medium">
-                <span className="flex items-center gap-2">
-                    {mod.mod_id}
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {modIdList.length > 1 ? (
+                        modIdList.map((id) => (
+                            <Badge key={id} variant="secondary" className="font-mono text-xs">
+                                {id}
+                            </Badge>
+                        ))
+                    ) : (
+                        <span>{modIdList[0] || mod.mod_id}</span>
+                    )}
                     {isProtected && (
                         <Badge variant="outline" className="text-xs">
                             {t('admin.mods.required_badge')}
                         </Badge>
                     )}
-                </span>
+                </div>
             </TableCell>
             <TableCell className="hidden sm:table-cell">
-                <Badge variant="secondary" className="text-xs">
-                    {mod.workshop_id}
-                </Badge>
+                {mod.workshop_id ? (
+                    <Badge variant="secondary" className="font-mono text-xs">
+                        {mod.workshop_id}
+                    </Badge>
+                ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                )}
             </TableCell>
             <TableCell>
                 <StatusBadge status={mod.status} />
             </TableCell>
             <TableCell className="text-right">
-                {!isProtected && (
+                <div className="flex items-center justify-end gap-1">
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => onDelete(mod)}
+                        onClick={() => onEdit(mod)}
+                        title={t('admin.mods.edit_mod')}
+                        data-testid={`edit-mod-${mod.workshop_id || mod.mod_id}`}
                     >
-                        <Trash2 className="size-4" />
+                        <Pencil className="size-4" />
                     </Button>
-                )}
+                    {!isProtected && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => onDelete(mod)}
+                            title={t('admin.mods.delete_dialog_title')}
+                            data-testid={`delete-mod-${mod.workshop_id || mod.mod_id}`}
+                        >
+                            <Trash2 className="size-4" />
+                        </Button>
+                    )}
+                </div>
             </TableCell>
         </TableRow>
     );
@@ -185,6 +223,8 @@ export default function Mods({
     const [deleteTarget, setDeleteTarget] = useState<ModEntry | null>(null);
     const [workshopId, setWorkshopId] = useState('');
     const [modId, setModId] = useState('');
+    const [selectedModIds, setSelectedModIds] = useState<string[]>([]);
+    const [customModInput, setCustomModInput] = useState('');
     const [mapFolder, setMapFolder] = useState('');
     const [loading, setLoading] = useState(false);
     const [restarting, setRestarting] = useState(false);
@@ -194,6 +234,17 @@ export default function Mods({
     const [manualOverride, setManualOverride] = useState(false);
     const lookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lookupAbort = useRef<AbortController | null>(null);
+
+    // Edit Mod Dialog State
+    const [editTarget, setEditTarget] = useState<ModEntry | null>(null);
+    const [editWorkshopId, setEditWorkshopId] = useState('');
+    const [editModIds, setEditModIds] = useState<string[]>([]);
+    const [editCustomModInput, setEditCustomModInput] = useState('');
+    const [editMapFolder, setEditMapFolder] = useState('');
+    const [editLookup, setEditLookup] = useState<LookupState>({ status: 'idle' });
+    const [editManualOverride, setEditManualOverride] = useState(false);
+    const [editManualText, setEditManualText] = useState('');
+    const [editLoading, setEditLoading] = useState(false);
 
     const existingWorkshopIds = useMemo(() => new Set(mods.map((m) => m.workshop_id).filter(Boolean)), [mods]);
     const existingModIds = useMemo(() => new Set(mods.map((m) => m.mod_id).filter(Boolean)), [mods]);
@@ -245,7 +296,6 @@ export default function Mods({
         }
 
         // IDs-only: resolve each Workshop ID's mod IDs via the Steam lookup endpoint.
-        // A single Workshop item can provide several mods, so collect them all.
         bulkCancelled.current = false;
         setBulkPhase('resolving');
         setBulkProgress({ done: 0, total: parsed.workshopIds.length });
@@ -314,6 +364,8 @@ export default function Mods({
     const resetLookupState = useCallback(() => {
         setLookup({ status: 'idle' });
         setModId('');
+        setSelectedModIds([]);
+        setCustomModInput('');
         setMapFolder('');
         setManualOverride(false);
     }, []);
@@ -338,20 +390,10 @@ export default function Mods({
 
         if (controller.signal.aborted) return;
 
-        // fetchAction returns null on transport / non-2xx failures.
-        // The "not found" case is structured by the backend as 404 + {found:false},
-        // which fetchAction collapses to null too — treat both the same.
-        if (!json) {
+        if (!json || json.found === false) {
             setLookup({ status: 'not_found' });
             setModId('');
-            setMapFolder('');
-            setManualOverride(true);
-            return;
-        }
-
-        if (json.found === false) {
-            setLookup({ status: 'not_found' });
-            setModId('');
+            setSelectedModIds([]);
             setMapFolder('');
             setManualOverride(true);
             return;
@@ -365,13 +407,15 @@ export default function Mods({
         if (modIds.length === 0) {
             setLookup({ status: 'no_mod_ids', title, previewUrl, mapFolders });
             setModId('');
+            setSelectedModIds([]);
             setMapFolder(mapFolders[0] ?? '');
             setManualOverride(true);
             return;
         }
 
         setLookup({ status: 'success', title, previewUrl, modIds, mapFolders });
-        setModId(modIds[0]);
+        setSelectedModIds(modIds);
+        setModId(modIds[0] || '');
         setMapFolder(mapFolders[0] ?? '');
         setManualOverride(false);
     }, []);
@@ -411,10 +455,11 @@ export default function Mods({
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
-        const oldIndex = orderedMods.findIndex((m) => m.workshop_id === active.id);
-        const newIndex = orderedMods.findIndex((m) => m.workshop_id === over.id);
-        const reordered = arrayMove(orderedMods, oldIndex, newIndex);
+        const oldIndex = orderedMods.findIndex((m) => (m.workshop_id || m.mod_id) === active.id);
+        const newIndex = orderedMods.findIndex((m) => (m.workshop_id || m.mod_id) === over.id);
+        if (oldIndex === -1 || newIndex === -1) return;
 
+        const reordered = arrayMove(orderedMods, oldIndex, newIndex);
         setOrderedMods(reordered);
 
         await fetchAction('/admin/mods/order', {
@@ -444,14 +489,124 @@ export default function Mods({
         resetLookupState();
     }
 
+    function toggleSelectModId(id: string) {
+        setSelectedModIds((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        );
+    }
+
+    function addCustomModIdToAddDialog() {
+        const trimmed = customModInput.trim();
+        if (trimmed && !selectedModIds.includes(trimmed)) {
+            setSelectedModIds((prev) => [...prev, trimmed]);
+            setCustomModInput('');
+        }
+    }
+
+    function removeSelectedModId(id: string) {
+        setSelectedModIds((prev) => prev.filter((item) => item !== id));
+    }
+
     async function addMod() {
         setLoading(true);
+        const finalModIds = manualOverride
+            ? modId.split(';').map((s) => s.trim()).filter(Boolean)
+            : (selectedModIds.length > 0 ? selectedModIds : (modId ? [modId] : []));
+
         await fetchAction('/admin/mods', {
-            data: { workshop_id: workshopId, mod_id: modId, map_folder: mapFolder || null },
-            successMessage: t('admin.mods.toast_added', { mod_id: modId }),
+            data: {
+                workshop_id: workshopId,
+                mod_ids: finalModIds,
+                map_folder: mapFolder || null,
+            },
+            successMessage: t('admin.mods.toast_added', { mod_id: finalModIds.join(', ') || workshopId }),
         });
         setLoading(false);
         closeAddDialog();
+        router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
+    }
+
+    // Edit Mod Handlers
+    async function openEdit(mod: ModEntry) {
+        setEditTarget(mod);
+        setEditWorkshopId(mod.workshop_id);
+        const initialIds = mod.mod_ids && mod.mod_ids.length > 0
+            ? [...mod.mod_ids]
+            : (mod.mod_id ? mod.mod_id.split(';').map((s) => s.trim()).filter(Boolean) : []);
+        setEditModIds(initialIds);
+        setEditCustomModInput('');
+        setEditMapFolder(mod.map_folder || '');
+        setEditManualOverride(false);
+        setEditManualText(initialIds.join('; '));
+        setEditLookup({ status: 'idle' });
+
+        if (mod.workshop_id && /^\d{1,20}$/.test(mod.workshop_id.trim())) {
+            setEditLookup({ status: 'loading' });
+            const json = (await fetchAction('/admin/mods/lookup', {
+                data: { workshop_id: mod.workshop_id.trim() },
+                silent: true,
+            })) as LookupResult | null;
+
+            if (json && json.found !== false) {
+                const discModIds = json.mod_ids ?? [];
+                const discMapFolders = json.map_folders ?? [];
+                const title = json.title ?? '';
+                const previewUrl = json.preview_url ?? null;
+                setEditLookup({ status: 'success', title, previewUrl, modIds: discModIds, mapFolders: discMapFolders });
+            } else {
+                setEditLookup({ status: 'not_found' });
+            }
+        }
+    }
+
+    function closeEditDialog() {
+        setEditTarget(null);
+        setEditLookup({ status: 'idle' });
+        setEditModIds([]);
+        setEditCustomModInput('');
+        setEditManualOverride(false);
+    }
+
+    function toggleEditModId(id: string) {
+        setEditModIds((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        );
+    }
+
+    function addCustomModIdToEditDialog() {
+        const trimmed = editCustomModInput.trim();
+        if (trimmed && !editModIds.includes(trimmed)) {
+            setEditModIds((prev) => [...prev, trimmed]);
+            setEditCustomModInput('');
+        }
+    }
+
+    function removeEditModId(id: string) {
+        setEditModIds((prev) => prev.filter((item) => item !== id));
+    }
+
+    async function saveEditMod() {
+        if (!editTarget) return;
+        setEditLoading(true);
+
+        const finalModIds = editManualOverride
+            ? editManualText.split(';').map((s) => s.trim()).filter(Boolean)
+            : editModIds;
+
+        await fetchAction(`/admin/mods/${editWorkshopId || editTarget.workshop_id}`, {
+            method: 'PUT',
+            data: {
+                mod_ids: finalModIds,
+                map_folder: editMapFolder || null,
+            },
+            successMessage: t('admin.mods.toast_updated', {
+                count: String(finalModIds.length),
+                workshop_id: editWorkshopId || editTarget.workshop_id,
+            }),
+        });
+
+        setEditLoading(false);
+        closeEditDialog();
         router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
     }
 
@@ -465,6 +620,23 @@ export default function Mods({
         setDeleteTarget(null);
         router.reload({ only: ['mods', 'pendingRestart', 'serverRunning'] });
     }
+
+    const canSubmitAdd = useMemo(() => {
+        if (loading || lookup.status === 'loading') return false;
+        if (!workshopId.trim()) return false;
+        if (manualOverride) {
+            return modId.trim().length > 0;
+        }
+        return selectedModIds.length > 0 || modId.trim().length > 0;
+    }, [loading, lookup.status, workshopId, manualOverride, modId, selectedModIds]);
+
+    const canSubmitEdit = useMemo(() => {
+        if (editLoading) return false;
+        if (editManualOverride) {
+            return editManualText.trim().length > 0;
+        }
+        return editModIds.length > 0;
+    }, [editLoading, editManualOverride, editManualText, editModIds]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -482,7 +654,7 @@ export default function Mods({
                             <FileUp className="mr-1.5 size-4" />
                             {t('admin.mods.bulk_import')}
                         </Button>
-                        <Button onClick={() => setShowAdd(true)}>
+                        <Button onClick={() => setShowAdd(true)} data-testid="add-mod-button">
                             <Plus className="mr-1.5 size-4" />
                             {t('admin.mods.add_mod')}
                         </Button>
@@ -547,15 +719,16 @@ export default function Mods({
                                         </TableRow>
                                     </TableHeader>
                                     <SortableContext
-                                        items={filteredMods.map((m) => m.workshop_id)}
+                                        items={filteredMods.map((m) => m.workshop_id || m.mod_id)}
                                         strategy={verticalListSortingStrategy}
                                     >
                                         <TableBody>
                                             {filteredMods.map((mod, index) => (
                                                 <SortableModRow
-                                                    key={mod.workshop_id}
+                                                    key={mod.workshop_id || mod.mod_id || index}
                                                     mod={mod}
                                                     index={index}
+                                                    onEdit={openEdit}
                                                     onDelete={setDeleteTarget}
                                                     isDragDisabled={isFiltering}
                                                     isProtected={protectedSet.has(mod.workshop_id)}
@@ -576,7 +749,7 @@ export default function Mods({
 
             {/* Add Mod Dialog */}
             <Dialog open={showAdd} onOpenChange={(open) => (open ? setShowAdd(true) : closeAddDialog())}>
-                <DialogContent>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{t('admin.mods.add_dialog_title')}</DialogTitle>
                         <DialogDescription>
@@ -633,53 +806,148 @@ export default function Mods({
                             )}
                         </div>
 
+                        {/* Discovered Mod IDs from Steam */}
+                        {lookup.status === 'success' && !manualOverride && lookup.modIds.length > 0 && (
+                            <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-semibold">
+                                        {t('admin.mods.available_mods_from_steam')}
+                                    </Label>
+                                    <div className="flex gap-2 text-xs">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-auto p-0 text-xs text-primary hover:underline"
+                                            onClick={() => setSelectedModIds([...lookup.modIds])}
+                                        >
+                                            {t('admin.mods.select_all')}
+                                        </Button>
+                                        <span className="text-muted-foreground">·</span>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-auto p-0 text-xs text-muted-foreground hover:underline"
+                                            onClick={() => setSelectedModIds([])}
+                                        >
+                                            {t('admin.mods.deselect_all')}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                    {lookup.modIds.map((id) => (
+                                        <label
+                                            key={id}
+                                            className="flex items-center gap-2.5 rounded-md border bg-background/60 p-2 text-xs hover:bg-muted/50 cursor-pointer transition-colors"
+                                        >
+                                            <Checkbox
+                                                checked={selectedModIds.includes(id)}
+                                                onCheckedChange={() => toggleSelectModId(id)}
+                                            />
+                                            <span className="font-mono font-medium">{id}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Active / Custom Mod IDs */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="mod-id">{t('admin.mods.table_mod_id')}</Label>
-                                {lookup.status === 'success' && !manualOverride && (
+                                <Label htmlFor="mod-id">
+                                    {manualOverride ? t('admin.mods.table_mod_id') : t('admin.mods.custom_mods_label')}
+                                </Label>
+                                {lookup.status === 'success' && (
                                     <Button
                                         type="button"
                                         variant="ghost"
                                         size="sm"
                                         className="h-auto px-2 py-0.5 text-xs"
-                                        onClick={() => setManualOverride(true)}
+                                        onClick={() => {
+                                            if (!manualOverride) {
+                                                setModId(selectedModIds.join('; '));
+                                            } else {
+                                                setSelectedModIds(modId.split(';').map((s) => s.trim()).filter(Boolean));
+                                            }
+                                            setManualOverride(!manualOverride);
+                                        }}
                                         data-testid="mod-id-edit-manually"
                                     >
                                         <Pencil className="mr-1 size-3" />
-                                        {t('admin.mods.edit_manually')}
+                                        {manualOverride ? t('common.cancel') : t('admin.mods.edit_manually')}
                                     </Button>
                                 )}
                             </div>
-                            {lookup.status === 'success' && lookup.modIds.length > 1 && !manualOverride ? (
-                                <Select value={modId} onValueChange={setModId}>
-                                    <SelectTrigger id="mod-id" data-testid="mod-id-select">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {lookup.modIds.map((id) => (
-                                            <SelectItem key={id} value={id}>
-                                                {id}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+
+                            {manualOverride || lookup.status !== 'success' ? (
+                                <>
+                                    <Input
+                                        id="mod-id"
+                                        value={modId}
+                                        onChange={(e) => setModId(e.target.value)}
+                                        placeholder={t('admin.mods.mod_id_placeholder')}
+                                        disabled={lookup.status === 'loading'}
+                                        data-testid="mod-id-input"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Phân tách nhiều Mod ID bằng dấu chấm phẩy (;)
+                                    </p>
+                                </>
                             ) : (
-                                <Input
-                                    id="mod-id"
-                                    value={modId}
-                                    onChange={(e) => setModId(e.target.value)}
-                                    placeholder={t('admin.mods.mod_id_placeholder')}
-                                    disabled={
-                                        lookup.status === 'loading' ||
-                                        (lookup.status === 'success' && !manualOverride)
-                                    }
-                                    data-testid="mod-id-input"
-                                />
-                            )}
-                            {lookup.status === 'success' && !manualOverride && (
-                                <p className="text-xs text-muted-foreground">
-                                    {t('admin.mods.mod_id_auto_filled')}
-                                </p>
+                                <div className="space-y-2">
+                                    {selectedModIds.length > 0 ? (
+                                        <div className="flex flex-wrap gap-1.5 rounded-md border bg-background p-2">
+                                            {selectedModIds.map((id) => (
+                                                <Badge
+                                                    key={id}
+                                                    variant="secondary"
+                                                    className="gap-1 font-mono text-xs pr-1"
+                                                >
+                                                    {id}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSelectedModId(id)}
+                                                        className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                                                    >
+                                                        <X className="size-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                                            {t('admin.mods.no_mod_selected')}
+                                        </p>
+                                    )}
+
+                                    {/* Add custom mod ID input */}
+                                    <div className="flex gap-2 pt-1">
+                                        <Input
+                                            value={customModInput}
+                                            onChange={(e) => setCustomModInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    addCustomModIdToAddDialog();
+                                                }
+                                            }}
+                                            placeholder={t('admin.mods.custom_mod_id_placeholder')}
+                                            className="h-8 text-xs font-mono"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8 text-xs"
+                                            disabled={!customModInput.trim()}
+                                            onClick={addCustomModIdToAddDialog}
+                                        >
+                                            <Plus className="mr-1 size-3" />
+                                            {t('common.add')}
+                                        </Button>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -711,8 +979,234 @@ export default function Mods({
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={closeAddDialog}>{t('common.cancel')}</Button>
-                        <Button disabled={loading || !workshopId || !modId || lookup.status === 'loading'} onClick={addMod}>
+                        <Button disabled={!canSubmitAdd} onClick={addMod} data-testid="submit-add-mod">
                             {t('admin.mods.add_mod')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Mod Dialog */}
+            <Dialog open={editTarget !== null} onOpenChange={(open) => (open ? null : closeEditDialog())}>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Pencil className="size-4" />
+                            {t('admin.mods.edit_dialog_title')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t('admin.mods.edit_dialog_description')}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        {/* Workshop ID display */}
+                        <div className="space-y-2">
+                            <Label>{t('admin.mods.table_workshop_id')}</Label>
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="font-mono text-sm px-2.5 py-1">
+                                    {editWorkshopId || editTarget?.workshop_id || '—'}
+                                </Badge>
+                                {editLookup.status === 'loading' && (
+                                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                                )}
+                            </div>
+
+                            {editLookup.status === 'success' && (
+                                <div className="flex items-center gap-3 rounded-md border bg-muted/30 p-2">
+                                    {editLookup.previewUrl && (
+                                        <img
+                                            src={editLookup.previewUrl}
+                                            alt=""
+                                            className="size-10 rounded object-cover"
+                                        />
+                                    )}
+                                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                                        {editLookup.title}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Discovered Mod IDs from Steam */}
+                        {editLookup.status === 'success' && !editManualOverride && editLookup.modIds.length > 0 && (
+                            <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-semibold">
+                                        {t('admin.mods.available_mods_from_steam')}
+                                    </Label>
+                                    <div className="flex gap-2 text-xs">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-auto p-0 text-xs text-primary hover:underline"
+                                            onClick={() => {
+                                                const merged = arrayMove([...new Set([...editModIds, ...editLookup.modIds])], 0, 0);
+                                                setEditModIds(merged);
+                                            }}
+                                        >
+                                            {t('admin.mods.select_all')}
+                                        </Button>
+                                        <span className="text-muted-foreground">·</span>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-auto p-0 text-xs text-muted-foreground hover:underline"
+                                            onClick={() => {
+                                                const steamSet = new Set(editLookup.modIds);
+                                                setEditModIds(editModIds.filter((id) => !steamSet.has(id)));
+                                            }}
+                                        >
+                                            {t('admin.mods.deselect_all')}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                    {editLookup.modIds.map((id) => (
+                                        <label
+                                            key={id}
+                                            className="flex items-center gap-2.5 rounded-md border bg-background/60 p-2 text-xs hover:bg-muted/50 cursor-pointer transition-colors"
+                                        >
+                                            <Checkbox
+                                                checked={editModIds.includes(id)}
+                                                onCheckedChange={() => toggleEditModId(id)}
+                                            />
+                                            <span className="font-mono font-medium">{id}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mod IDs Configuration */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>
+                                    {editManualOverride ? t('admin.mods.table_mod_id') : t('admin.mods.custom_mods_label')}
+                                </Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto px-2 py-0.5 text-xs"
+                                    onClick={() => {
+                                        if (!editManualOverride) {
+                                            setEditManualText(editModIds.join('; '));
+                                        } else {
+                                            setEditModIds(editManualText.split(';').map((s) => s.trim()).filter(Boolean));
+                                        }
+                                        setEditManualOverride(!editManualOverride);
+                                    }}
+                                >
+                                    <Pencil className="mr-1 size-3" />
+                                    {editManualOverride ? t('common.cancel') : t('admin.mods.edit_manually')}
+                                </Button>
+                            </div>
+
+                            {editManualOverride ? (
+                                <>
+                                    <Textarea
+                                        value={editManualText}
+                                        onChange={(e) => setEditManualText(e.target.value)}
+                                        placeholder={t('admin.mods.mod_id_placeholder')}
+                                        rows={3}
+                                        className="font-mono text-xs"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Phân tách nhiều Mod ID bằng dấu chấm phẩy (;)
+                                    </p>
+                                </>
+                            ) : (
+                                <div className="space-y-2">
+                                    {editModIds.length > 0 ? (
+                                        <div className="flex flex-wrap gap-1.5 rounded-md border bg-background p-2 min-h-[44px]">
+                                            {editModIds.map((id) => (
+                                                <Badge
+                                                    key={id}
+                                                    variant="secondary"
+                                                    className="gap-1 font-mono text-xs pr-1"
+                                                >
+                                                    {id}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeEditModId(id)}
+                                                        className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                                                    >
+                                                        <X className="size-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                                            {t('admin.mods.no_mod_selected')}
+                                        </p>
+                                    )}
+
+                                    {/* Add custom mod ID input */}
+                                    <div className="flex gap-2 pt-1">
+                                        <Input
+                                            value={editCustomModInput}
+                                            onChange={(e) => setEditCustomModInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    addCustomModIdToEditDialog();
+                                                }
+                                            }}
+                                            placeholder={t('admin.mods.custom_mod_id_placeholder')}
+                                            className="h-8 text-xs font-mono"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8 text-xs"
+                                            disabled={!editCustomModInput.trim()}
+                                            onClick={addCustomModIdToEditDialog}
+                                        >
+                                            <Plus className="mr-1 size-3" />
+                                            {t('common.add')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Map Folder */}
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-map-folder">{t('admin.mods.map_folder_label')}</Label>
+                            {editLookup.status === 'success' && editLookup.mapFolders.length > 1 ? (
+                                <Select value={editMapFolder || '__none__'} onValueChange={(v) => setEditMapFolder(v === '__none__' ? '' : v)}>
+                                    <SelectTrigger id="edit-map-folder">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__none__">{t('admin.mods.map_folder_none')}</SelectItem>
+                                        {editLookup.mapFolders.map((f) => (
+                                            <SelectItem key={f} value={f}>
+                                                {f}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Input
+                                    id="edit-map-folder"
+                                    value={editMapFolder}
+                                    onChange={(e) => setEditMapFolder(e.target.value)}
+                                    placeholder={t('admin.mods.map_folder_placeholder')}
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={closeEditDialog}>{t('common.cancel')}</Button>
+                        <Button disabled={!canSubmitEdit} onClick={saveEditMod} data-testid="submit-edit-mod">
+                            {t('admin.mods.save_changes')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

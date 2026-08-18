@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
+import { convertHours } from '@/lib/hours-format';
 import type { BreadcrumbItem, PlayerStatPeriod, ServerPlayerStats } from '@/types';
 
 type ServerPlayerStatsProps = {
     stats: ServerPlayerStats;
+    day_length_minutes?: number;
 };
 
 const PERIODS: PlayerStatPeriod[] = ['hour', 'day', 'week', 'month', 'year'];
@@ -34,7 +36,7 @@ function formatLabel(label: string, period: PlayerStatPeriod): string {
     return label;
 }
 
-export default function ServerPlayerStats({ stats }: ServerPlayerStatsProps) {
+export default function ServerPlayerStats({ stats, day_length_minutes = 60 }: ServerPlayerStatsProps) {
     const { t } = useTranslation();
     const [period, setPeriod] = useState<PlayerStatPeriod>('hour');
 
@@ -54,8 +56,10 @@ export default function ServerPlayerStats({ stats }: ServerPlayerStatsProps) {
 
     const hoursPoints: ChartPoint[] = series.map((b) => ({
         label: formatLabel(b.label, period),
-        value: b.total_hours_survived,
+        value: convertHours(b.total_hours_survived, 'real', day_length_minutes),
     }));
+
+    const realTotalHours = convertHours(stats.total_hours_played, 'real', day_length_minutes);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -117,7 +121,7 @@ export default function ServerPlayerStats({ stats }: ServerPlayerStatsProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="text-3xl font-bold tabular-nums">
-                                {stats.total_hours_played.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                {realTotalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                             </div>
                         </CardContent>
                     </Card>

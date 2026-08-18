@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\GameTimeService;
 use App\Services\OnlinePlayersReader;
 use App\Services\ServerPlayerStatsService;
 use Inertia\Inertia;
@@ -23,12 +24,14 @@ class ServerPlayerStatsController extends Controller
     public function __construct(
         private readonly ServerPlayerStatsService $stats,
         private readonly OnlinePlayersReader $onlinePlayers,
+        private readonly GameTimeService $gameTime,
     ) {}
 
     public function index(): Response
     {
         return Inertia::render('admin/server-player-stats', [
             'stats' => $this->payload(),
+            'day_length_minutes' => $this->gameTime->realMinutesPerInGameDay(),
         ]);
     }
 

@@ -34,7 +34,7 @@ class ModManager
      * leave stale or empty Mods= entries between container restarts. Falls back to
      * the INI when the state file is missing or malformed.
      *
-     * @return array<int, array{workshop_id: string, mod_id: string, position: int}>
+     * @return array<int, array{workshop_id: string, mod_id: string, mod_ids: list<string>, position: int}>
      */
     public function list(string $iniPath): array
     {
@@ -49,15 +49,68 @@ class ModManager
             $modIds = $this->splitList($config['Mods'] ?? '');
         }
 
+        $mapping = $this->readMapping($iniPath);
+        $mappingUpdated = false;
         $mods = [];
-        $count = max(count($workshopIds), count($modIds));
+        $claimedModIds = [];
 
-        for ($i = 0; $i < $count; $i++) {
+        // 1. Process workshop IDs in order
+        foreach ($workshopIds as $workshopId) {
+            $wModIds = [];
+            if (isset($mapping[$workshopId])) {
+                // Keep only mapped mod IDs that actually exist in the current $modIds list
+                $wModIds = array_values(array_filter(
+                    $mapping[$workshopId],
+                    fn ($m) => in_array($m, $modIds, true) && ! in_array($m, $claimedModIds, true)
+                ));
+            }
+
+            if (empty($wModIds)) {
+                if (self::isProtected($workshopId)) {
+                    $protectedId = self::PROTECTED_MODS[$workshopId];
+                    if (in_array($protectedId, $modIds, true) && ! in_array($protectedId, $claimedModIds, true)) {
+                        $wModIds = [$protectedId];
+                    }
+                } else {
+                    // Find the next unassigned mod ID from $modIds
+                    foreach ($modIds as $candidate) {
+                        if (! in_array($candidate, $claimedModIds, true)) {
+                            $wModIds = [$candidate];
+                            $mapping[$workshopId] = [$candidate];
+                            $mappingUpdated = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            foreach ($wModIds as $m) {
+                $claimedModIds[] = $m;
+            }
+
             $mods[] = [
-                'workshop_id' => $workshopIds[$i] ?? '',
-                'mod_id' => $modIds[$i] ?? '',
-                'position' => $i,
+                'workshop_id' => $workshopId,
+                'mod_id' => implode('; ', $wModIds),
+                'mod_ids' => $wModIds,
+                'position' => count($mods),
             ];
+        }
+
+        // 2. Add any truly standalone mod IDs that were not mapped to any workshop item
+        foreach ($modIds as $modId) {
+            if (! in_array($modId, $claimedModIds, true)) {
+                $mods[] = [
+                    'workshop_id' => '',
+                    'mod_id' => $modId,
+                    'mod_ids' => [$modId],
+                    'position' => count($mods),
+                ];
+                $claimedModIds[] = $modId;
+            }
+        }
+
+        if ($mappingUpdated) {
+            $this->writeMapping($iniPath, $mapping);
         }
 
         return $mods;
@@ -82,7 +135,7 @@ class ModManager
      * the snapshot.
      *
      * @return array{
-     *     mods: array<int, array{workshop_id: string, mod_id: string, position: int, status: string}>,
+     *     mods: array<int, array{workshop_id: string, mod_id: string, mod_ids: list<string>, position: int, status: string}>,
      *     pending_restart: bool,
      *     server_running: bool,
      *     applied_snapshot_present: bool,
@@ -95,18 +148,38 @@ class ModManager
         $appliedWorkshopIds = $applied !== null
             ? $this->splitList($applied['WorkshopItems'])
             : null;
+        $appliedModIds = $applied !== null
+            ? $this->splitList($applied['Mods'])
+            : null;
 
         $pendingRestart = false;
 
         foreach ($mods as $i => $mod) {
             if (! $serverRunning) {
                 $status = 'stopped';
-            } elseif ($appliedWorkshopIds === null) {
+            } elseif ($applied === null) {
                 $status = 'active';
-            } elseif (in_array($mod['workshop_id'], $appliedWorkshopIds, true)) {
-                $status = 'active';
+            } elseif ($mod['workshop_id'] !== '') {
+                // If mod has a workshop ID, check if workshop ID and all its mod IDs are applied
+                $workshopApplied = $appliedWorkshopIds !== null && in_array($mod['workshop_id'], $appliedWorkshopIds, true);
+                $modsApplied = true;
+                if ($appliedModIds !== null && ! empty($mod['mod_ids'])) {
+                    foreach ($mod['mod_ids'] as $mid) {
+                        if (! in_array($mid, $appliedModIds, true)) {
+                            $modsApplied = false;
+                            break;
+                        }
+                    }
+                }
+                $status = ($workshopApplied && $modsApplied) ? 'active' : 'pending_restart';
             } else {
-                $status = 'pending_restart';
+                // Standalone mod without workshop ID
+                $status = ($appliedModIds !== null && in_array($mod['mod_id'], $appliedModIds, true))
+                    ? 'active'
+                    : 'pending_restart';
+            }
+
+            if ($status === 'pending_restart') {
                 $pendingRestart = true;
             }
 
@@ -114,7 +187,7 @@ class ModManager
         }
 
         if ($serverRunning && $applied !== null) {
-            $intentWorkshopIds = array_column($mods, 'workshop_id');
+            $intentWorkshopIds = array_filter(array_column($mods, 'workshop_id'));
             $removedSinceStart = array_diff($appliedWorkshopIds, $intentWorkshopIds);
             if (! empty($removedSinceStart)) {
                 $pendingRestart = true;
@@ -162,24 +235,179 @@ class ModManager
     }
 
     /**
-     * Add a mod to both WorkshopItems and Mods lines.
+     * Read the mod mapping JSON file.
+     *
+     * @return array<string, list<string>>
      */
-    public function add(string $iniPath, string $workshopId, string $modId, ?string $mapFolder = null): void
+    private function readMapping(string $iniPath): array
     {
+        $mappingFile = dirname($iniPath).'/.mod_mapping.json';
+        if (! is_readable($mappingFile)) {
+            return [];
+        }
+
+        $contents = @file_get_contents($mappingFile);
+        if ($contents === false) {
+            return [];
+        }
+
+        $data = json_decode($contents, true);
+        if (! is_array($data)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($data as $key => $values) {
+            if (is_array($values)) {
+                $result[(string) $key] = array_values(array_filter(
+                    array_map('trim', $values),
+                    fn ($v) => $v !== ''
+                ));
+            } elseif (is_string($values) && trim($values) !== '') {
+                $result[(string) $key] = [trim($values)];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Write the mod mapping JSON file.
+     *
+     * @param array<string, list<string>> $mapping
+     */
+    private function writeMapping(string $iniPath, array $mapping): void
+    {
+        $mappingFile = dirname($iniPath).'/.mod_mapping.json';
+        $json = json_encode($mapping, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if ($json !== false) {
+            @file_put_contents($mappingFile, $json);
+        }
+    }
+
+    /**
+     * Add a mod to both WorkshopItems and Mods lines.
+     *
+     * @param string|list<string> $modId
+     */
+    public function add(string $iniPath, string $workshopId, string|array $modId, ?string $mapFolder = null): void
+    {
+        $modList = is_array($modId)
+            ? array_values(array_filter(array_map('trim', $modId), fn ($v) => $v !== ''))
+            : $this->splitList($modId);
+
+        if (empty($modList)) {
+            return;
+        }
+
         $current = $this->readCurrentLists($iniPath);
         $workshopIds = $current['workshop_ids'];
         $modIds = $current['mod_ids'];
 
-        if (in_array($workshopId, $workshopIds, true)) {
-            return;
+        $workshopIdAlreadyPresent = in_array($workshopId, $workshopIds, true);
+        if (! $workshopIdAlreadyPresent) {
+            $workshopIds[] = $workshopId;
         }
 
-        $workshopIds[] = $workshopId;
-        $modIds[] = $modId;
+        $newModsAdded = false;
+        foreach ($modList as $m) {
+            if (! in_array($m, $modIds, true)) {
+                $modIds[] = $m;
+                $newModsAdded = true;
+            }
+        }
+
+        $mapping = $this->readMapping($iniPath);
+        $existingMapped = $mapping[$workshopId] ?? [];
+        $mapping[$workshopId] = array_values(array_unique(array_merge($existingMapped, $modList)));
+        $this->writeMapping($iniPath, $mapping);
+
+        if ($workshopIdAlreadyPresent && ! $newModsAdded && $mapFolder === null) {
+            return;
+        }
 
         $updates = [
             'WorkshopItems' => implode(';', $workshopIds),
             'Mods' => implode(';', $modIds),
+        ];
+
+        if ($mapFolder !== null) {
+            $config = $this->iniParser->read($iniPath);
+            $maps = $this->splitList($config['Map'] ?? 'Muldraugh, KY', ';');
+            if (! in_array($mapFolder, $maps, true)) {
+                $maps[] = $mapFolder;
+                $updates['Map'] = implode(';', $maps);
+            }
+        }
+
+        $this->writeIniAndState($iniPath, $updates);
+    }
+
+    /**
+     * Update mod IDs and optional map folder for a Workshop ID.
+     *
+     * @param string|list<string> $newModIds
+     */
+    public function update(string $iniPath, string $workshopId, string|array $newModIds, ?string $mapFolder = null): void
+    {
+        $newModList = is_array($newModIds)
+            ? array_values(array_filter(array_map('trim', $newModIds), fn ($v) => $v !== ''))
+            : $this->splitList($newModIds);
+
+        if (empty($newModList)) {
+            return;
+        }
+
+        $current = $this->readCurrentLists($iniPath);
+        $workshopIds = $current['workshop_ids'];
+        $modIds = $current['mod_ids'];
+        $mapping = $this->readMapping($iniPath);
+
+        if (! in_array($workshopId, $workshopIds, true)) {
+            $workshopIds[] = $workshopId;
+        }
+
+        $oldModIds = $mapping[$workshopId] ?? [];
+        if (empty($oldModIds)) {
+            $existingList = $this->list($iniPath);
+            $found = collect($existingList)->firstWhere('workshop_id', $workshopId);
+            $oldModIds = $found['mod_ids'] ?? ($found['mod_id'] ? [$found['mod_id']] : []);
+        }
+
+        // Find position of the first old mod ID to replace in-place, preserving order
+        $replaceIndex = -1;
+        foreach ($oldModIds as $oldMod) {
+            $idx = array_search($oldMod, $modIds, true);
+            if ($idx !== false) {
+                $replaceIndex = $idx;
+                break;
+            }
+        }
+
+        // Remove old mod IDs that are no longer in newModList
+        $updatedModIds = array_values(array_filter(
+            $modIds,
+            fn ($m) => ! in_array($m, $oldModIds, true)
+        ));
+
+        // Insert newModList at the replacement position or append
+        if ($replaceIndex >= 0 && $replaceIndex <= count($updatedModIds)) {
+            array_splice($updatedModIds, $replaceIndex, 0, $newModList);
+        } else {
+            foreach ($newModList as $m) {
+                if (! in_array($m, $updatedModIds, true)) {
+                    $updatedModIds[] = $m;
+                }
+            }
+        }
+        $updatedModIds = array_values(array_unique($updatedModIds));
+
+        $mapping[$workshopId] = $newModList;
+        $this->writeMapping($iniPath, $mapping);
+
+        $updates = [
+            'WorkshopItems' => implode(';', $workshopIds),
+            'Mods' => implode(';', $updatedModIds),
         ];
 
         if ($mapFolder !== null) {
@@ -204,6 +432,7 @@ class ModManager
         $current = $this->readCurrentLists($iniPath);
         $workshopIds = $current['workshop_ids'];
         $modIds = $current['mod_ids'];
+        $mapping = $this->readMapping($iniPath);
 
         $index = array_search($workshopId, $workshopIds, true);
 
@@ -211,13 +440,27 @@ class ModManager
             return null;
         }
 
+        $associatedMods = $mapping[$workshopId] ?? [];
+        if (empty($associatedMods)) {
+            $existingList = $this->list($iniPath);
+            $found = collect($existingList)->firstWhere('workshop_id', $workshopId);
+            $associatedMods = $found['mod_ids'] ?? ($found['mod_id'] ? [$found['mod_id']] : []);
+        }
+
         $removed = [
             'workshop_id' => $workshopIds[$index],
-            'mod_id' => $modIds[$index] ?? '',
+            'mod_id' => implode('; ', $associatedMods),
         ];
 
         array_splice($workshopIds, $index, 1);
-        array_splice($modIds, $index, 1);
+
+        $modIds = array_values(array_filter(
+            $modIds,
+            fn ($m) => ! in_array($m, $associatedMods, true)
+        ));
+
+        unset($mapping[$workshopId]);
+        $this->writeMapping($iniPath, $mapping);
 
         $updates = [
             'WorkshopItems' => implode(';', $workshopIds),
@@ -244,9 +487,12 @@ class ModManager
     public function reorder(string $iniPath, array $orderedMods): void
     {
         $workshopIds = array_column($orderedMods, 'workshop_id');
-        $modIds = array_column($orderedMods, 'mod_id');
+        $mapping = $this->readMapping($iniPath);
 
-        $existing = $this->readCurrentLists($iniPath)['workshop_ids'];
+        $current = $this->readCurrentLists($iniPath);
+        $existing = $current['workshop_ids'];
+        $currentModIds = $current['mod_ids'];
+
         foreach (array_keys(self::PROTECTED_MODS) as $required) {
             // Cast: PHP coerces numeric-string array keys to int; compare as strings.
             $requiredStr = (string) $required;
@@ -257,9 +503,27 @@ class ModManager
             }
         }
 
+        $newModIds = [];
+        foreach ($orderedMods as $m) {
+            $wId = $m['workshop_id'];
+            $wModList = $mapping[$wId] ?? (isset($m['mod_id']) ? $this->splitList($m['mod_id']) : []);
+            foreach ($wModList as $modName) {
+                if (! in_array($modName, $newModIds, true)) {
+                    $newModIds[] = $modName;
+                }
+            }
+        }
+
+        // Keep any remaining mod IDs from current config
+        foreach ($currentModIds as $modName) {
+            if (! in_array($modName, $newModIds, true)) {
+                $newModIds[] = $modName;
+            }
+        }
+
         $this->writeIniAndState($iniPath, [
             'WorkshopItems' => implode(';', $workshopIds),
-            'Mods' => implode(';', $modIds),
+            'Mods' => implode(';', $newModIds),
         ]);
     }
 

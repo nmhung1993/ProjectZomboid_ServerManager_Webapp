@@ -22,6 +22,11 @@ function adminUser(): User
     return User::factory()->admin()->create();
 }
 
+function superAdminUser(): User
+{
+    return User::factory()->superAdmin()->create();
+}
+
 function mockAdminRcon(array $commands = []): void
 {
     $rcon = Mockery::mock(RconClient::class);
@@ -61,6 +66,7 @@ function mockAdminModManager(array $mods = []): void
         'applied_snapshot_present' => true,
     ])->byDefault();
     $modManager->shouldReceive('add')->byDefault();
+    $modManager->shouldReceive('update')->byDefault();
     $modManager->shouldReceive('remove')->andReturn(['workshop_id' => '123', 'mod_id' => 'Test'])->byDefault();
     $modManager->shouldReceive('reorder')->byDefault();
 
@@ -422,6 +428,26 @@ it('can add a mod via admin', function () {
     $response->assertJson(['restart_required' => true]);
 });
 
+it('can add multiple mod ids for one workshop id via admin', function () {
+    mockAdminModManager();
+
+    $response = $this->actingAs(adminUser())
+        ->postJson('/admin/mods', ['workshop_id' => '456', 'mod_ids' => ['ModPart1', 'ModPart2']]);
+
+    $response->assertCreated();
+    $response->assertJson(['restart_required' => true]);
+});
+
+it('can update a mod via admin', function () {
+    mockAdminModManager();
+
+    $response = $this->actingAs(adminUser())
+        ->putJson('/admin/mods/456', ['mod_ids' => ['ModPart1', 'ModPart2', 'ModPart3']]);
+
+    $response->assertOk();
+    $response->assertJson(['restart_required' => true]);
+});
+
 it('can remove a mod via admin', function () {
     mockAdminModManager();
 
@@ -461,7 +487,7 @@ it('can create a backup via admin', function () {
     $response->assertStatus(202);
 });
 
-it('can delete a backup via admin', function () {
+it('forbids normal admin from deleting a backup', function () {
     mockAdminBackupManager();
 
     $backup = Backup::create([
@@ -473,6 +499,23 @@ it('can delete a backup via admin', function () {
     ]);
 
     $response = $this->actingAs(adminUser())
+        ->deleteJson("/admin/backups/{$backup->id}");
+
+    $response->assertForbidden();
+});
+
+it('can delete a backup via super admin', function () {
+    mockAdminBackupManager();
+
+    $backup = Backup::create([
+        'filename' => 'delete-me.tar.gz',
+        'path' => '/backups/delete-me.tar.gz',
+        'size_bytes' => 512,
+        'type' => 'manual',
+        'created_at' => now(),
+    ]);
+
+    $response = $this->actingAs(superAdminUser())
         ->deleteJson("/admin/backups/{$backup->id}");
 
     $response->assertOk();

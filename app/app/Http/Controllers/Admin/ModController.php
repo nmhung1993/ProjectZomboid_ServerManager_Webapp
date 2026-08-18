@@ -82,15 +82,24 @@ class ModController extends Controller
     {
         $validated = $request->validate([
             'workshop_id' => 'required|string|max:20',
-            'mod_id' => 'required|string|max:255',
+            'mod_id' => 'nullable|string|max:255',
+            'mod_ids' => 'nullable|array',
+            'mod_ids.*' => 'string|max:255',
             'map_folder' => 'nullable|string|max:255',
         ]);
+
+        $modIds = $validated['mod_ids'] ?? (isset($validated['mod_id']) && $validated['mod_id'] !== '' ? [$validated['mod_id']] : []);
+        if (empty($modIds)) {
+            return response()->json([
+                'error' => 'At least one Mod ID is required.',
+            ], 422);
+        }
 
         try {
             $this->modManager->add(
                 config('zomboid.paths.server_ini'),
                 $validated['workshop_id'],
-                $validated['mod_id'],
+                $modIds,
                 $validated['map_folder'] ?? null,
             );
         } catch (RuntimeException $e) {
@@ -113,6 +122,51 @@ class ModController extends Controller
             'added' => $validated,
             'restart_required' => true,
         ], 201);
+    }
+
+    public function update(Request $request, string $workshopId): JsonResponse
+    {
+        $validated = $request->validate([
+            'mod_id' => 'nullable|string|max:255',
+            'mod_ids' => 'nullable|array',
+            'mod_ids.*' => 'string|max:255',
+            'map_folder' => 'nullable|string|max:255',
+        ]);
+
+        $modIds = $validated['mod_ids'] ?? (isset($validated['mod_id']) && $validated['mod_id'] !== '' ? [$validated['mod_id']] : []);
+        if (empty($modIds)) {
+            return response()->json([
+                'error' => 'At least one Mod ID is required.',
+            ], 422);
+        }
+
+        try {
+            $this->modManager->update(
+                config('zomboid.paths.server_ini'),
+                $workshopId,
+                $modIds,
+                $validated['map_folder'] ?? null,
+            );
+        } catch (RuntimeException $e) {
+            Log::error('Failed to update mod', ['exception' => $e, 'workshop_id' => $workshopId, 'data' => $validated]);
+
+            return response()->json([
+                'error' => 'Could not write the server config. The server may still be starting, or the config volume is not writable.',
+            ], 500);
+        }
+
+        $this->auditLogger->log(
+            actor: $request->user()->name ?? 'admin',
+            action: 'mod.update',
+            target: $workshopId,
+            details: ['workshop_id' => $workshopId, 'mod_ids' => $modIds, 'map_folder' => $validated['map_folder'] ?? null],
+            ip: $request->ip(),
+        );
+
+        return response()->json([
+            'updated' => ['workshop_id' => $workshopId, 'mod_ids' => $modIds],
+            'restart_required' => true,
+        ]);
     }
 
     public function destroy(Request $request, string $workshopId): JsonResponse

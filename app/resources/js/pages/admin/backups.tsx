@@ -1,4 +1,4 @@
-import { Deferred, Head, router } from '@inertiajs/react';
+import { Deferred, Head, router, usePage } from '@inertiajs/react';
 import { AlertTriangle, Archive, ChevronDown, ChevronLeft, ChevronRight, Download, HelpCircle, Loader2, Plus, RotateCcw, Search, Trash2, Upload } from 'lucide-react';
 import { formatDateTime } from '@/lib/dates';
 import { useMemo, useState } from 'react';
@@ -30,7 +30,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { fetchAction } from '@/lib/fetch-action';
-import type { BackupEntry, BreadcrumbItem } from '@/types';
+import type { BackupEntry, BreadcrumbItem, SharedData } from '@/types';
 
 type PaginatedBackups = {
     data: BackupEntry[];
@@ -76,6 +76,8 @@ type SortKey = 'filename' | 'type' | 'size_bytes' | 'created_at';
 
 export default function Backups({ backups, current_version, current_branch, filters }: BackupsProps) {
     const { t } = useTranslation();
+    const { auth } = usePage<SharedData>().props;
+    const isSuperAdmin = auth?.user?.role === 'super_admin';
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('nav.dashboard'), href: '/dashboard' },
         { title: t('admin.backups.title'), href: '/admin/backups' },
@@ -268,7 +270,7 @@ export default function Backups({ backups, current_version, current_branch, filt
                         <p className="text-muted-foreground">{backups ? t('admin.backups.backup_count', { count: String(backups.total) }) : t('common.loading')}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        {selectedIds.size > 0 && (
+                        {isSuperAdmin && selectedIds.size > 0 && (
                             <Button
                                 variant="destructive"
                                 onClick={() => setShowBulkDelete(true)}
@@ -314,7 +316,7 @@ export default function Backups({ backups, current_version, current_branch, filt
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-10" />
+                                        {isSuperAdmin && <TableHead className="w-10" />}
                                         <TableHead>{t('admin.backups.table_filename')}</TableHead>
                                         <TableHead className="hidden sm:table-cell">{t('admin.backups.table_type')}</TableHead>
                                         <TableHead className="hidden md:table-cell">{t('admin.backups.table_version')}</TableHead>
@@ -327,7 +329,7 @@ export default function Backups({ backups, current_version, current_branch, filt
                                 <TableBody>
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <TableRow key={i}>
-                                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                                            {isSuperAdmin && <TableCell><Skeleton className="h-4 w-4" /></TableCell>}
                                             <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                                             <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                                             <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-16" /></TableCell>
@@ -337,7 +339,7 @@ export default function Backups({ backups, current_version, current_branch, filt
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <Skeleton className="h-8 w-24 rounded-md" />
-                                                    <Skeleton className="h-8 w-8 rounded-md" />
+                                                    {isSuperAdmin && <Skeleton className="h-8 w-8 rounded-md" />}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -349,13 +351,15 @@ export default function Backups({ backups, current_version, current_branch, filt
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-10">
-                                                <Checkbox
-                                                    checked={allSelected}
-                                                    onCheckedChange={toggleSelectAll}
-                                                    aria-label="Select all"
-                                                />
-                                            </TableHead>
+                                            {isSuperAdmin && (
+                                                <TableHead className="w-10">
+                                                    <Checkbox
+                                                        checked={allSelected}
+                                                        onCheckedChange={toggleSelectAll}
+                                                        aria-label="Select all"
+                                                    />
+                                                </TableHead>
+                                            )}
                                             <TableHead>
                                                 <SortableHeader column="filename" label={t('admin.backups.table_filename')} sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                                             </TableHead>
@@ -376,13 +380,15 @@ export default function Backups({ backups, current_version, current_branch, filt
                                     <TableBody>
                                         {filteredBackups.map((backup) => (
                                             <TableRow key={backup.id} data-state={selectedIds.has(backup.id) ? 'selected' : undefined}>
-                                                <TableCell>
-                                                    <Checkbox
-                                                        checked={selectedIds.has(backup.id)}
-                                                        onCheckedChange={() => toggleSelect(backup.id)}
-                                                        aria-label={`Select ${backup.filename}`}
-                                                    />
-                                                </TableCell>
+                                                {isSuperAdmin && (
+                                                    <TableCell>
+                                                        <Checkbox
+                                                            checked={selectedIds.has(backup.id)}
+                                                            onCheckedChange={() => toggleSelect(backup.id)}
+                                                            aria-label={`Select ${backup.filename}`}
+                                                        />
+                                                    </TableCell>
+                                                )}
                                                 <TableCell className="font-medium text-sm">{backup.filename}</TableCell>
                                                 <TableCell className="hidden sm:table-cell">
                                                     <Badge className={`text-xs ${typeColors[backup.type] ?? ''}`}>
@@ -426,14 +432,16 @@ export default function Backups({ backups, current_version, current_branch, filt
                                                             <RotateCcw className="mr-1.5 size-3.5" />
                                                             {t('admin.backups.rollback_button')}
                                                         </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-destructive hover:text-destructive"
-                                                            onClick={() => setDeleteTarget(backup)}
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
+                                                        {isSuperAdmin && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-destructive hover:text-destructive"
+                                                                onClick={() => setDeleteTarget(backup)}
+                                                            >
+                                                                <Trash2 className="size-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

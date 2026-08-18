@@ -89,6 +89,10 @@ class BackupController extends Controller
 
     public function destroy(Request $request, Backup $backup): JsonResponse
     {
+        if ($request->user()?->role !== \App\Enums\UserRole::SuperAdmin) {
+            abort(403, 'Chỉ Super Admin mới có quyền xóa bản sao lưu.');
+        }
+
         $filename = $backup->filename;
         $this->backupManager->deleteBackup($backup);
 
@@ -104,6 +108,10 @@ class BackupController extends Controller
 
     public function destroyBulk(Request $request): JsonResponse
     {
+        if ($request->user()?->role !== \App\Enums\UserRole::SuperAdmin) {
+            abort(403, 'Chỉ Super Admin mới có quyền xóa bản sao lưu.');
+        }
+
         $validated = $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'required|uuid|exists:backups,id',

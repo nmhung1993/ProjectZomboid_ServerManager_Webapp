@@ -39,6 +39,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the model has a super_admin role.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => \App\Enums\UserRole::SuperAdmin,
+        ]);
+    }
+
+    /**
      * Indicate that the model has an admin role.
      */
     public function admin(): static

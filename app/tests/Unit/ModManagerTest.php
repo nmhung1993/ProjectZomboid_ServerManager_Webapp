@@ -498,3 +498,83 @@ it('bulk import with only already-present mods and no maps writes nothing new', 
         ->and($summary['mods_added'])->toBe(0)
         ->and(file_exists($this->tempDir.'/Server/.mod_state'))->toBeFalse();
 });
+
+it('adds multiple mod IDs for one workshop ID', function () {
+    $this->manager->add($this->iniPath, '5555555555', ['VehicleCore', 'VehicleTuning', 'VehicleArmor']);
+
+    $mods = $this->manager->list($this->iniPath);
+
+    $addedMod = collect($mods)->firstWhere('workshop_id', '5555555555');
+    expect($addedMod)->not->toBeNull()
+        ->and($addedMod['mod_ids'])->toBe(['VehicleCore', 'VehicleTuning', 'VehicleArmor'])
+        ->and($addedMod['mod_id'])->toBe('VehicleCore; VehicleTuning; VehicleArmor');
+
+    $config = $this->parser->read($this->iniPath);
+    expect($config['Mods'])->toContain('VehicleCore')
+        ->and($config['Mods'])->toContain('VehicleTuning')
+        ->and($config['Mods'])->toContain('VehicleArmor')
+        ->and($config['WorkshopItems'])->toContain('5555555555');
+});
+
+it('updates mod IDs for an existing workshop ID', function () {
+    $this->manager->add($this->iniPath, '5555555555', ['VehicleCore', 'VehicleTuning']);
+
+    $this->manager->update($this->iniPath, '5555555555', ['VehicleCore', 'VehicleArmor']);
+
+    $mods = $this->manager->list($this->iniPath);
+    $updatedMod = collect($mods)->firstWhere('workshop_id', '5555555555');
+    expect($updatedMod)->not->toBeNull()
+        ->and($updatedMod['mod_ids'])->toBe(['VehicleCore', 'VehicleArmor']);
+
+    $config = $this->parser->read($this->iniPath);
+    expect($config['Mods'])->not->toContain('VehicleTuning')
+        ->and($config['Mods'])->toContain('VehicleArmor');
+});
+
+it('removes all associated mod IDs when removing a workshop item', function () {
+    $this->manager->add($this->iniPath, '5555555555', ['VehicleCore', 'VehicleTuning', 'VehicleArmor']);
+
+    $this->manager->remove($this->iniPath, '5555555555');
+
+    $mods = $this->manager->list($this->iniPath);
+    expect(collect($mods)->firstWhere('workshop_id', '5555555555'))->toBeNull();
+
+    $config = $this->parser->read($this->iniPath);
+    expect($config['Mods'])->not->toContain('VehicleCore')
+        ->and($config['Mods'])->not->toContain('VehicleTuning')
+        ->and($config['Mods'])->not->toContain('VehicleArmor')
+        ->and($config['WorkshopItems'])->not->toContain('5555555555');
+});
+
+it('does not misalign subsequent unmapped workshop items when earlier items have multiple mod IDs', function () {
+    // Write an INI file with 3 workshop items:
+    // W1 has 1 mod (M1)
+    // W2 has 2 mods (M2_a, M2_b) -> mapped in mapping JSON
+    // W3 has 1 mod (M3) -> not in mapping JSON
+    $this->parser->write($this->iniPath, [
+        'WorkshopItems' => '111;222;333;3685323705',
+        'Mods' => 'Mod1;Mod2_A;Mod2_B;Mod3;ZomboidManager',
+    ]);
+
+    $mappingFile = $this->tempDir.'/Server/.mod_mapping.json';
+    file_put_contents($mappingFile, json_encode([
+        '222' => ['Mod2_A', 'Mod2_B'],
+    ]));
+
+    $mods = $this->manager->list($this->iniPath);
+
+    expect(count($mods))->toBe(4); // Exactly 4 rows, no orphan row
+
+    $w1 = collect($mods)->firstWhere('workshop_id', '111');
+    expect($w1['mod_id'])->toBe('Mod1');
+
+    $w2 = collect($mods)->firstWhere('workshop_id', '222');
+    expect($w2['mod_ids'])->toBe(['Mod2_A', 'Mod2_B']);
+
+    $w3 = collect($mods)->firstWhere('workshop_id', '333');
+    expect($w3['mod_id'])->toBe('Mod3');
+    expect($w3['workshop_id'])->toBe('333');
+
+    $standalone = collect($mods)->firstWhere('workshop_id', '');
+    expect($standalone)->toBeNull();
+});

@@ -1,18 +1,22 @@
-import { Head, usePoll } from '@inertiajs/react';
+import { Head, Link, usePoll } from '@inertiajs/react';
 import {
     Activity,
+    ArrowRight,
     Circle,
     Clock,
-    Globe,
+    Crosshair,
     Map,
-    Package,
     Server,
     Signal,
+    Skull,
+    Swords,
+    Trophy,
     Users,
 } from 'lucide-react';
 import { GameStateWidget } from '@/components/game-state-widget';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Tooltip,
     TooltipContent,
@@ -22,7 +26,8 @@ import {
 import { usePing } from '@/hooks/use-ping';
 import { useTranslation } from '@/hooks/use-translation';
 import PublicLayout from '@/layouts/public-layout';
-import type { StatusPageData } from '@/types';
+import { formatHours } from '@/lib/hours-format';
+import type { LeaderboardEntry, StatusOnlinePlayer, StatusPageData } from '@/types';
 
 type StatusTone = 'online' | 'starting' | 'offline';
 
@@ -55,11 +60,62 @@ const statusTone: Record<
     },
 };
 
+function MiniRankBadge({ rank }: { rank?: number | null }) {
+    if (!rank) {
+        return (
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
+                —
+            </span>
+        );
+    }
+    if (rank === 1) {
+        return (
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-yellow-500/20 text-[11px] font-bold text-yellow-600 dark:text-yellow-400 shadow-sm">
+                #1
+            </span>
+        );
+    }
+    if (rank === 2) {
+        return (
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-zinc-200 text-[11px] font-bold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                #2
+            </span>
+        );
+    }
+    if (rank === 3) {
+        return (
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-amber-800/20 text-[11px] font-bold text-amber-700 dark:text-amber-500">
+                #3
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted/60 text-[11px] font-medium text-muted-foreground">
+            #{rank}
+        </span>
+    );
+}
+
+function normalizePlayer(p: string | StatusOnlinePlayer): StatusOnlinePlayer {
+    if (typeof p === 'string') {
+        return {
+            username: p,
+            rank: null,
+            zombie_kills: 0,
+            hours_survived: 0,
+            profession: null,
+            is_dead: false,
+        };
+    }
+    return p;
+}
+
 export default function Status({
     server,
     game_state,
-    mods,
     server_name,
+    top_rankings,
+    day_length_minutes = 60,
 }: StatusPageData) {
     usePoll(5000, { only: ['server', 'game_state'] });
     const { t } = useTranslation();
@@ -68,6 +124,8 @@ export default function Status({
     const tone = statusTone[server.status] ?? statusTone.offline;
     const playerCount = server.player_count;
     const maxPlayers = server.max_players;
+
+    const normalizedPlayers = (server.players ?? []).map(normalizePlayer);
 
     return (
         <>
@@ -101,8 +159,8 @@ export default function Status({
                                 </div>
                             </div>
 
-                            <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto">
-                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto">
+                                <div className="rounded-xl border bg-background/60 px-5 py-3 text-center min-w-[120px]">
                                     <Users className="mx-auto mb-1 size-4 text-emerald-500" />
                                     <p className="text-xl font-bold tabular-nums">
                                         {playerCount}
@@ -117,7 +175,7 @@ export default function Status({
                                 <TooltipProvider delayDuration={200}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <div className="cursor-default rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                            <div className="cursor-default rounded-xl border bg-background/60 px-5 py-3 text-center min-w-[120px]">
                                                 <Map className="mx-auto mb-1 size-4 text-blue-500" />
                                                 <p className="truncate text-xl font-bold">{server.map || '—'}</p>
                                                 <p className="text-[11px] text-muted-foreground">{t('status.map')}</p>
@@ -130,15 +188,10 @@ export default function Status({
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                                <div className="rounded-xl border bg-background/60 px-5 py-3 text-center min-w-[120px]">
                                     <Clock className="mx-auto mb-1 size-4 text-violet-500" />
                                     <p className="truncate text-xl font-bold">{server.uptime || '—'}</p>
                                     <p className="text-[11px] text-muted-foreground">{t('status.uptime')}</p>
-                                </div>
-                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
-                                    <Package className="mx-auto mb-1 size-4 text-orange-500" />
-                                    <p className="text-xl font-bold tabular-nums">{mods.length}</p>
-                                    <p className="text-[11px] text-muted-foreground">{t('status.mods')}</p>
                                 </div>
                             </div>
                         </div>
@@ -151,33 +204,74 @@ export default function Status({
                         </div>
                     )}
 
-                    {/* Detail columns */}
-                    <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                        {/* Online players */}
-                        <Card>
+                    {/* Online players (Full Width & Mini Ranking) */}
+                    <div className="mt-6">
+                        <Card className="w-full shadow-sm">
                             <CardHeader className="border-b pb-4">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Activity className="size-5 text-emerald-500" />
-                                    {t('status.online_players_title')}
-                                </CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <Activity className="size-5 text-emerald-500" />
+                                        {t('status.online_players_title')}
+                                    </CardTitle>
+                                    <Badge variant="secondary" className="tabular-nums">
+                                        {normalizedPlayers.length} online
+                                    </Badge>
+                                </div>
+                                <CardDescription>
+                                    {t('admin.server_player_stats.subtitle')}
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent className="pt-4">
-                                {server.players.length > 0 ? (
-                                    <div className="grid gap-2 sm:grid-cols-2">
-                                        {server.players.map((player) => (
-                                            <div
-                                                key={player}
-                                                className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/40 px-3 py-2"
+                            <CardContent className="pt-6">
+                                {normalizedPlayers.length > 0 ? (
+                                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                        {normalizedPlayers.map((player) => (
+                                            <Link
+                                                key={player.username}
+                                                href={`/rankings/${player.username}`}
+                                                className="group relative flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card/60 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500/40 hover:bg-muted/40 hover:shadow-md"
                                             >
-                                                <Circle className="size-2 shrink-0 fill-emerald-500 text-emerald-500" />
-                                                <span className="truncate text-sm font-medium">{player}</span>
-                                            </div>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <Circle className="size-2.5 shrink-0 fill-emerald-500 text-emerald-500 group-hover:animate-pulse" />
+                                                        <span className="truncate text-sm font-semibold group-hover:text-primary">
+                                                            {player.username}
+                                                        </span>
+                                                        {player.is_dead && (
+                                                            <Skull className="size-3.5 shrink-0 text-red-500" title="Dead" />
+                                                        )}
+                                                    </div>
+                                                    <MiniRankBadge rank={player.rank} />
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                                    <div className="flex items-center gap-1 rounded bg-background/80 px-2 py-0.5 border border-border/40">
+                                                        <Crosshair className="size-3 text-red-500" />
+                                                        <span className="font-semibold text-foreground tabular-nums">
+                                                            {(player.zombie_kills ?? 0).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 rounded bg-background/80 px-2 py-0.5 border border-border/40">
+                                                        <Clock className="size-3 text-emerald-500" />
+                                                        <span className="font-semibold text-foreground tabular-nums">
+                                                            {formatHours(player.hours_survived ?? 0, 'real', day_length_minutes)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {player.profession && (
+                                                    <div className="pt-1">
+                                                        <Badge variant="outline" className="text-[10px] text-muted-foreground/90 font-normal">
+                                                            {player.profession}
+                                                        </Badge>
+                                                    </div>
+                                                )}
+                                            </Link>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                                        <Users className="mb-3 size-8 text-muted-foreground/40" />
-                                        <p className="text-sm text-muted-foreground">
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <Users className="mb-3 size-10 text-muted-foreground/40" />
+                                        <p className="text-sm font-medium text-muted-foreground">
                                             {server.status === 'online'
                                                 ? t('status.no_players_online')
                                                 : server.status === 'starting'
@@ -188,41 +282,98 @@ export default function Status({
                                 )}
                             </CardContent>
                         </Card>
-
-                        {/* Installed mods */}
-                        <Card>
-                            <CardHeader className="border-b pb-4">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Globe className="size-5 text-blue-500" />
-                                    {t('status.installed_mods_title')}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-4">
-                                {mods.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {mods.map((mod) => (
-                                            <div
-                                                key={mod.workshop_id}
-                                                className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-background/40 px-3 py-2"
-                                            >
-                                                <span className="truncate text-sm font-medium">{mod.mod_id}</span>
-                                                {mod.workshop_id && (
-                                                    <Badge variant="secondary" className="shrink-0 font-mono text-xs">
-                                                        {mod.workshop_id}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                                        <Package className="mb-3 size-8 text-muted-foreground/40" />
-                                        <p className="text-sm text-muted-foreground">{t('status.no_mods_installed')}</p>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
                     </div>
+
+                    {/* Mini Leaderboards Section */}
+                    {top_rankings && (
+                        <div className="mt-6 grid gap-6 md:grid-cols-2">
+                            {/* Top Kills */}
+                            <Card className="shadow-sm">
+                                <CardHeader className="border-b pb-4">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center gap-2 text-base">
+                                            <Swords className="size-4 text-red-500" />
+                                            Top Zombie Kills
+                                        </CardTitle>
+                                        <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
+                                            <Link href="/rankings">
+                                                {t('common.view_all')}
+                                                <ArrowRight className="ml-1 size-3" />
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="pt-3">
+                                    {top_rankings.kills && top_rankings.kills.length > 0 ? (
+                                        <div className="divide-y divide-border/40">
+                                            {top_rankings.kills.map((entry: LeaderboardEntry) => (
+                                                <Link
+                                                    key={entry.username}
+                                                    href={`/rankings/${entry.username}`}
+                                                    className="flex items-center justify-between py-2.5 px-2 rounded-md transition-colors hover:bg-muted/50 text-sm"
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <MiniRankBadge rank={entry.rank} />
+                                                        <span className="font-medium truncate">{entry.username}</span>
+                                                    </div>
+                                                    <span className="font-semibold tabular-nums text-red-500/90">
+                                                        {entry.zombie_kills.toLocaleString()} kills
+                                                    </span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="py-6 text-center text-xs text-muted-foreground">
+                                            {t('common.no_data')}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            {/* Top Survival */}
+                            <Card className="shadow-sm">
+                                <CardHeader className="border-b pb-4">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center gap-2 text-base">
+                                            <Trophy className="size-4 text-amber-500" />
+                                            Top Sinh tồn (Realtime)
+                                        </CardTitle>
+                                        <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
+                                            <Link href="/rankings">
+                                                {t('common.view_all')}
+                                                <ArrowRight className="ml-1 size-3" />
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="pt-3">
+                                    {top_rankings.survival && top_rankings.survival.length > 0 ? (
+                                        <div className="divide-y divide-border/40">
+                                            {top_rankings.survival.map((entry: LeaderboardEntry) => (
+                                                <Link
+                                                    key={entry.username}
+                                                    href={`/rankings/${entry.username}`}
+                                                    className="flex items-center justify-between py-2.5 px-2 rounded-md transition-colors hover:bg-muted/50 text-sm"
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <MiniRankBadge rank={entry.rank} />
+                                                        <span className="font-medium truncate">{entry.username}</span>
+                                                    </div>
+                                                    <span className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                                        {formatHours(entry.hours_survived, 'real', day_length_minutes)}
+                                                    </span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="py-6 text-center text-xs text-muted-foreground">
+                                            {t('common.no_data')}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
                 </div>
             </PublicLayout>
         </>

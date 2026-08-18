@@ -55,6 +55,8 @@ export type ModStatus = 'active' | 'pending_restart' | 'stopped';
 export type ModEntry = {
     workshop_id: string;
     mod_id: string;
+    mod_ids?: string[];
+    map_folder?: string;
     position: number;
     status?: ModStatus;
 };
@@ -267,11 +269,20 @@ export type WelcomePageData = {
     landing_sections: LandingSection[];
 };
 
+export type StatusOnlinePlayer = {
+    username: string;
+    rank?: number | null;
+    zombie_kills?: number;
+    hours_survived?: number;
+    profession?: string | null;
+    is_dead?: boolean;
+};
+
 export type StatusServerStatus = {
     online: boolean;
     status: 'offline' | 'starting' | 'online';
     player_count: number;
-    players: string[];
+    players: (string | StatusOnlinePlayer)[];
     uptime: string | null;
     map: string | null;
     max_players: number | null;
@@ -280,8 +291,13 @@ export type StatusServerStatus = {
 export type StatusPageData = {
     server: StatusServerStatus;
     game_state: GameState | null;
-    mods: ModEntry[];
+    mods?: ModEntry[];
     server_name: string;
+    top_rankings?: {
+        kills: LeaderboardEntry[];
+        survival: LeaderboardEntry[];
+    };
+    day_length_minutes?: number;
 };
 
 export type PlayerMarker = {
