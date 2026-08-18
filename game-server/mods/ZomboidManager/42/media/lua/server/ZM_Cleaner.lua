@@ -103,7 +103,7 @@ local function processCleanerCommands()
     end
 
     ZM_Utils.writeJsonFile(RESULTS_FILE, results)
-    ZM_Utils.writeJsonFile(COMMANDS_FILE, { actions = [] })
+    ZM_Utils.writeJsonFile(COMMANDS_FILE, { actions = {} })
 end
 
 function ZM_Cleaner.tick()

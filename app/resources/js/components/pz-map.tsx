@@ -323,6 +323,7 @@ const eventTypeColors: Record<string, string> = {
 
 export default function PzMap({
     markers = [],
+    vehicleMarkers = [],
     mapConfig,
     hasTiles,
     className = '',

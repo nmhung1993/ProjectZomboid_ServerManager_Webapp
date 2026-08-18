@@ -116,62 +116,64 @@ local function onEveryOneMinute()
     end
 
     -- Respawn delay: reload config, process resets, clean expired
-    ZM_RespawnDelay.tick()
+    if ZM_RespawnDelay and ZM_RespawnDelay.tick then ZM_RespawnDelay.tick() end
 
     -- Safe zone: reload config, flush violations
-    ZM_SafeZone.tick()
+    if ZM_SafeZone and ZM_SafeZone.tick then ZM_SafeZone.tick() end
 
     -- PvP tracker: scan for kills, flush to disk
-    ZM_PvpTracker.tick()
+    if ZM_PvpTracker and ZM_PvpTracker.tick then ZM_PvpTracker.tick() end
 
     -- AntiCheat: scan online players for godmode, noclip, and admin cheats
-    ZM_AntiCheat.tick()
+    if ZM_AntiCheat and ZM_AntiCheat.tick then ZM_AntiCheat.tick() end
 
     -- Faction: reload config and cache
-    ZM_Faction.tick()
+    if ZM_Faction and ZM_Faction.tick then ZM_Faction.tick() end
 
     -- Vehicles: export vehicles and process commands
-    ZM_Vehicles.tick()
+    if ZM_Vehicles and ZM_Vehicles.tick then ZM_Vehicles.tick() end
 
     -- Cleaner: process cleanup requests
-    ZM_Cleaner.tick()
+    if ZM_Cleaner and ZM_Cleaner.tick then ZM_Cleaner.tick() end
 
     -- Delivery: process item deliveries to online players
-    ZM_Delivery.tick()
+    if ZM_Delivery and ZM_Delivery.tick then ZM_Delivery.tick() end
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
 local function onServerStarted()
     -- Initialize respawn delay system
-    ZM_RespawnDelay.init()
+    if ZM_RespawnDelay and ZM_RespawnDelay.init then ZM_RespawnDelay.init() end
 
     -- Initialize safe zone system
-    ZM_SafeZone.init()
+    if ZM_SafeZone and ZM_SafeZone.init then ZM_SafeZone.init() end
 
     -- Initialize PvP tracker
-    ZM_PvpTracker.init()
+    if ZM_PvpTracker and ZM_PvpTracker.init then ZM_PvpTracker.init() end
 
     -- Initialize anticheat scanner
-    ZM_AntiCheat.init()
+    if ZM_AntiCheat and ZM_AntiCheat.init then ZM_AntiCheat.init() end
 
     -- Initialize faction system
-    ZM_Faction.init()
+    if ZM_Faction and ZM_Faction.init then ZM_Faction.init() end
 
     -- Initialize vehicles system
-    ZM_Vehicles.init()
+    if ZM_Vehicles and ZM_Vehicles.init then ZM_Vehicles.init() end
 
     -- Initialize cleaner
-    ZM_Cleaner.init()
+    if ZM_Cleaner and ZM_Cleaner.init then ZM_Cleaner.init() end
 
     -- Initialize delivery system
-    ZM_Delivery.init()
+    if ZM_Delivery and ZM_Delivery.init then ZM_Delivery.init() end
 
     -- Initialize money deposit system
-    ZM_MoneyDeposit.init()
+    if ZM_MoneyDeposit and ZM_MoneyDeposit.init then ZM_MoneyDeposit.init() end
 
     -- Export game state immediately so it's available even when server is paused
-    if ZM_GameState.export() then
-        print("[ZomboidManager] Exported initial game state")
+    if ZM_GameState and ZM_GameState.export then
+        if ZM_GameState.export() then
+            print("[ZomboidManager] Exported initial game state")
+        end
     end
 
     local ok, count = pcall(ZM_ItemCatalog.export)

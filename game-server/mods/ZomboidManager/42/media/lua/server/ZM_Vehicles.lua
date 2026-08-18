@@ -141,7 +141,7 @@ local function processCommands()
     end
 
     -- Clear commands
-    ZM_Utils.writeJsonFile(COMMANDS_FILE, { actions = [] })
+    ZM_Utils.writeJsonFile(COMMANDS_FILE, { actions = {} })
 end
 
 function ZM_Vehicles.tick()
