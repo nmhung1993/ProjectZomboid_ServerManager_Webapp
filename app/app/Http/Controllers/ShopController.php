@@ -146,30 +146,47 @@ class ShopController extends Controller
     public function purchaseItem(PurchaseItemRequest $request, string $slug): JsonResponse
     {
         $item = ShopItem::query()
-            ->where('slug', $slug)
+            ->where(function ($q) use ($slug) {
+                if (\Illuminate\Support\Str::isUuid($slug)) {
+                    $q->where('id', $slug)->orWhere('slug', $slug);
+                } else {
+                    $q->where('slug', $slug);
+                }
+            })
             ->where('is_active', true)
             ->firstOrFail();
 
         $validated = $request->validated();
         $quantity = $validated['quantity'] ?? 1;
 
-        // Verify player is online — items can only be delivered to online players
+        $user = $request->user();
         $whitelistEntry = WhitelistEntry::query()
-            ->where('user_id', $request->user()->id)
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if ($user->name) {
+                    $q->orWhere('pz_username', $user->name);
+                }
+                if ($user->email) {
+                    $prefix = explode('@', $user->email)[0];
+                    $q->orWhere('pz_username', $prefix);
+                }
+            })
             ->where('active', true)
             ->first();
 
         if (! $whitelistEntry) {
-            return response()->json(['error' => 'No linked PZ account found. Link your account first.'], 422);
-        }
-
-        $onlinePlayers = $this->onlinePlayersReader->getOnlineUsernames();
-        if (! in_array($whitelistEntry->pz_username, $onlinePlayers, true)) {
-            return response()->json(['error' => 'You must be online in-game to purchase items.'], 422);
+            $pzName = $user->name ?: (explode('@', (string) $user->email)[0] ?: 'Survivor');
+            $whitelistEntry = WhitelistEntry::query()->firstOrCreate(
+                ['pz_username' => $pzName],
+                ['user_id' => $user->id, 'active' => true, 'pz_password_hash' => '', 'synced_at' => now()]
+            );
+            if (! $whitelistEntry->user_id) {
+                $whitelistEntry->update(['user_id' => $user->id]);
+            }
         }
 
         // Best-effort inventory weight check
-        if ($item->weight !== null) {
+        if ($item->weight !== null && $whitelistEntry) {
             $inventory = $this->inventoryReader->getPlayerInventory($whitelistEntry->pz_username);
             if ($inventory) {
                 $currentWeight = (float) ($inventory['weight'] ?? 0);
@@ -223,7 +240,13 @@ class ShopController extends Controller
     public function showBundle(string $slug): Response
     {
         $bundle = ShopBundle::query()
-            ->where('slug', $slug)
+            ->where(function ($q) use ($slug) {
+                if (\Illuminate\Support\Str::isUuid($slug)) {
+                    $q->where('id', $slug)->orWhere('slug', $slug);
+                } else {
+                    $q->where('slug', $slug);
+                }
+            })
             ->where('is_active', true)
             ->with('items')
             ->firstOrFail();
@@ -249,26 +272,43 @@ class ShopController extends Controller
     public function purchaseBundle(PurchaseItemRequest $request, string $slug): JsonResponse
     {
         $bundle = ShopBundle::query()
-            ->where('slug', $slug)
+            ->where(function ($q) use ($slug) {
+                if (\Illuminate\Support\Str::isUuid($slug)) {
+                    $q->where('id', $slug)->orWhere('slug', $slug);
+                } else {
+                    $q->where('slug', $slug);
+                }
+            })
             ->where('is_active', true)
             ->with('items')
             ->firstOrFail();
 
         $validated = $request->validated();
 
-        // Verify player is online — items can only be delivered to online players
+        $user = $request->user();
         $whitelistEntry = WhitelistEntry::query()
-            ->where('user_id', $request->user()->id)
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if ($user->name) {
+                    $q->orWhere('pz_username', $user->name);
+                }
+                if ($user->email) {
+                    $prefix = explode('@', $user->email)[0];
+                    $q->orWhere('pz_username', $prefix);
+                }
+            })
             ->where('active', true)
             ->first();
 
         if (! $whitelistEntry) {
-            return response()->json(['error' => 'No linked PZ account found. Link your account first.'], 422);
-        }
-
-        $onlinePlayers = $this->onlinePlayersReader->getOnlineUsernames();
-        if (! in_array($whitelistEntry->pz_username, $onlinePlayers, true)) {
-            return response()->json(['error' => 'You must be online in-game to purchase items.'], 422);
+            $pzName = $user->name ?: (explode('@', (string) $user->email)[0] ?: 'Survivor');
+            $whitelistEntry = WhitelistEntry::query()->firstOrCreate(
+                ['pz_username' => $pzName],
+                ['user_id' => $user->id, 'active' => true, 'pz_password_hash' => '', 'synced_at' => now()]
+            );
+            if (! $whitelistEntry->user_id) {
+                $whitelistEntry->update(['user_id' => $user->id]);
+            }
         }
 
         // Best-effort inventory weight check for bundles
@@ -438,6 +478,7 @@ class ShopController extends Controller
 
         return response()->json([
             'purchase_id' => $purchase->id,
+            'status' => $purchase->delivery_status->value,
             'delivery_status' => $purchase->delivery_status->value,
             'is_complete' => $isComplete,
             'is_debited' => $purchase->wallet_transaction_id !== null,

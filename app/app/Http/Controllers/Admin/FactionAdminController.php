@@ -59,10 +59,14 @@ class FactionAdminController extends Controller
         return back()->with('success', "Đã giải tán bang hội {$faction->name}.");
     }
 
-    public function sync(): JsonResponse
+    public function sync(Request $request): RedirectResponse|JsonResponse
     {
         $this->factionManager->exportFactionConfig();
 
-        return response()->json(['message' => 'Đã xuất đồng bộ cấu hình bang hội sang game server.']);
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json(['message' => 'Đã xuất đồng bộ cấu hình bang hội sang game server.']);
+        }
+
+        return back()->with('success', 'Đã xuất đồng bộ cấu hình bang hội sang game server.');
     }
 }

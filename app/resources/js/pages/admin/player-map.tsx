@@ -109,6 +109,8 @@ export default function PlayerMap({
     safeZones,
     factionTerritories = [],
     vehicles = [],
+    worldEvents = [],
+    deathHeatmapPoints = [],
 }: Props) {
     const { t } = useTranslation();
     const [isMapInteracting, setIsMapInteracting] = useState(false);

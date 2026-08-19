@@ -50,14 +50,18 @@ class AntiCheatController extends Controller
         ]);
     }
 
-    public function sync(): JsonResponse
+    public function sync(Request $request): RedirectResponse|JsonResponse
     {
         $count = $this->antiCheatManager->importViolations();
 
-        return response()->json([
-            'message' => "Synced {$count} new anticheat violation(s).",
-            'count' => $count,
-        ]);
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'message' => "Synced {$count} new anticheat violation(s).",
+                'count' => $count,
+            ]);
+        }
+
+        return back()->with('success', "Synced {$count} new anticheat violation(s).");
     }
 
     public function resolve(Request $request, AntiCheatViolation $violation): RedirectResponse|JsonResponse

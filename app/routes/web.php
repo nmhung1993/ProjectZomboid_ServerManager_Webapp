@@ -34,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('deposit/status', [ShopController::class, 'depositStatus'])->name('deposit.status')->middleware('throttle:30,1');
         Route::get('purchase/{purchaseId}/status', [ShopController::class, 'purchaseStatus'])->name('purchase.status')->middleware('throttle:30,1');
         Route::post('bundle/{slug}/purchase', [ShopController::class, 'purchaseBundle'])->name('bundle.purchase')->middleware('throttle:10,1');
+        Route::post('item/{slug}/purchase', [ShopController::class, 'purchaseItem'])->name('item.purchase')->middleware('throttle:10,1');
         Route::post('{slug}/purchase', [ShopController::class, 'purchaseItem'])->name('purchase')->middleware('throttle:10,1');
     });
 
@@ -101,6 +102,11 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         // Players
         Route::get('players', [Admin\PlayerController::class, 'index'])->name('players');
         Route::get('players/map', Admin\PlayerMapController::class)->name('players.map');
+        Route::get('player/map', fn () => redirect()->route('admin.players.map'));
+        Route::get('player-map', fn () => redirect()->route('admin.players.map'));
+
+        // Performance
+        Route::get('performance', [Admin\PerformanceAdminController::class, 'index'])->name('performance');
 
         // Player Inventory
         Route::get('players/{username}/inventory', [Admin\InventoryController::class, 'show'])->name('players.inventory');

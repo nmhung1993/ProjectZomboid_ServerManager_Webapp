@@ -331,25 +331,45 @@ export default function ShopIndex({
                 credentials: 'same-origin',
             });
             if (!res.ok) return;
-            const data: PurchaseStatusResponse = await res.json();
-            if (data.status === 'completed') {
+            const data: any = await res.json();
+            const status = data.status || data.delivery_status;
+            const isCompleted = status === 'completed' || status === 'delivered' || status === 'queued' || data.is_complete;
+            const isFailed = status === 'failed';
+
+            if (isCompleted) {
                 toast.success(t('shop.purchase_completed'));
                 setPendingPurchaseId(null);
                 if (data.availableBalance !== undefined) setAvailableBalance(data.availableBalance);
                 if (data.balance !== undefined) setBalance(data.balance);
-            } else if (data.status === 'failed') {
+            } else if (isFailed) {
                 toast.error(data.error_message || t('shop.purchase_failed'));
                 setPendingPurchaseId(null);
                 if (data.availableBalance !== undefined) setAvailableBalance(data.availableBalance);
                 if (data.balance !== undefined) setBalance(data.balance);
             }
-        } catch { /* ignore */ }
+        } catch {
+            setPendingPurchaseId(null);
+        }
     }, [pendingPurchaseId, t]);
 
     useEffect(() => {
-        if (!pendingPurchaseId) { if (purchasePollRef.current) { clearInterval(purchasePollRef.current); purchasePollRef.current = null; } return; }
-        purchasePollRef.current = setInterval(pollPurchaseStatus, 3000);
-        return () => { if (purchasePollRef.current) clearInterval(purchasePollRef.current); };
+        if (!pendingPurchaseId) {
+            if (purchasePollRef.current) { clearInterval(purchasePollRef.current); purchasePollRef.current = null; }
+            return;
+        }
+        // Poll immediately, then every 2s
+        pollPurchaseStatus();
+        purchasePollRef.current = setInterval(pollPurchaseStatus, 2000);
+
+        // Safety timeout: unlock button after 8 seconds max
+        const safetyTimer = setTimeout(() => {
+            setPendingPurchaseId(null);
+        }, 8000);
+
+        return () => {
+            if (purchasePollRef.current) clearInterval(purchasePollRef.current);
+            clearTimeout(safetyTimer);
+        };
     }, [pendingPurchaseId, pollPurchaseStatus]);
 
     // ── Handlers ─────────────────────────────────────────────────────

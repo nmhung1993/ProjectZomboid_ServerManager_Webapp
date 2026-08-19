@@ -104,15 +104,16 @@ class PerformanceManager
         $memoryPercent = $memoryMax > 0 ? round(($memoryUsed / $memoryMax) * 100, 1) : 0;
 
         // Health Score calculation (0 - 100)
+        // Project Zomboid Dedicated Server standard tick rate is 10 - 60 TPS (100ms - 16.6ms).
         $score = 100;
-        if ($tps < 50) {
-            $score -= (50 - $tps) * 2;
+        if ($tps < 7.0) {
+            $score -= (7.0 - $tps) * 10;
         }
-        if ($tickTime > 30) {
-            $score -= ($tickTime - 30);
+        if ($tickTime > 150.0) {
+            $score -= ($tickTime - 150.0) * 0.2;
         }
-        if ($memoryPercent > 80) {
-            $score -= ($memoryPercent - 80);
+        if ($memoryPercent > 85.0) {
+            $score -= ($memoryPercent - 85.0);
         }
         if ($deadBodies > 1500) {
             $score -= 15;

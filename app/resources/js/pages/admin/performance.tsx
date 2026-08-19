@@ -14,6 +14,7 @@ import {
     ShieldAlert,
     Skull,
     Sparkles,
+    Timer,
     Users,
     Zap,
 } from 'lucide-react';
@@ -196,23 +197,23 @@ export default function AdminPerformancePage({ health, history, hotspots }: Prop
                 <div className="grid gap-4 md:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Server TPS Target</CardTitle>
+                            <CardTitle className="text-sm font-medium">Server TPS (Tick Rate)</CardTitle>
                             <Gauge className="size-4 text-emerald-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{health.latest.tps.toFixed(1)} / 60.0</div>
-                            <p className="text-xs text-muted-foreground mt-1">Chuẩn mượt: 50.0 - 60.0 TPS</p>
+                            <div className="text-2xl font-bold text-emerald-600">{health.latest.tps.toFixed(1)} / 10.0 TPS</div>
+                            <p className="text-xs text-muted-foreground mt-1">Chuẩn tối đa Dedicated Server: 10.0 TPS (100ms / tick)</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Frame Render Time</CardTitle>
-                            <Clock className="size-4 text-primary" />
+                            <CardTitle className="text-sm font-medium">Server Tick Time</CardTitle>
+                            <Timer className="size-4 text-primary" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{health.latest.tick_time_ms.toFixed(1)} ms</div>
-                            <p className="text-xs text-muted-foreground mt-1">Mục tiêu: &lt; 16.7 ms mỗi tick</p>
+                            <div className="text-2xl font-bold text-primary">{health.latest.tick_time_ms.toFixed(1)} ms</div>
+                            <p className="text-xs text-muted-foreground mt-1">Chu kỳ vòng lặp máy chủ (Tối ưu ≤ 100ms)</p>
                         </CardContent>
                     </Card>
 

@@ -218,7 +218,7 @@ class WhitelistController extends Controller
         ]);
     }
 
-    public function sync(Request $request): JsonResponse
+    public function sync(Request $request): RedirectResponse|JsonResponse
     {
         $result = $this->whitelistManager->syncWithPostgres();
 
@@ -229,11 +229,15 @@ class WhitelistController extends Controller
             ip: $request->ip(),
         );
 
-        return response()->json([
-            'message' => 'Sync completed',
-            'added' => $result['added'],
-            'removed' => $result['removed'],
-            'mismatches' => $result['mismatches'],
-        ]);
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'message' => 'Sync completed',
+                'added' => $result['added'],
+                'removed' => $result['removed'],
+                'mismatches' => $result['mismatches'],
+            ]);
+        }
+
+        return back()->with('success', "Đã đồng bộ Whitelist (Thêm: {$result['added']}, Xóa: {$result['removed']}).");
     }
 }
