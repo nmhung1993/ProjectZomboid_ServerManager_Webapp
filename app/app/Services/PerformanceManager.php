@@ -20,20 +20,44 @@ class PerformanceManager
     public function syncPerformanceSnapshot(): ?ServerPerformanceLog
     {
         $data = JsonFile::read($this->perfPath, []);
-        if (! $data || empty($data['tps'])) {
+        if (! $data) {
             return null;
+        }
+
+        $rawTps = (float) ($data['tps'] ?? 60.0);
+        $tickTime = (float) ($data['tick_time_ms'] ?? 16.6);
+        // Sanitize legacy bug where tps was computed over 5000ms delta (0.2 TPS)
+        if ($rawTps <= 1.0 && $tickTime <= 50.0) {
+            $rawTps = 60.0;
+        }
+
+        $memUsed = (float) ($data['memory_used_mb'] ?? 0);
+        $memMax = (float) ($data['memory_max_mb'] ?? 0);
+
+        if ($memMax <= 0) {
+            try {
+                /** @var DockerManager $docker */
+                $docker = app(DockerManager::class);
+                $stats = $docker->getContainerStats();
+                if ($stats) {
+                    $memUsed = $stats['memory_used_mb'];
+                    $memMax = $stats['memory_max_mb'];
+                }
+            } catch (\Throwable) {
+                // Fallback to default
+            }
         }
 
         try {
             return ServerPerformanceLog::create([
-                'tps' => (float) ($data['tps'] ?? 60.0),
-                'tick_time_ms' => (float) ($data['tick_time_ms'] ?? 16.6),
+                'tps' => $rawTps,
+                'tick_time_ms' => $tickTime,
                 'loaded_squares' => (int) ($data['loaded_squares'] ?? 0),
                 'active_zombies' => (int) ($data['active_zombies'] ?? 0),
                 'dead_bodies' => (int) ($data['dead_bodies'] ?? 0),
                 'online_players' => (int) ($data['online_players'] ?? 0),
-                'memory_used_mb' => (float) ($data['memory_used_mb'] ?? 0),
-                'memory_max_mb' => (float) ($data['memory_max_mb'] ?? 0),
+                'memory_used_mb' => $memUsed,
+                'memory_max_mb' => $memMax,
                 'recorded_at' => now(),
             ]);
         } catch (\Throwable $e) {
@@ -51,11 +75,32 @@ class PerformanceManager
         $latest = ServerPerformanceLog::latest('recorded_at')->first();
 
         $tps = $latest ? (float) $latest->tps : 60.0;
+        if ($tps <= 1.0) {
+            $tps = 60.0;
+        }
         $tickTime = $latest ? (float) $latest->tick_time_ms : 16.6;
+        if ($tickTime > 100.0) {
+            $tickTime = 16.6;
+        }
         $activeZombies = $latest ? (int) $latest->active_zombies : 0;
         $deadBodies = $latest ? (int) $latest->dead_bodies : 0;
         $memoryUsed = $latest ? (float) $latest->memory_used_mb : 0;
         $memoryMax = $latest ? (float) $latest->memory_max_mb : 0;
+
+        if ($memoryMax <= 0) {
+            try {
+                /** @var DockerManager $docker */
+                $docker = app(DockerManager::class);
+                $stats = $docker->getContainerStats();
+                if ($stats) {
+                    $memoryUsed = $stats['memory_used_mb'];
+                    $memoryMax = $stats['memory_max_mb'];
+                }
+            } catch (\Throwable) {
+                // Ignore
+            }
+        }
+
         $memoryPercent = $memoryMax > 0 ? round(($memoryUsed / $memoryMax) * 100, 1) : 0;
 
         // Health Score calculation (0 - 100)

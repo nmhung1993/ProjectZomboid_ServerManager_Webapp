@@ -9,15 +9,32 @@ ZM_Performance = {}
 
 local PERF_FILE = "performance_metrics.json"
 
-local lastTickTime = nil
-local tickTimes = {}
-local MAX_SAMPLES = 20
+local lastFrameTime = nil
+local frameDeltas = {}
+local MAX_SAMPLES = 60
+
+local function onFrameTick()
+    local now = getTimeInMillis and getTimeInMillis() or (os.time() * 1000)
+    if lastFrameTime then
+        local delta = now - lastFrameTime
+        if delta > 0 and delta < 1000 then
+            table.insert(frameDeltas, delta)
+            if #frameDeltas > MAX_SAMPLES then
+                table.remove(frameDeltas, 1)
+            end
+        end
+    end
+    lastFrameTime = now
+end
+
+if Events and Events.OnTick then
+    Events.OnTick.Add(onFrameTick)
+end
 
 function ZM_Performance.export()
     local cell = getCell and getCell()
     local activeZombies = 0
     local deadBodies = 0
-    local loadedSquares = 0
 
     if cell then
         pcall(function()
@@ -28,18 +45,18 @@ function ZM_Performance.export()
         end)
     end
 
-    -- Calculate average TPS / Tick Time
+    -- Calculate average TPS / Tick Time from frame deltas
     local avgTickTime = 16.6
     local calculatedTps = 60.0
 
-    if #tickTimes > 0 then
+    if #frameDeltas > 5 then
         local sum = 0
-        for _, t in ipairs(tickTimes) do
+        for _, t in ipairs(frameDeltas) do
             sum = sum + t
         end
-        avgTickTime = sum / #tickTimes
+        avgTickTime = sum / #frameDeltas
         if avgTickTime > 0 then
-            calculatedTps = math.min(60.0, math.floor((1000.0 / avgTickTime) * 10) / 10)
+            calculatedTps = math.min(60.0, math.max(1.0, math.floor((1000.0 / avgTickTime) * 10) / 10))
         end
     end
 
@@ -68,23 +85,11 @@ function ZM_Performance.export()
 end
 
 function ZM_Performance.tick()
-    local now = getTimeInMillis and getTimeInMillis() or (os.time() * 1000)
-    if lastTickTime then
-        local delta = now - lastTickTime
-        if delta > 0 and delta < 5000 then
-            table.insert(tickTimes, delta)
-            if #tickTimes > MAX_SAMPLES then
-                table.remove(tickTimes, 1)
-            end
-        end
-    end
-    lastTickTime = now
-
     ZM_Performance.export()
 end
 
 function ZM_Performance.init()
-    print("[ZomboidManager-Performance] Initialized Server Performance Monitor")
+    print("[ZomboidManager-Performance] Initialized Performance & TPS Monitor")
     ZM_Performance.export()
 end
 

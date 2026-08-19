@@ -401,3 +401,62 @@ body,
 .pz-map .leaflet-popup-close-button {
     color: var(--muted-foreground) !important;
 }
+
+/* ── Retro 1993 Vintage Computer & Knox BBS OS Styles ── */
+.crt-screen {
+    position: relative;
+    overflow: hidden;
+}
+
+.crt-scanlines::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+    z-index: 30;
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+.crt-glow-green {
+    text-shadow: 0 0 4px rgba(34, 197, 94, 0.6), 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+.crt-glow-amber {
+    text-shadow: 0 0 4px rgba(245, 158, 11, 0.6), 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.win93-beveled-outset {
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-bottom: 2px solid #555555;
+    border-right: 2px solid #555555;
+    box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #888888;
+}
+
+.win93-beveled-inset {
+    border-top: 2px solid #555555;
+    border-left: 2px solid #555555;
+    border-bottom: 2px solid #ffffff;
+    border-right: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px #000000, inset -1px -1px 0px #dfdfdf;
+}
+
+.win93-btn {
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-bottom: 2px solid #333333;
+    border-right: 2px solid #333333;
+    box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #777777;
+}
+
+.win93-btn:active {
+    border-top: 2px solid #333333;
+    border-left: 2px solid #333333;
+    border-bottom: 2px solid #ffffff;
+    border-right: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px #000000;
+}
+
