@@ -20,10 +20,12 @@ function ZM_Performance.export()
     local loadedSquares = 0
 
     if cell then
-        local zList = cell:getZombieList()
-        if zList then
-            activeZombies = zList:size()
-        end
+        pcall(function()
+            local zList = cell:getZombieList()
+            if zList and zList.size then
+                activeZombies = zList:size()
+            end
+        end)
     end
 
     -- Calculate average TPS / Tick Time
@@ -41,22 +43,15 @@ function ZM_Performance.export()
         end
     end
 
-    -- Java VM Memory
-    local memoryUsedMb = 0
-    local memoryMaxMb = 0
-    local ok, runtime = pcall(function() return java.lang.Runtime:getRuntime() end)
-    if ok and runtime then
-        local total = runtime:totalMemory() / (1024 * 1024)
-        local free = runtime:freeMemory() / (1024 * 1024)
-        local maxMem = runtime:maxMemory() / (1024 * 1024)
-        memoryUsedMb = math.floor(total - free)
-        memoryMaxMb = math.floor(maxMem)
-    end
-
     local onlinePlayers = 0
-    if getOnlinePlayers and getOnlinePlayers() then
-        onlinePlayers = getOnlinePlayers():size()
-    end
+    pcall(function()
+        if getOnlinePlayers and getOnlinePlayers() then
+            local pl = getOnlinePlayers()
+            if pl and pl.size then
+                onlinePlayers = pl:size()
+            end
+        end
+    end)
 
     local payload = {
         timestamp = getTimestamp and getTimestamp() or os.time(),
@@ -65,8 +60,8 @@ function ZM_Performance.export()
         active_zombies = activeZombies,
         dead_bodies = deadBodies,
         online_players = onlinePlayers,
-        memory_used_mb = memoryUsedMb,
-        memory_max_mb = memoryMaxMb,
+        memory_used_mb = 0,
+        memory_max_mb = 0,
     }
 
     ZM_Utils.writeJsonFile(PERF_FILE, payload)

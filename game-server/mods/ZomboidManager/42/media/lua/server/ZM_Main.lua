@@ -117,35 +117,45 @@ local function onEveryOneMinute()
         ZM_GameState.export()
     end
 
+    -- Helper to safely run sub-module ticks
+    local function safeTick(name, mod)
+        if mod and mod.tick then
+            local ok, err = pcall(mod.tick)
+            if not ok then
+                print("[ZomboidManager-Main] Error in " .. name .. ".tick(): " .. tostring(err))
+            end
+        end
+    end
+
     -- Respawn delay: reload config, process resets, clean expired
-    if ZM_RespawnDelay and ZM_RespawnDelay.tick then ZM_RespawnDelay.tick() end
+    safeTick("ZM_RespawnDelay", ZM_RespawnDelay)
 
     -- Safe zone: reload config, flush violations
-    if ZM_SafeZone and ZM_SafeZone.tick then ZM_SafeZone.tick() end
+    safeTick("ZM_SafeZone", ZM_SafeZone)
 
     -- PvP tracker: scan for kills, flush to disk
-    if ZM_PvpTracker and ZM_PvpTracker.tick then ZM_PvpTracker.tick() end
+    safeTick("ZM_PvpTracker", ZM_PvpTracker)
 
     -- AntiCheat: scan online players for godmode, noclip, and admin cheats
-    if ZM_AntiCheat and ZM_AntiCheat.tick then ZM_AntiCheat.tick() end
+    safeTick("ZM_AntiCheat", ZM_AntiCheat)
 
     -- Faction: reload config and cache
-    if ZM_Faction and ZM_Faction.tick then ZM_Faction.tick() end
+    safeTick("ZM_Faction", ZM_Faction)
 
     -- Vehicles: export vehicles and process commands
-    if ZM_Vehicles and ZM_Vehicles.tick then ZM_Vehicles.tick() end
+    safeTick("ZM_Vehicles", ZM_Vehicles)
 
     -- Cleaner: process cleanup requests
-    if ZM_Cleaner and ZM_Cleaner.tick then ZM_Cleaner.tick() end
+    safeTick("ZM_Cleaner", ZM_Cleaner)
 
     -- Delivery: process item deliveries to online players
-    if ZM_Delivery and ZM_Delivery.tick then ZM_Delivery.tick() end
+    safeTick("ZM_Delivery", ZM_Delivery)
 
     -- World Events: process active airdrops, heli crashes, invasions
-    if ZM_Events and ZM_Events.tick then ZM_Events.tick() end
+    safeTick("ZM_Events", ZM_Events)
 
     -- Performance: monitor tick time, zombies, heap memory
-    if ZM_Performance and ZM_Performance.tick then ZM_Performance.tick() end
+    safeTick("ZM_Performance", ZM_Performance)
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
