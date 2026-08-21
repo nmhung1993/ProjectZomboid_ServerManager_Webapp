@@ -400,7 +400,7 @@ export default function Status({
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center gap-2 text-base">
                                             <Swords className="size-4 text-red-500" />
-                                            Top Zombie Kills
+                                            {t('status.top_kills')}
                                         </CardTitle>
                                         <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
                                             <Link href="/rankings">
@@ -443,7 +443,7 @@ export default function Status({
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center gap-2 text-base">
                                             <Trophy className="size-4 text-amber-500" />
-                                            Top Sinh tồn (Realtime)
+                                            {t('status.top_survival')}
                                         </CardTitle>
                                         <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
                                             <Link href="/rankings">
