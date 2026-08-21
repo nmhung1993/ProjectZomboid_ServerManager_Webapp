@@ -81,6 +81,7 @@ describe('Site settings update', function () {
         $this->actingAs($this->admin)
             ->post(route('admin.site-settings.update'), [
                 'site_name' => 'New Server Name',
+                'pwa_badge_name' => 'PZ Admin',
                 'footer_text' => 'New Footer',
                 'hero_badge' => 'New Badge',
                 'hero_title' => 'New Title',
@@ -93,6 +94,8 @@ describe('Site settings update', function () {
 
         $settings = SiteSetting::instance();
         expect($settings->site_name)->toBe('New Server Name');
+        expect($settings->pwa_badge_name)->toBe('PZ Admin');
+        expect($settings->pwaBadgeName())->toBe('PZ Admin');
         expect($settings->footer_text)->toBe('New Footer');
         expect($settings->hero_badge)->toBe('New Badge');
         expect($settings->hero_title)->toBe('New Title');

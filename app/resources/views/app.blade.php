@@ -38,13 +38,26 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        {{-- PWA Manifest & Mobile Icons --}}
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ $pwaBadgeName ?? config('app.name', 'Zomboid') }}">
+        <meta name="theme-color" content="#161c24">
+
         @if(isset($siteFavicon) && $siteFavicon)
             <link rel="icon" href="{{ $siteFavicon }}">
         @else
             <link rel="icon" href="/favicon.ico" sizes="any">
             <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         @endif
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+        @if(isset($pwaIcon) && $pwaIcon)
+            <link rel="apple-touch-icon" href="{{ $pwaIcon }}">
+        @else
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        @endif
 
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

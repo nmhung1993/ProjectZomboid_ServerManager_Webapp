@@ -16,6 +16,7 @@ class UpdateSiteSettingRequest extends FormRequest
     {
         return [
             'site_name' => ['sometimes', 'string', 'max:100'],
+            'pwa_badge_name' => ['sometimes', 'nullable', 'string', 'max:50'],
             'logo' => ['sometimes', 'nullable', 'file', 'image', 'max:2048', 'mimes:png,jpg,jpeg,webp'],
             'favicon' => ['sometimes', 'nullable', 'file', 'max:512', 'mimes:ico,png'],
             'footer_text' => ['sometimes', 'string', 'max:200'],

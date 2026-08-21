@@ -2,6 +2,7 @@ import type { Auth } from '@/types/auth';
 
 export type SiteSettings = {
     name: string;
+    pwa_badge_name?: string | null;
     logo_url: string | null;
     favicon_url: string | null;
     footer_text: string;

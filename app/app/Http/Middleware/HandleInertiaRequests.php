@@ -43,6 +43,9 @@ class HandleInertiaRequests extends Middleware
         $siteSettings = $request->attributes->get('site_settings') ?? SiteSetting::cached();
 
         view()->share('siteFavicon', $siteSettings->faviconUrl());
+        view()->share('siteLogo', $siteSettings->logoUrl());
+        view()->share('pwaBadgeName', $siteSettings->pwaBadgeName());
+        view()->share('pwaIcon', $siteSettings->pwaIconUrl());
 
         return [
             ...parent::share($request),
@@ -57,6 +60,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'site' => fn () => [
                 'name' => $siteSettings->site_name,
+                'pwa_badge_name' => $siteSettings->pwa_badge_name,
                 'logo_url' => $siteSettings->logoUrl(),
                 'favicon_url' => $siteSettings->faviconUrl(),
                 'footer_text' => $siteSettings->footer_text,

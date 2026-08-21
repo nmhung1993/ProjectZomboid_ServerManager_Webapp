@@ -19,6 +19,7 @@ class SiteSettingFactory extends Factory
     {
         return [
             'site_name' => 'Zomboid Manager',
+            'pwa_badge_name' => null,
             'footer_text' => 'Created by nmhung1993 — https://github.com/nmhung1993',
             'hero_badge' => 'nmhung1993',
             'hero_title' => 'Project Zomboid',

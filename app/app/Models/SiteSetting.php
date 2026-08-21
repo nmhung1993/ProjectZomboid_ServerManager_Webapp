@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 /**
  * @property int $id
  * @property string $site_name
+ * @property string|null $pwa_badge_name
  * @property string|null $logo_path
  * @property string|null $favicon_path
  * @property string $footer_text
@@ -33,6 +34,7 @@ class SiteSetting extends Model
 
     protected $fillable = [
         'site_name',
+        'pwa_badge_name',
         'logo_path',
         'favicon_path',
         'footer_text',
@@ -72,6 +74,7 @@ class SiteSetting extends Model
     {
         return static::query()->firstOrCreate([], [
             'site_name' => 'Zomboid Manager',
+            'pwa_badge_name' => null,
             'footer_text' => 'Created by nmhung1993 — https://github.com/nmhung1993',
             'hero_badge' => 'nmhung1993',
             'hero_title' => 'Project Zomboid',
@@ -101,6 +104,16 @@ class SiteSetting extends Model
     public static function bustCache(): void
     {
         Cache::forget('site_settings');
+    }
+
+    public function pwaBadgeName(): string
+    {
+        return ! empty($this->pwa_badge_name) ? $this->pwa_badge_name : $this->site_name;
+    }
+
+    public function pwaIconUrl(): string
+    {
+        return $this->logoUrl() ?? $this->faviconUrl() ?? '/apple-touch-icon.png';
     }
 
     public function logoUrl(): ?string

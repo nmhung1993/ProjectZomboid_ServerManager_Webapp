@@ -25,6 +25,7 @@ class SiteSettingController extends Controller
         return Inertia::render('admin/site-settings', [
             'settings' => [
                 'site_name' => $settings->site_name,
+                'pwa_badge_name' => $settings->pwa_badge_name ?? '',
                 'logo_url' => $settings->logoUrl(),
                 'favicon_url' => $settings->faviconUrl(),
                 'footer_text' => $settings->footer_text,
@@ -79,7 +80,7 @@ class SiteSettingController extends Controller
 
         // Update text fields
         $textFields = [
-            'site_name', 'footer_text', 'hero_badge', 'hero_title',
+            'site_name', 'pwa_badge_name', 'footer_text', 'hero_badge', 'hero_title',
             'hero_subtitle', 'hero_description', 'hero_button_text', 'default_locale',
         ];
 

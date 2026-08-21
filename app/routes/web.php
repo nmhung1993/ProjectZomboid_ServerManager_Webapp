@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\PlayerProfileController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\RankingsController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', WelcomeController::class)->name('home');
+Route::get('manifest.webmanifest', ManifestController::class)->name('manifest.webmanifest');
+Route::get('manifest.json', ManifestController::class)->name('manifest.json');
 
 Route::get('status', StatusController::class)->name('status');
 Route::get('rankings', RankingsController::class)->name('rankings');

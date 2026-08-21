@@ -16,6 +16,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type Settings = {
     site_name: string;
+    pwa_badge_name?: string | null;
     logo_url: string | null;
     favicon_url: string | null;
     footer_text: string;
@@ -65,6 +66,7 @@ export default function SiteSettings({ settings, available_icons, available_sect
     ];
 
     const [siteName, setSiteName] = useState(settings.site_name);
+    const [pwaBadgeName, setPwaBadgeName] = useState(settings.pwa_badge_name ?? '');
     const [footerText, setFooterText] = useState(settings.footer_text);
     const [heroBadge, setHeroBadge] = useState(settings.hero_badge);
     const [heroTitle, setHeroTitle] = useState(settings.hero_title);
@@ -111,6 +113,7 @@ export default function SiteSettings({ settings, available_icons, available_sect
     // Track dirty state for floating save button
     const isDirty =
         siteName !== settings.site_name ||
+        pwaBadgeName !== (settings.pwa_badge_name ?? '') ||
         footerText !== settings.footer_text ||
         heroBadge !== settings.hero_badge ||
         heroTitle !== settings.hero_title ||
@@ -132,6 +135,7 @@ export default function SiteSettings({ settings, available_icons, available_sect
         const formData = new FormData();
 
         formData.append('site_name', siteName);
+        formData.append('pwa_badge_name', pwaBadgeName);
         formData.append('footer_text', footerText);
         formData.append('hero_badge', heroBadge);
         formData.append('hero_title', heroTitle);
@@ -284,6 +288,18 @@ export default function SiteSettings({ settings, available_icons, available_sect
                                 onChange={(e) => setSiteName(e.target.value)}
                                 maxLength={100}
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="pwa-badge-name">{t('admin.site_settings.pwa_badge_name')}</Label>
+                            <Input
+                                id="pwa-badge-name"
+                                value={pwaBadgeName}
+                                onChange={(e) => setPwaBadgeName(e.target.value)}
+                                placeholder={t('admin.site_settings.pwa_badge_name_placeholder')}
+                                maxLength={50}
+                            />
+                            <p className="text-xs text-muted-foreground">{t('admin.site_settings.pwa_badge_name_hint')}</p>
                         </div>
 
                         <div className="space-y-2">
