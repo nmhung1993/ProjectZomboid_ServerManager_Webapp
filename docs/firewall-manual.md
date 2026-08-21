@@ -1,135 +1,93 @@
+# Cấu Hình Tường Lửa — Thủ Công / Hệ Điều Hành Khác
 # Firewall Configuration — Manual / Unsupported OS
 
-This guide is for servers running on operating systems where automatic firewall management is **not supported** (anything other than firewalld or ufw), or where you chose "manual" mode during `make init`.
+---
 
-When you run `make expose`, `make hide`, `make admin-expose`, or `make admin-hide`, the commands will **print the ports you need to open/close** instead of modifying the firewall automatically.
+Tài liệu này dành cho các hệ điều hành chưa hỗ trợ cấu hình tự động (khác firewalld/ufw), hoặc khi bạn chọn chế độ "manual" trong `make init`.
 
-## Ports Reference
+---
 
-| Port | Protocol | Purpose | When to open |
-|------|----------|---------|--------------|
-| `16261` | UDP | PZ game port | `make expose` — for players to connect |
-| `16262` | UDP | PZ direct connection | `make expose` — for players to connect |
-| *Caddy HTTP* | TCP | HTTP redirect to HTTPS | `make admin-expose` — for public admin |
-| *Caddy HTTPS* | TCP | Admin panel (HTTPS) | `make admin-expose` — for public admin |
-| `8000` | TCP | App (local only) | **Never expose** — stays on `127.0.0.1` |
+## 1. Bảng Tra Cứu Các Cổng Mạng / Ports Reference
 
-> Caddy ports default to 80/443 but can be customized during `make init`. Check `.firewall.conf` or run `make info` to see your configured ports.
+| Port / Cổng | Protocol / Giao thức | Mục đích / Purpose | Khi nào cần mở / When to open |
+|---|---|---|---|
+| `16261` | UDP | Cổng kết nối game PZ chính | `make expose` — cho người chơi kết nối |
+| `16262` | UDP | Cổng kết nối trực tiếp PZ | `make expose` — cho người chơi kết nối |
+| *Caddy HTTP* | TCP | Tự động chuyển hướng sang HTTPS | `make admin-expose` — Web Admin |
+| *Caddy HTTPS* | TCP | Bảng điều khiển Web Admin | `make admin-expose` — Web Admin |
+| `8000` | TCP | App backend nội bộ | **Không bao giờ mở ra ngoài** (chỉ `127.0.0.1`) |
 
-## Access Levels
+---
 
-### 1. Local-Only (Default)
+## 2. Các Lệnh Cấu Hình Theo Từng Công Cụ / Firewall Tool Syntax
 
-After `make up`, the admin panel is available at `http://localhost:8000`. No firewall changes needed.
-
-### 2. Game Ports Open (LAN / Internet)
-
-Open UDP ports `16261` and `16262` in your firewall. Examples for common tools:
-
-**iptables:**
+### A. iptables (Linux)
 ```bash
+# Mở cổng game UDP
 sudo iptables -A INPUT -p udp --dport 16261 -j ACCEPT
 sudo iptables -A INPUT -p udp --dport 16262 -j ACCEPT
+
+# Mở cổng Web Admin Caddy
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Đóng cổng (thay -A bằng -D)
+sudo iptables -D INPUT -p udp --dport 16261 -j ACCEPT
 ```
 
-**nftables:**
+### B. nftables (Linux)
 ```bash
+# Mở cổng game
 sudo nft add rule inet filter input udp dport { 16261, 16262 } accept
+
+# Mở cổng Caddy
+sudo nft add rule inet filter input tcp dport { 80, 443 } accept
 ```
 
-**Windows Firewall (PowerShell):**
+### C. Windows Firewall (PowerShell)
 ```powershell
 New-NetFirewallRule -DisplayName "PZ Game" -Direction Inbound -Protocol UDP -LocalPort 16261,16262 -Action Allow
+New-NetFirewallRule -DisplayName "PZ Admin HTTPS" -Direction Inbound -Protocol TCP -LocalPort 80,443 -Action Allow
 ```
 
-**macOS (pf):**
+### D. macOS (pf)
 ```bash
 echo "pass in proto udp from any to any port { 16261, 16262 }" | sudo pfctl -ef -
 ```
 
-### 3. Public Admin Panel
+---
 
-Open TCP ports for Caddy reverse proxy access. The exact ports depend on what you configured during `make init` (default: 80 and 443). Check your ports with `make info`.
+## 3. Mở Port Trên Router (Port Forwarding) / Router Port Forwarding
 
-**iptables:**
-```bash
-# Replace 80/443 with your configured Caddy ports if different
-sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-```
+1. Tìm IP nội bộ của máy chủ (`ip addr` hoặc `ipconfig`).
+2. Mở trình duyệt truy cập vào modem/router.
+3. Chuyển tiếp cổng `16261/UDP`, `16262/UDP`, `80/TCP`, `443/TCP` về IP máy chủ.
 
-**nftables:**
-```bash
-sudo nft add rule inet filter input tcp dport { 80, 443 } accept
-```
 
-### Closing Ports
+---
 
-Reverse the commands above. For iptables, replace `-A` with `-D`:
+## 4. Chuyển Sang Backend Được Hỗ Trợ Tự Động / Switching to a Supported Backend
 
-```bash
-sudo iptables -D INPUT -p udp --dport 16261 -j ACCEPT
-sudo iptables -D INPUT -p udp --dport 16262 -j ACCEPT
-```
-
-## Router Port Forwarding
-
-> **Important:** Opening firewall ports and router port forwarding are two separate steps.
-> The firewall controls what traffic the *server itself* accepts.
-> Your router controls what traffic reaches the server *from the internet*.
-> Players on your local network only need the firewall opened. Internet players need both.
-
-**This project does not automate router configuration.** To let internet players connect:
-
-1. Find your server's **local IP** (e.g., `192.168.1.100`)
-2. Log into your router's admin panel
-3. Forward these ports to your server's local IP:
-   - `16261/UDP` — Game port
-   - `16262/UDP` — Direct connection port
-   - Your configured Caddy HTTP + HTTPS ports (see `make info`) — only if you want public admin access
-
-### Common Issues
-
-- **Router WAN admin on port 80/443:** Many routers use port 80 or 443 for their own remote management (WAN admin) UI. When enabled, the router **intercepts** traffic on these ports before it ever reaches your server — port forwarding rules for 80/443 will silently fail. **Fix:** Disable "Remote Management" / "WAN Admin" in your router settings, or move the router's admin port to something else (e.g., 8888). Alternatively, choose custom Caddy ports during `make init` (e.g., 8080/8443) to sidestep the conflict.
-- **Double NAT:** If your server is behind two routers (e.g., ISP gateway + your router), you need to forward ports on **both** devices, or put the first device in bridge mode.
-- **CGNAT:** Some ISPs use Carrier-Grade NAT (100.64.x.x range). Port forwarding won't work — you'll need a VPN tunnel or a reverse proxy service.
-- **Dynamic IP:** If your public IP changes, use a Dynamic DNS service (e.g., DuckDNS, No-IP) and configure a domain in `make init`.
-
-## Switching to a Supported Backend
-
-If you install firewalld or ufw later, re-run:
-
+Nếu bạn cài đặt `ufw` hoặc `firewalld` sau này, chỉ cần chạy lại:
 ```bash
 make init
 ```
+Hệ thống sẽ tự động quét lại môi trường và ghi đè `.firewall.conf`.
 
-The setup wizard will re-detect your firewall backend and update `.firewall.conf`.
+---
 
-Or edit `.firewall.conf` manually:
+## 5. Cấu Trúc File `.firewall.conf` / About `.firewall.conf`
 
+File này được tạo tự động bởi `make init` để lưu cấu hình firewall của server:
 ```ini
-FIREWALL_BACKEND=ufw
-FIREWALL_OS=ubuntu
-FIREWALL_ZONE=
-CADDY_ENABLED=true
-ADMIN_PUBLIC_HOST=
-ADMIN_HTTP_PORT=80
-ADMIN_HTTPS_PORT=443
-```
-
-## About .firewall.conf
-
-This file is created by `make init` and stores your firewall configuration:
-
-```ini
-# Auto-generated by make init — safe to edit
+# Tự động sinh bởi make init — có thể chỉnh sửa thủ công
 FIREWALL_BACKEND=manual    # firewalld | ufw | manual
-FIREWALL_OS=unknown        # detected OS ID from /etc/os-release
-FIREWALL_ZONE=             # firewalld zone (only for firewalld backend)
-CADDY_ENABLED=true         # whether Caddy reverse proxy is configured
-ADMIN_PUBLIC_HOST=         # hostname/IP for public admin access
-ADMIN_HTTP_PORT=80         # Caddy HTTP port (for redirect)
-ADMIN_HTTPS_PORT=443       # Caddy HTTPS port (admin panel)
+FIREWALL_OS=unknown        # Tên HĐH nhận diện từ /etc/os-release
+FIREWALL_ZONE=             # Zone firewalld (nếu dùng firewalld)
+CADDY_ENABLED=true         # Trạng thái reverse proxy Caddy
+ADMIN_PUBLIC_HOST=         # Domain hoặc IP cho public admin
+ADMIN_HTTP_PORT=80         # Cổng HTTP Caddy
+ADMIN_HTTPS_PORT=443       # Cổng HTTPS Caddy
 ```
+*(File này nằm trong `.gitignore` và chỉ tồn tại cục bộ trên máy chủ).*
 
-It is gitignored and local to your server.

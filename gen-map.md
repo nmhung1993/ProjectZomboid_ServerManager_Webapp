@@ -1,29 +1,41 @@
-## Phân tích: cách lệnh `gen-map` lấy các map mod đang active
+# Phân tích Kỹ thuật: Cơ chế Lấy và Hợp nhất Map Mod (`gen-map`)
+# Technical Analysis: Active Mod Map Extraction & Compositing Mechanism (`gen-map`)
 
+---
+
+## 1. Tổng quan / Overview
+
+### Tiếng Việt
 Lệnh `.\make.ps1 gen-map` chạy command Laravel `zomboid:generate-map-tiles` (file `app/app/Console/Commands/GenerateMapTiles.php`). Cốt lõi lấy map mod nằm ở hàm **`resolveModMaps()`** (dòng 299–352).
 
+### English
+The `.\make.ps1 gen-map` command executes Laravel's `zomboid:generate-map-tiles` command (`app/app/Console/Commands/GenerateMapTiles.php`). The core logic for mod map extraction resides within **`resolveModMaps()`** (lines 299–352).
+
 ---
 
-### Bức tranh tổng thể về nguồn dữ liệu
+## 2. Nguồn dữ liệu Local / Local Data Sources
 
+### Tiếng Việt & English
 `gen-map` không lấy gì từ internet. Nó đọc dữ liệu từ **3 nguồn local**:
+*(The `gen-map` pipeline operates completely offline from 3 local sources:)*
 
-| Nguồn | Đường dẫn | Vai trò |
+| Nguồn / Source | Đường dẫn / Path | Vai trò / Role |
 |---|---|---|
-| `server.ini` | `/pz-data/Server/*.ini` | Cho biết server đang bật những map nào (dòng `Map=`) |
-| Game data vanilla | `/pz-server/media/maps/...` | Map gốc của game |
-| Workshop mods | `/pz-server/steamapps/workshop/content/108600/<id>/mods/<mod>/common/media/maps/...` | Map mod đã cài qua Steam Workshop |
-| pzmap2dzi conf | `/opt/pzmap2dzi/conf/vanilla.txt` + `conf/mod/maps-*.txt` | Định nghĩa: tên map ↔ key pzmap2dzi |
+| `server.ini` | `/pz-data/Server/*.ini` | Cho biết server đang bật những map nào (dòng `Map=`) / Active server map line |
+| Game data vanilla | `/pz-server/media/maps/...` | Map gốc của game / Official vanilla game map data |
+| Workshop mods | `/pz-server/steamapps/workshop/content/108600/<id>/mods/<mod>/common/media/maps/...` | Map mod đã cài qua Steam Workshop / Installed workshop mod maps |
+| pzmap2dzi conf | `/opt/pzmap2dzi/conf/vanilla.txt` + `conf/mod/maps-*.txt` | Định nghĩa: tên map ↔ key pzmap2dzi / Map name to pzmap2dzi key mapping |
 
 ---
 
-### Dòng `Map=` thực tế của bạn
+## 3. Dòng `Map=` Thực tế / Example `Map=` Line
 
-```
+```ini
 Map=Muldraugh, KY;EchoCreek;Fort Benning B42;Fort Waterfront B42;EchoCreek MilitaryBase回音河 军事基地
 ```
 
 Sau khi `explode(';')` + `trim`, `resolveModMaps()` có danh sách `activeMaps`:
+*(After parsing with `explode(';')` and `trim`, `resolveModMaps()` acquires the active array:)*
 ```php
 [
   "Muldraugh, KY",
@@ -36,45 +48,37 @@ Sau khi `explode(';')` + `trim`, `resolveModMaps()` có danh sách `activeMaps`:
 
 ---
 
-### Quy trình 4 bước của `resolveModMaps()`
+## 4. Quy trình 4 bước của `resolveModMaps()` / 4-Step Resolution Pipeline
 
-#### Bước 1 — Đọc vanilla names (`parseVanillaMapNames`)
-
+### Bước 1 — Đọc vanilla names (`parseVanillaMapNames`) / Step 1: Read Vanilla Names
 Đọc `conf/vanilla.txt`, parse mọi `map_path`:
 ```yaml
 default:
     map_path: '{pz_root}/media/maps/Muldraugh, KY'
 ```
 → `vanillaNames = ["Muldraugh, KY", "Tutorial", "Studio", "Kingsmouth", ...]`
+*Dùng để loại bỏ map vanilla khỏi danh sách mod (vanilla render qua `base_map` riêng).*
 
-Dùng để loại bỏ map vanilla khỏi danh sách mod (vanilla render qua `base_map` riêng).
-
-#### Bước 2 — Đọc mod map keys (`parseModMapKeys`)
-
+### Bước 2 — Đọc mod map keys (`parseModMapKeys`) / Step 2: Read Mod Map Keys
 Quét `conf/mod/maps-*.txt`, parse cấu trúc YAML để dựng mapping `map_name → key`:
-
 ```yaml
-RavenCreek:                    # ← key (dùng để render)
-  map_name: RavenCreek         # ← tên trong game
+RavenCreek:                    # ← key (dùng để render / render key)
+  map_name: RavenCreek         # ← tên trong game / in-game name
   steam_id: '2196102849'
 ```
 → `modMapKeys["RavenCreek"] = "RavenCreek"`
 
-#### Bước 3 — Auto-discover (`discoverModMapKeys`) [quan trọng nhất]
-
-Với các map active **không khớp** với vanilla lẫn mod definition có sẵn, nó quét thẳng thư mục Workshop:
-
+### Bước 3 — Auto-discover (`discoverModMapKeys`) / Step 3: Auto-Discovery
+Với các map active **không khớp** với vanilla lẫn mod definition có sẵn, hệ thống quét thẳng thư mục Workshop:
 ```
 /pz-server/steamapps/workshop/content/108600/<steam_id>/mods/<mod_name>/common/media/maps/<map_name>
 ```
-
-Nếu tìm thấy thư mục map, nó:
+Nếu tìm thấy thư mục map:
 1. Tạo key bằng cách lọc ký tự đặc biệt: `sanitizeModMapKey($mapName)`.
 2. Ghi ra file `conf/mod/maps-auto-generated.txt` để pzmap2dzi đọc lần sau.
-3. Thêm vào mapping.
+3. Thêm vào mapping bộ nhớ.
 
-#### Bước 4 — Đối chiếu và trả kết quả
-
+### Bước 4 — Đối chiếu và trả kết quả / Step 4: Map Key Resolution
 ```php
 foreach ($activeMaps as $mapName) {
     if (in_array($mapName, $vanillaNames, true)) continue;   // bỏ vanilla
@@ -82,53 +86,26 @@ foreach ($activeMaps as $mapName) {
     if ($key !== null) {
         $modMaps[] = $key;                                    // thêm key mod
     } else {
-        // báo warning: không tìm thấy, bỏ qua
+        // cảnh báo: không tìm thấy / warning: unknown map key
     }
 }
 ```
 
 ---
 
-### Ví dụ cụ thể với danh sách map của bạn
+## 5. Kết quả Đối chiếu Mẫu / Concrete Map Resolution Example
 
-| Tên trong `Map=` | Kết quả | Vì sao |
+| Tên trong `Map=` / Name in `Map=` | Kết quả / Result | Vì sao / Reason |
 |---|---|---|
 | `Muldraugh, KY` | **Bỏ qua** (vanilla) | Có trong `vanilla.txt` → render qua `base_map` |
 | `EchoCreek` | → key `EchoCreekMB` | Khớp qua alias mapping (pzmap2dzi key khác tên game) |
 | `Fort Benning B42` | → key `FortBenning` | Alias `"Fort Benning B42" → FortBenning` |
 | `Fort Waterfront B42` | → key `FortWaterfront` | Alias `"Fort Waterfront B42" → FortWaterfront` |
-| `EchoCreek MilitaryBase回音河 军事基地` | **WARNING: bỏ qua** | Tên Unicode (Tiếng Trung) không khớp mapping nào và `sanitizeModMapKey` loại bỏ hết ký tự đặc biệt → không resolve được |
-
-> ⚠️ Đây là lý do lần chạy `merge-mod-maps` trước đó bạn thấy dòng:
-> ```
-> [WARN] Unknown map (no CDN key): EchoCreek MilitaryBase回音河 军事基地
-> ```
+| `EchoCreek MilitaryBase回音河 军事基地` | **Cảnh báo: bỏ qua** | Tên Unicode không khớp mapping và bị strip ký tự đặc biệt |
 
 ---
 
-### Sau khi có các key `$modMaps`, chuyện gì xảy ra?
-
-**1. Generate config (`generateConfig` dòng 179–186):**
-```yaml
-mod_root: /pz-server/steamapps/workshop/content/108600
-mod_maps:
-  - EchoCreekMB
-  - FortBenning
-  - FortWaterfront
-```
-
-**2. pzmap2dzi render:**
-- `render base` → vanilla vào `map_data/base/`
-- Mỗi mod → `map_data/mod_maps/<key>/base_top/` hoặc `base/`
-
-**3. Merge (`mergeModTiles` + `composite-map-tiles.py`):**
-- Vì vanilla và mod đều do **cùng pzmap2dzi render với cùng config** `top_view_square_size: 4`, nên mọi map có **cùng `sqr`, cùng `tile_size`, cùng format**.
-- Script chỉ cần tính độ lệch `x0/y0` rồi copy tile mod đè lên vanilla đúng vị trí.
-- Hàm `merge_mod` còn kiểm tra: nếu `sqr` hoặc `tile_size` khác nhau thì **ném exception** (`ValueError`) — vì không cùng hệ tọa độ.
-
----
-
-### Tóm tắt cơ chế "lấy map mod active"
+## 6. Quy trình Render và Hợp nhất Tile / Render & Tile Compositing Workflow
 
 ```
 server.ini (Map=)
@@ -151,4 +128,4 @@ server.ini (Map=)
     composite-map-tiles.py merge mod vào vanilla theo tọa độ x0/y0
 ```
 
-Điểm mấu chốt khiến `gen-map` hiển thị "hoàn hảo": **mọi map — vanilla lẫn mod — đều được render lại từ đầu bằng cùng một pzmap2dzi với cùng cấu hình tỷ lệ**, nên không bao giờ lệch `sqr`/`tile_size`/format như bản tải từ CDN.
+> **Điểm cốt lõi / Key Takeaway:** Mọi map (vanilla lẫn mod) đều được render lại từ đầu bằng cùng một phiên bản `pzmap2dzi` với cùng cấu hình tỷ lệ (`top_view_square_size: 4`), đảm bảo tuyệt đối không lệch `sqr`, `tile_size` hay hệ tọa độ.

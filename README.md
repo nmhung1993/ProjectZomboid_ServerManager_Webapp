@@ -3,7 +3,7 @@
 <img src="app/public/favicon.svg" alt="Zomboid Manager Webapp" width="80" />
 
 # Zomboid Manager
-
+### Web Panel Toàn Diện Quản Trị Máy Chủ Project Zomboid Dedicated Server
 **Full-stack web panel for managing a Project Zomboid dedicated server.**
 
 [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
@@ -14,169 +14,96 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 
-[Features](#features) · [Quick Start](#quick-start) · [Docs](#documentation) · [Screenshots](#screenshots) · [API Reference](#rest-api-reference) · [Architecture](#architecture) · [Security](#security)
+[Tính Năng (#features)](#tính-năng--features) · [Cài Đặt Nhanh (#quick-start)](#khởi-động-nhanh--quick-start) · [Tài Liệu Hướng Dẫn (#documentation)](#documentation--tài-liệu-hướng-dẫn) · [Hình Ảnh Giao Diện (#screenshots)](#hình-ảnh-giao-diện--screenshots) · [Kiến Trúc Hệ Thống (#architecture)](#kiến-trúc-hệ-thống--architecture)
 
 </div>
 
 ---
 
-## Overview
+## Tổng Quan / Overview
 
-Zomboid Manager wraps a Dockerized Project Zomboid dedicated server with a Laravel REST API and a React + Inertia.js web dashboard. It provides remote management through three integration points:
+### Tiếng Việt (Primary)
+**Zomboid Manager** là nền tảng quản trị web toàn diện bọc quanh máy chủ game Project Zomboid Dedicated Server chạy trên môi trường Docker, kết hợp giữa backend **Laravel 12 REST API** và frontend **React 19 + Inertia.js v2 + TypeScript**. Hệ thống cung cấp khả năng điều khiển máy chủ từ xa thông qua 3 điểm tích hợp cốt lõi:
 
-- **RCON** — Source RCON TCP protocol for real-time player commands, broadcasts, and saves
-- **Docker Engine API** — Container lifecycle control (start, stop, restart, update) via the Docker socket
-- **File I/O** — Direct read/write access to PZ config files (`server.ini`, sandbox Lua) mounted from the game server volume
+- **RCON Protocol** — Giao thức Source RCON TCP thời gian thực: thực thi lệnh quản trị, gửi thông báo in-game, lưu thế giới tức thì.
+- **Docker Engine API** — Quản lý vòng đời container (bật, tắt, khởi động lại, cập nhật game) qua Docker socket proxy an toàn.
+- **File I/O Trực Tiếp** — Đọc/ghi cấu hình server (`server.ini`, sandbox Lua) mount trực tiếp từ volume máy chủ game.
 
-21 admin pages, a public status page, player portal, item shop, 40+ API endpoints, Discord notifications, an interactive player map, inventory management, safe zones, site customization, i18n, and more — all from a browser.
+Bao gồm hơn 21 trang quản trị admin, trang trạng thái công khai, cổng thông tin người chơi (Player Portal), cửa hàng vật phẩm & ví tiền (Item Shop), hơn 40+ REST API endpoints, thông báo Discord Webhooks, bản đồ tương tác người chơi thời gian thực (Live Map), quản lý túi đồ, vùng an toàn Safe Zones, tùy biến giao diện website và đa ngôn ngữ (i18n).
 
-## Feature Status
+### English (Secondary)
+Zomboid Manager wraps a Dockerized Project Zomboid dedicated server with a Laravel REST API and a React + Inertia.js web dashboard. It provides remote management through three integration points: RCON, Docker Engine API, and File I/O. Over 21 admin pages, public status page, player portal, item shop, 40+ API endpoints, Discord notifications, interactive map, safe zones, site customization, and full i18n support.
 
-| Area | Status | Notes |
+---
+
+## Trạng Thái Tính Năng / Feature Status
+
+| Hạng mục / Area | Trạng thái / Status | Ghi chú / Notes |
 |---|---|---|
-| Docker Infrastructure | Done | Multi-arch (ARM64 + AMD64), auto-detection |
-| RCON Integration | Done | Custom PHP Source RCON client |
-| Server Control | Done | Start, stop, restart, save, wipe, update |
-| Configuration Editor | Done | server.ini + sandbox Lua, categorized UI |
-| Player Management | Done | Kick, ban, teleport, access levels, XP, god mode |
-| Mod Management | Done | Steam Workshop integration, drag-and-drop reorder |
-| Backup & Rollback | Done | Manual + scheduled, retention policies, queue-based |
-| Whitelist | Done | CRUD + sync with PZ's SQLite `serverPZ.db` |
-| Audit Logging | Done | Every admin action logged with user, IP, payload |
-| Web Dashboard | Done | React 19 + Inertia.js v2 + shadcn/ui |
-| Interactive Player Map | Done | Leaflet with live player markers |
-| Inventory Management | Done | Browse, give, remove items with 1,100+ icons |
-| Discord Webhooks | Done | 25+ configurable event notifications |
-| Safe Zones | Done | PvP-free areas with violation tracking |
-| Respawn Delay | Done | Configurable cooldown after death |
-| Moderation & Events | Done | PvP violations, event log, player action history |
-| RCON Console | Done | Browser-based console with command history |
-| Server Logs | Done | Live log viewer with filtering |
-| Authentication | Done | Fortify sessions, Sanctum tokens, API keys, 2FA |
-| User Settings | Done | Profile, password, appearance, two-factor setup |
-| Public Status Page | Done | Live server status, player count, uptime |
-| Welcome Page | Done | Public landing with stats, podium, feature overview |
-| Rankings | Done | Public leaderboard with 6 stat categories |
-| Player Portal | Done | Player dashboard with account info and map position |
-| Auto Restart | Done | Scheduled daily restarts with countdown warnings |
-| Item Shop & Wallet | Done | Browse, purchase items/bundles, promo codes, wallet |
-| Shop Admin (Items, Bundles, Promotions) | Done | Full CRUD for items, categories, bundles, promos |
-| Purchase History & Wallets | Done | Admin views for purchases, delivery tracking, wallet management |
-| In-Game Money Deposit | Done | Convert Base.Money/MoneyBundle to wallet coins via Lua bridge |
-| Lua Bridge Mod | Done | Server-side enforcement for safe zones + respawn |
-| Site Customization | Done | Branding, logo/favicon, hero content, feature cards, section layout |
-| Theme Colors | Done | Admin-configurable color scheme (hex to oklch) |
-| Progressive Web App (PWA) | Done | Dynamic manifest, customizable badge name, auto-updating logo icons, Service Worker |
-| i18n / Translations | Done | Dynamic languages, JSON import/export, DB overrides, language switcher |
+| Hạ tầng Docker / Docker Infrastructure | Hoàn thành / Done | Đa kiến trúc (ARM64 + AMD64), tự nhận diện |
+| Cầu nối RCON / RCON Client | Hoàn thành / Done | PHP Source RCON client thuần |
+| Điều khiển Server / Server Control | Hoàn thành / Done | Bật, tắt, khởi động lại, lưu world, wipe, update |
+| Chỉnh sửa Cấu hình / Config Editor | Hoàn thành / Done | Giao diện trực quan cho server.ini + Sandbox Lua |
+| Quản lý Người chơi / Player Admin | Hoàn thành / Done | Kick, ban, teleport, set quyền, cấp XP, God mode |
+| Quản lý Mod / Mod Management | Hoàn thành / Done | Tích hợp Steam Workshop, kéo thả sắp xếp thứ tự nạp |
+| Sao lưu & Rollback / Backups | Hoàn thành / Done | Thủ công & tự động định kỳ, chính sách lưu giữ |
+| Quản lý Whitelist | Hoàn thành / Done | CRUD & đồng bộ SQLite `serverPZ.db` |
+| Nhật ký Hoạt động / Audit Logging | Hoàn thành / Done | Ghi vết mọi thao tác Admin với IP, User, Payload |
+| Bảng điều khiển Web / Web Dashboard | Hoàn thành / Done | React 19 + Inertia.js v2 + shadcn/ui |
+| Bản đồ Trực tiếp / Interactive Live Map | Hoàn thành / Done | Leaflet với Marker vị trí người chơi & sự kiện |
+| Quản lý Kho đồ / Inventory Management | Hoàn thành / Done | Xem, cấp/xóa item với hơn 1,100+ icon hình ảnh |
+| Thông báo Discord / Discord Webhooks | Hoàn thành / Done | Hơn 25+ sự kiện thông báo qua Webhook |
+| Vùng An Toàn / Safe Zones | Hoàn thành / Done | Khu vực cấm PvP với theo dõi vi phạm |
+| Trì hoãn Hồi sinh / Respawn Delay | Hoàn thành / Done | Thời gian chờ hồi sinh tùy biến sau khi chết |
+| Bảng điều khiển RCON Console | Hoàn thành / Done | Console trên trình duyệt với lịch sử lệnh |
+| Nhật ký Máy chủ / Server Logs | Hoàn thành / Done | Trình xem log trực tiếp với bộ lọc tìm kiếm |
+| Xác thực & Bảo mật / Authentication | Hoàn thành / Done | Fortify session, Sanctum token, API Key, 2FA |
+| Cài đặt Người dùng / User Settings | Hoàn thành / Done | Hồ sơ, đổi mật khẩu, giao diện sáng/tối, 2FA |
+| Trang Trạng Thái / Public Status Page | Hoàn thành / Done | Trạng thái server online/offline, số người chơi |
+| Trang Giới Thiệu / Welcome Page | Hoàn thành / Done | Landing page với thống kê cộng đồng & bảng vinh danh |
+| Bảng Xếp Hạng / Rankings Leaderboard | Hoàn thành / Done | 6 bảng xếp hạng chỉ số sinh tồn |
+| Cổng Người Chơi / Player Portal | Hoàn thành / Done | Xem tài khoản, vị trí map, phương tiện, nhiệm vụ |
+| Tự Động Khởi Động Lại / Auto Restart | Hoàn thành / Done | Lên lịch restart hàng ngày với cảnh báo đếm ngược |
+| Cửa Hàng & Ví Tiền / Shop & Wallet | Hoàn thành / Done | Mua vật phẩm/gói combo, mã giảm giá, nạp tiền ví |
+| Nạp Tiền In-Game / Money Deposit | Hoàn thành / Done | Chuyển đổi tiền nhặt trong game thành số dư ví |
+| Hệ Thống Nhiệm Vụ & Bounties | Hoàn thành / Done | Daily/Weekly quests & Săn tiền thưởng truy nã |
+| Quản Lý Xe Cộ & Dọn Lag Server | Hoàn thành / Done | Quản lý xe, tích hợp AVCS, dọn xác zombie & rác |
+| Sự Kiện Thế Giới Động / World Events | Hoàn thành / Done | Thả Airdrop quân sự, trực thăng rơi, quái xâm lăng |
+| Tùy Biến Giao Diện / Site Customization | Hoàn thành / Done | Tùy biến logo/favicon, banner, bố cục, màu sắc theme |
+| Ứng Dụng PWA / Progressive Web App | Hoàn thành / Done | Dynamic Manifest, icon tự tạo, Service Worker offline |
+| Đa Ngôn Ngữ / i18n Translations | Hoàn thành / Done | Hỗ trợ chuyển đổi đa ngôn ngữ linh hoạt |
 
-## Documentation & Reports
+---
 
-- [Quality Audit & Test Report](docs/TEST_AUDIT_REPORT.md)
-- [Firewall: firewalld (Fedora/RHEL)](docs/firewall-firewalld.md)
-- [Firewall: ufw (Ubuntu/Debian)](docs/firewall-ufw.md)
-- [Firewall: Manual Configuration](docs/firewall-manual.md)
-- [Linux Installation Guide](docs/installation-linux.md)
-- [Windows Installation Guide](docs/installation-windows.md)
-- [Troubleshooting](docs/troubleshooting.md)
+## Tính Năng / Features
 
-## Features
+### 1. Tùy Biến Giao Diện & Đa Ngôn Ngữ / Site Customization & i18n
+Trang cấu hình tại `/admin/site-settings`: chỉnh sửa tên trang web, tải lên logo/favicon, nội dung chân trang (footer), phần banner giới thiệu (hero section), các thẻ tính năng (lên đến 8 thẻ kèm bộ chọn icon), bật/tắt và sắp xếp thứ tự các section trên trang chủ, tùy biến bảng màu theme (chọn mã hex và tự động chuyển đổi sang oklch). Hệ thống đa ngôn ngữ tại `/admin/translations` cho phép quản lý ngôn ngữ động, nạp/xuất file JSON để dịch offline.
 
-### Site Customization & i18n
+### 2. Trang Chào Mừng & Bảng Vinh Danh / Welcome Page & Leaderboard
+Trang đích công khai (`/welcome`) hiển thị trạng thái máy chủ theo thời gian thực, tổng số người chơi, số zombie đã tiêu diệt, tổng giờ sinh tồn, bục vinh danh top người chơi và tổng quan tính năng. Không yêu cầu đăng nhập.
 
-Admin-editable site settings at `/admin/site-settings`: site name, logo/favicon upload, footer text, hero section content, feature cards (up to 8 with icon picker), landing page section visibility and ordering, and theme color customization (hex color picker with automatic oklch conversion). Full internationalization system at `/admin/translations`: dynamic language management, JSON file defaults with database overrides, JSON import/export for offline translation workflow, and a language switcher on public pages. Georgian font (Noto Sans Georgian) included.
+### 3. Điều Khiển & Giám Sát Server / Server Control & Monitoring
+Bật, tắt, khởi động lại, lưu thế giới tức thì, wipe dữ liệu và cập nhật game server trực tiếp từ web panel. Các tác vụ khởi động lại sẽ tự động phát sóng thông điệp đếm ngược vào trong game.
 
-<details>
-<summary>Screenshots</summary>
+### 4. Quản Lý Người Chơi / Player Management
+Bảng danh sách người chơi trực quan với tìm kiếm và lọc. Thao tác nhanh: kick, ban/unban, phân quyền (admin, moderator, GM...), dịch chuyển (teleport), cấp vật phẩm, cộng điểm kinh nghiệm XP, bật chế độ bất tử (god mode).
 
-![Site Settings](docs/screenshots/site-settings.png)
-![Translations](docs/screenshots/translations.png)
-</details>
+### 5. Bản Đồ Tương Tác Trực Tiếp / Interactive Live Map
+Bản đồ Leaflet hiển thị toàn bộ Kentucky và các bản đồ Mod. Theo dõi vị trí người chơi theo thời gian thực, hiển thị xe cộ và các điểm sự kiện Airdrop đang diễn ra.
 
-### Welcome Page
+### 6. Quản Lý Túi Đồ / Inventory Management
+Xem trực tiếp túi đồ của người chơi với hơn 1,100+ hình ảnh icon vật phẩm. Cấp phát đồ từ xa qua RCON và theo dõi trạng thái nhận đồ.
 
-Public landing page with live server status, community stats (total players, zombie kills, hours survived, deaths), a top survivors podium, and a feature overview. Sections render in admin-configured order; disabled sections are hidden. All content is editable from the Site Settings admin page. No login required.
+### 7. Trình Chỉnh Sửa Cấu Hình / Configuration Editor
+Chỉnh sửa `server.ini` và `SandboxVars.lua` trực tiếp trên trình duyệt với giao diện phân loại rõ ràng và gợi ý thông số an toàn.
 
-<details>
-<summary>Screenshot</summary>
+### 8. Quản Lý Mod Steam Workshop / Mod Management
+Thêm mod bằng ID Steam Workshop. Hệ thống tự động đồng bộ dòng `WorkshopItems=` và `Mods=`. Hỗ trợ kéo thả để sắp xếp thứ tự nạp mod.
 
-![Welcome](docs/screenshots/welcome.png)
-</details>
+### 9. Sao Lưu & Khôi Phục / Backup & Rollback
+Tạo bản sao lưu thủ công hoặc cấu hình lịch sao lưu tự động. Khôi phục về bất kỳ bản snapshot nào với cơ chế sao lưu phòng ngừa trước khi rollback.
 
-### Server Control
-
-Start, stop, restart, save, wipe, and update the game server from the dashboard. Scheduled actions dispatch countdown warnings to in-game players before executing. Server updates pull the latest build via SteamCMD. Wipe requires double confirmation and creates a pre-wipe backup automatically.
-
-### Dashboard
-
-Real-time server overview: online status, player count, game time, uptime, memory usage, game version, and a player leaderboard.
-
-<details>
-<summary>Screenshot</summary>
-
-![Dashboard](docs/screenshots/dashboard.png)
-</details>
-
-### Player Management
-
-Full player table with search and filtering. Per-player actions: kick, ban/unban, set access level (admin, moderator, overseer, GM, observer, none), teleport, give items, add XP, toggle god mode. View detailed player profiles with stats and inventory links.
-
-<details>
-<summary>Screenshot</summary>
-
-![Players](docs/screenshots/players.png)
-</details>
-
-### Interactive Player Map
-
-Leaflet-based map rendered from PZ map tiles. Live player markers with position tracking. Click a player to view details or take action. Supports zoom levels and coordinates display.
-
-<details>
-<summary>Screenshot</summary>
-
-![Player Map](docs/screenshots/player-map.png)
-</details>
-
-### Inventory Management
-
-Browse a player's inventory with visual item icons (1,100+ icons sourced from PZwiki). Give items to online players via RCON with delivery status tracking. Remove items through the Lua bridge. Search and filter the item database.
-
-<details>
-<summary>Screenshot</summary>
-
-![Inventory](docs/screenshots/inventory.png)
-</details>
-
-### Configuration Editor
-
-Edit `server.ini` and sandbox settings from the browser. Settings are organized into categories with descriptions, input validation, and type-appropriate controls (toggles, sliders, dropdowns). Changes require a server restart to take effect — the UI prompts for it.
-
-<details>
-<summary>Screenshot</summary>
-
-![Config](docs/screenshots/config.png)
-</details>
-
-### Mod Management
-
-Add mods by Steam Workshop ID. The system keeps `WorkshopItems=` and `Mods=` lines in sync (paired entries, semicolon-separated). Drag-and-drop load order reordering. Remove mods with a single click. Requires a restart to apply.
-
-<details>
-<summary>Screenshot</summary>
-
-![Mods](docs/screenshots/mods.png)
-</details>
-
-### Backup & Rollback
-
-Create manual backups or configure scheduled backups with per-type retention policies. Backups are created as queue jobs to avoid blocking the UI. Rollback to any previous backup with automatic pre-rollback snapshot. Backup types: manual, scheduled, pre-rollback, pre-update.
-
-<details>
-<summary>Screenshot</summary>
-
-![Backups](docs/screenshots/backups.png)
-</details>
-
-### Whitelist Management
 
 CRUD operations on the PZ whitelist stored in `serverPZ.db` (SQLite). Add, remove, and toggle player entries. Sync the whitelist from the game server's live database. Configure auto-whitelist behavior.
 
@@ -246,131 +173,134 @@ Every admin action is recorded with: timestamp, user, action type, IP address, a
 ![Discord](docs/screenshots/discord.png)
 </details>
 
-### Item Shop
-
-Browse and purchase in-game items and bundles with a virtual wallet. Categories, search, featured items, promotional codes with percentage/fixed discounts. Purchase history and wallet transaction log. Admin panel for managing items, categories, bundles, promotions, and player wallets.
+### 10. Quản Lý Danh Sách Cho Phép / Whitelist Management
+Thao tác CRUD trực tiếp trên database Whitelist `serverPZ.db` (SQLite). Thêm, xóa và bật/tắt quyền truy cập người chơi. Đồng bộ danh sách với database sống của máy chủ game.
 
 <details>
-<summary>Screenshot</summary>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![Whitelist](docs/screenshots/whitelist.png)
+</details>
+
+### 11. Vùng An Toàn / Safe Zones
+Thiết lập các vùng hình chữ nhật không PvP trên bản đồ theo tọa độ. Lua bridge mod tự động thực thi vùng an toàn phía server. Theo dõi lịch sử vi phạm chi tiết.
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![Safe Zones](docs/screenshots/safe-zones.png)
+</details>
+
+### 12. Điều Hành & Sự Kiện Vi Phạm / Moderation & Events
+Bảng điều hành tập trung hiển thị các vi phạm PvP, sự kiện Safe Zone và lịch sử hành vi người chơi kèm hệ thống cảnh cáo tăng dần (strike system).
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![Moderation](docs/screenshots/moderation.png)
+</details>
+
+### 13. Bảng Điều Khiển RCON Console / RCON Console
+Console RCON trên nền web với lịch sử lệnh, tự động gợi ý lệnh và nhận phản hồi tức thì từ máy chủ game.
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![RCON Console](docs/screenshots/rcon.png)
+</details>
+
+### 14. Xem Nhật Ký Máy Chủ / Server Logs
+Trình xem log thời gian thực với tính năng tự động làm mới, lọc theo danh mục và tìm kiếm nội dung trực tiếp.
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![Server Logs](docs/screenshots/logs.png)
+</details>
+
+### 15. Nhật Ký Hoạt Động Quản Trị / Audit Logging
+Mọi thao tác của Admin được lưu vết đầy đủ: thời gian, người thực hiện, loại hành động, địa chỉ IP và toàn bộ payload dữ liệu.
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![Audit Log](docs/screenshots/audit.png)
+</details>
+
+### 16. Thông Báo Discord / Discord Webhooks
+Hơn 25+ sự kiện thông báo qua Webhook Discord (bật/tắt server, backup, hành vi người chơi, sự kiện safe zone...). Hỗ trợ test trực tiếp trên giao diện cài đặt.
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
+
+![Discord](docs/screenshots/discord.png)
+</details>
+
+### 17. Cửa Hàng Vật Phẩm & Ví Tiền / Item Shop & Wallet
+Xem và mua vật phẩm/combo đồ in-game bằng số dư ví. Phân loại danh mục, tìm kiếm, vật phẩm nổi bật, mã khuyến mãi giảm giá %, lịch sử giao dịch và ví tiền.
+
+<details>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
 
 ![Shop](docs/screenshots/shop.png)
 </details>
 
-### Shop Admin — Items & Categories
-
-Admin interface for managing shop items and categories. Set prices, quantities, stock limits, featured status, and assign categories. Full CRUD with inline editing.
-
-<details>
-<summary>Screenshot</summary>
-
-![Shop Admin](docs/screenshots/shop-admin.png)
-</details>
-
-### Shop Bundles
-
-Create and manage item bundles with percentage discounts. Each bundle contains multiple shop items with automatic price calculation showing savings.
+### 18. Nạp Tiền In-Game Vào Ví Web / In-Game Money Deposit
+Người chơi nhặt tiền `Base.Money` (1 coin) và `Base.MoneyStack` (10 coins) từ Zombie có thể nạp trực tiếp vào ví Web. Khi bấm "Deposit", Lua bridge sẽ tự động thu hồi tiền trong túi và cộng số dư ví tương ứng.
 
 <details>
-<summary>Screenshot</summary>
-
-![Bundles](docs/screenshots/bundles.png)
-</details>
-
-### Shop Promotions
-
-Create discount codes and automatic promotions with percentage or fixed-amount discounts, usage limits, and expiration dates.
-
-<details>
-<summary>Screenshot</summary>
-
-![Promotions](docs/screenshots/promotions.png)
-</details>
-
-### Shop Purchases
-
-Admin view of all player purchases with delivery status tracking, revenue stats, and filtering. Shows item delivery details including partial deliveries and failures.
-
-<details>
-<summary>Screenshot</summary>
-
-![Shop Purchases](docs/screenshots/shop-purchases.png)
-</details>
-
-### Wallet Management
-
-Admin panel for managing player currency balances. View total circulation, per-player balances, earnings, and spending. Adjust balances manually when needed.
-
-<details>
-<summary>Screenshot</summary>
-
-![Wallets](docs/screenshots/wallets.png)
-</details>
-
-### In-Game Money Deposit
-
-Players deposit `Base.Money` (1 coin) and `Base.MoneyStack` (10 coins) looted from zombies into their web wallet. Click "Deposit" on the shop page, the Lua bridge removes money items from inventory within ~15 seconds, and the wallet is credited within 5 minutes.
-
-<details>
-<summary>Screenshot</summary>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
 
 ![Money Deposit](docs/screenshots/shop-deposit-auth.png)
 </details>
 
-### Authentication & Security
+### 19. Xác Thực & Bảo Mật / Authentication & Security
+- **Web Auth** — Laravel Fortify với đăng nhập theo Session an toàn.
+- **Xác thực 2 yếu tố (2FA)** — TOTP QR code, mã dự phòng.
+- **API Key & Token** — Xác thực header `X-API-Key` và Laravel Sanctum Tokens cho API bên ngoài.
+- **Role Middleware** — Phân quyền Admin chặt chẽ.
 
-- **Web auth** — Laravel Fortify with session-based login
-- **Two-factor authentication** — TOTP with QR code setup, manual key entry, and recovery codes
-- **API auth** — API key via `X-API-Key` header for programmatic access
-- **Token auth** — Laravel Sanctum for token-based API access
-- **Role-based access** — Admin middleware protects all management routes
-
-### User Settings
-
-Four settings pages: profile (name, email), password, two-factor authentication setup, and appearance (theme/dark mode).
-
-### Public Status Page
-
-Unauthenticated server status page showing: online/offline state, current player count, player list, server name, map, and uptime. Designed for sharing with the community.
+### 20. Trang Trạng Thái Công Khai / Public Status Page
+Trang theo dõi trạng thái máy chủ không cần đăng nhập: online/offline, số lượng người chơi, danh sách người chơi online, tên server và thời gian hoạt động.
 
 <details>
-<summary>Screenshot</summary>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
 
 ![Status Page](docs/screenshots/status.png)
 </details>
 
-### Rankings
-
-Public leaderboard with six tabs: zombie kills, hours survived, deaths, kills/death ratio, hours/death ratio, and PvP kills/death. Community stats summary at the top. No login required.
+### 21. Bảng Xếp Hạng Người Chơi / Rankings
+Bảng xếp hạng công khai với 6 tiêu chí: số zombie đã diệt, thời gian sinh tồn, số lần chết, K/D ratio, tỉ lệ sống sót và PvP kills.
 
 <details>
-<summary>Screenshot</summary>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
 
 ![Rankings](docs/screenshots/rankings.png)
 </details>
 
-### Player Portal
-
-Authenticated player dashboard showing game account details (username, whitelist status, server status), profile settings links, and an interactive map with the player's last known position.
+### 22. Cổng Thông Tin Người Chơi / Player Portal
+Trang cá nhân của người chơi hiển thị tài khoản game, trạng thái Whitelist, liên kết cài đặt hồ sơ và bản đồ hiển thị vị trí nhân vật.
 
 <details>
-<summary>Screenshot</summary>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
 
 ![Player Portal](docs/screenshots/portal.png)
 </details>
 
-### Auto Restart
-
-Schedule daily restart times with timezone support, configurable in-game countdown warnings, Discord reminder notifications, and custom warning messages. Up to 5 daily restart slots.
+### 23. Tự Động Khởi Động Lại / Auto Restart
+Lên lịch tối đa 5 khung giờ tự động restart máy chủ mỗi ngày, tích hợp thông báo đếm ngược trong game và cảnh báo qua Discord.
 
 <details>
-<summary>Screenshot</summary>
+<summary>Ảnh chụp màn hình / Screenshot</summary>
 
 ![Auto Restart](docs/screenshots/auto-restart.png)
 </details>
 
-## Architecture
+---
 
-Seven Docker services across two networks:
+## Kiến Trúc Hệ Thống / Architecture
+
+Hệ thống bao gồm 7 dịch vụ Docker phân bổ trên 2 mạng (networks):
 
 ```
                           Internet
@@ -414,91 +344,83 @@ Seven Docker services across two networks:
                 │        │  (containers, logs, start/stop only) │   │
                 │        └──────────────────────────────────────┘   │
                 └───────────────────────────────────────────────────┘
-
-Volumes: pz-data, pz-server-files, pz-backups, pz-lua-bridge, pz-map-tiles,
-         pz-postgres, pz-redis, pz-app-storage, pz-caddy-data, pz-caddy-config
 ```
 
-- **game-server** — PZ dedicated server via SteamCMD. Auto-detects ARM64/AMD64 and selects the correct image.
-- **app** — Laravel 12 + React web panel. Controls the game server container via the Docker socket proxy and accesses PZ data volumes for config/save files.
-- **queue** — Background job worker for backups, scheduled restarts, server updates, and other long-running tasks.
-- **db** — PostgreSQL 16. Users, backups, audit logs, PvP violations, settings.
-- **redis** — Job queue, cache, sessions, rate limiting.
-- **docker-socket-proxy** — Tecnativa proxy restricting Docker API access to container inspect, start/stop, and log endpoints. Prevents dangerous operations (exec, image pull, volume mount).
-- **caddy** — Reverse proxy with automatic TLS via Let's Encrypt. Terminates HTTPS and forwards to the app container. Optional for development — the app is also accessible directly on port 8000.
+- **game-server** — Máy chủ PZ Dedicated Server chạy qua SteamCMD (tự động nhận diện ARM64 / AMD64).
+- **app** — Web panel Laravel 12 + React 19, điều khiển server qua socket proxy an toàn.
+- **queue** — Worker xử lý tác vụ nền: sao lưu, restart theo lịch, update game.
+- **db** — PostgreSQL 16 lưu trữ dữ liệu người dùng, audit logs, cửa hàng, nhiệm vụ.
+- **redis** — Hàng đợi job, cache, session và rate limiting.
+- **docker-socket-proxy** — Giới hạn quyền truy cập Docker API (chỉ inspect, start/stop, logs).
+- **caddy** — Reverse proxy tự động cấp phát HTTPS SSL (Let's Encrypt).
 
-## Quick Start
+---
 
-### Requirements
+## Khởi Động Nhanh / Quick Start
 
-**Linux:** Docker Engine, Docker Compose v2, Git, Make — see [full Linux guide](docs/installation-linux.md)
+### Yêu Cầu / Requirements
+- **Linux:** Docker Engine, Docker Compose v2, Git, Make (xem [Hướng dẫn Linux](docs/installation-linux.md)).
+- **Windows:** Docker Desktop (WSL 2 backend), Git for Windows (xem [Hướng dẫn Windows](docs/installation-windows.md)).
 
-**Windows (alpha):** PowerShell wrappers are included, but they require Docker CLI + Compose with a Linux container backend. On Windows Server, use a Linux VM or other Linux container host. See [full Windows guide](docs/installation-windows.md)
-
-### Start
+### Lệnh Cài Đặt / Installation Commands
 
 ```bash
-# Linux
-git clone <repo-url> && cd Zomboid_Server
+# Trên Linux
+git clone https://github.com/nmhung1993/ProjectZomboid_ServerManager_Webapp.git
+cd ProjectZomboid_ServerManager_Webapp
 make init
 ```
 
 ```powershell
-# Windows (PowerShell)
-git clone <repo-url>; cd Zomboid_Server
+# Trên Windows (PowerShell)
+git clone https://github.com/nmhung1993/ProjectZomboid_ServerManager_Webapp.git
+cd ProjectZomboid_ServerManager_Webapp
 .\make.ps1 init
-```
-
-Or use the wrapper:
-
-```powershell
+# hoặc chạy nhanh:
 .\easy-init.ps1
 ```
 
-The interactive setup wizard will:
+Trình wizard cài đặt tương tác sẽ tự động:
+1. Hỏi môi trường (production/dev), tài khoản Admin và cấu hình server
+2. Tự động sinh file `.env` với các secret key an toàn ngẫu nhiên
+3. Build và khởi động toàn bộ 7 container
+4. Chạy database migrations và tạo tài khoản Admin
 
-1. Ask for environment (production/dev), admin credentials, and server settings
-2. Generate `.env` files with random secrets
-3. Build Docker images and start all services
-4. Run database migrations and create the admin account automatically
+Truy cập Web Panel ngay tại: `http://localhost:8000` hoặc địa chỉ HTTPS cấu hình.
 
-All prompts have sensible defaults — press Enter through everything for a working setup.
 
-### Access Modes
+### Chế Độ Truy Cập / Access Modes
 
-During `make init`, you choose how the admin panel is accessed:
+Khi chạy `make init`, bạn có thể lựa chọn 3 chế độ truy cập:
 
-| Mode | When to use | TLS |
+| Chế độ / Mode | Mục đích sử dụng / Use Case | Chứng chỉ TLS / TLS Cert |
 |---|---|---|
-| **Public — Domain** | Production server with a domain pointed at it | Auto (Let's Encrypt) |
-| **Public — IP address** | Server without a domain (public or LAN IP) | Self-signed cert (browser will warn) |
-| **Local only** | Development or when you only need `localhost:8000` | Internal cert |
+| **Public — Domain** | Máy chủ production có gắn tên miền riêng | Tự động qua Let's Encrypt (Auto HTTPS) |
+| **Public — IP address** | Máy chủ dùng IP công khai hoặc IP mạng LAN | Chứng chỉ tự ký (Self-signed Caddy CA) |
+| **Local only** | Chạy thử nghiệm cục bộ trên máy (`localhost:8000`) | Chứng chỉ nội bộ |
 
-Public modes set up [Caddy](https://caddyserver.com/) as an HTTPS reverse proxy. You also choose the Caddy listening ports (default 80/443 — change these if your router or another service already uses them).
+*Lưu ý: Bảng điều khiển Web luôn sẵn sàng truy cập nội bộ tại `http://localhost:8000` trên máy chủ.*
 
-The admin panel is **always** available locally at `http://localhost:8000`, regardless of which mode you pick.
 
-### Open the Panel
+## Documentation / Tài Liệu Hướng Dẫn
 
-Navigate to the URL shown at the end of setup and log in with the displayed credentials.
+| Hướng dẫn / Guide | Mô tả / Description |
+|---|---|
+| [Linux Installation](docs/installation-linux.md) | Yêu cầu, thiết lập và từng bước cài đặt trên Linux *(Linux setup instructions)* |
+| [Windows Installation](docs/installation-windows.md) | Hướng dẫn cài đặt trên Windows Desktop và Windows Server *(Windows setup guide)* |
+| [Command Reference](docs/commands.md) | Bảng tra cứu tất cả các lệnh `make` & `make.ps1` *(All management commands)* |
+| [Troubleshooting & FAQ](docs/troubleshooting.md) | Khắc phục sự cố, lưu ý nhà mạng Cloud, cấu hình phần cứng *(Troubleshooting guide)* |
+| [Firewall — UFW](docs/firewall-ufw.md) | Cấu hình tường lửa Ubuntu/Debian *(UFW firewall guide)* |
+| [Firewall — firewalld](docs/firewall-firewalld.md) | Cấu hình tường lửa Fedora/RHEL/CentOS *(firewalld guide)* |
+| [Firewall — Manual](docs/firewall-manual.md) | Hướng dẫn cấu hình iptables/nftables thủ công *(Manual firewall rules)* |
+| [Quality Audit & Test Report](docs/TEST_AUDIT_REPORT.md) | Báo cáo kiểm định chất lượng, Unit Test & Playwright E2E *(Test audit report)* |
+| [Quests & Player Bounty Spec](Quests_PlayerBounty.md) | Kế hoạch triển khai Hệ thống Nhiệm vụ & Săn tiền thưởng *(Quests & Bounty plan)* |
+| [Vehicle Manager & Auto Cleaner Spec](AVCS_intergration.md) | Quản lý phương tiện, AVCS và tối ưu dọn dẹp lag server *(Vehicle & Cleaner plan)* |
+| [Dynamic World Events Spec](AirDrop_Horde.md) | Kế hoạch Sự kiện Airdrop, Trực thăng rơi & Zombie Invasions *(World Events plan)* |
+| [Map Generation & Compositing Analysis](gen-map.md) | Phân tích cơ chế trích xuất và ghép Mod Map `gen-map` *(Map tiles mechanism)* |
+| [PZ Server Requirements Spec](PZ_Server_Requirements_v1.0.md) | Đặc tả yêu cầu kỹ thuật hệ thống ban đầu *(Technical Requirements)* |
+| [Full Implementation Plan](IMPLEMENTATION_PLAN.md) | Kế hoạch kiến trúc và lộ trình tổng thể *(Architecture roadmap)* |
 
-### Troubleshooting
-
-- **Can't reach the public URL?** The panel is always accessible at `http://localhost:8000` on the server itself. If the public URL doesn't work, check `make info` for your configured ports, run `make admin-expose` to open the firewall, and verify router port forwarding.
-- **Browser shows a certificate warning?** Expected with IP-address mode (Caddy internal CA). Trust Caddy's root certificate or click through to proceed.
-- **Want to change access mode?** Re-run `make init` — it will detect existing config and offer to reconfigure.
-
-## Documentation
-
-| Guide | Description |
-|-------|-------------|
-| [Linux Installation](docs/installation-linux.md) | Requirements, setup, and step-by-step instructions for Linux |
-| [Windows Installation](docs/installation-windows.md) | Windows desktop and Windows Server guidance for PowerShell wrappers and Linux backends **(alpha)** |
-| [Command Reference](docs/commands.md) | All `make` / `.\make.ps1` commands with Linux and Windows equivalents |
-| [Troubleshooting](docs/troubleshooting.md) | Common issues, cloud provider notes, hardware requirements |
-| [Firewall — UFW](docs/firewall-ufw.md) | Ubuntu/Debian firewall details |
-| [Firewall — firewalld](docs/firewall-firewalld.md) | Fedora/RHEL firewall details |
-| [Firewall — Manual](docs/firewall-manual.md) | Manual iptables/nftables instructions |
 
 ## Configuration
 

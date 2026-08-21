@@ -1,106 +1,84 @@
-# Linux Installation
+# Hướng Dẫn Cài Đặt Trên Linux
+# Linux Installation Guide
 
-## Requirements
+---
 
-You need a Linux server (Ubuntu, Debian, Fedora, etc.) with at least **4 GB RAM** (8 GB recommended). Works on both **x86_64** (AMD/Intel) and **ARM64** (Oracle Cloud free tier, Raspberry Pi 5, AWS Graviton, etc.) — architecture is auto-detected.
+## 1. Yêu Cầu Hệ Thống / System Requirements
 
-Install these before you begin:
+### Tiếng Việt
+Bạn cần một máy chủ Linux (Ubuntu, Debian, Fedora...) với tối thiểu **4 GB RAM** (khuyến nghị 8 GB). Hỗ trợ cả kiến trúc **x86_64** (AMD/Intel) và **ARM64** (Oracle Cloud Free Tier, Raspberry Pi 5, AWS Graviton...) — hệ thống sẽ tự động nhận diện kiến trúc CPU.
 
-| # | Dependency | Notes |
+Cài đặt các gói phụ thuộc sau trước khi bắt đầu:
+
+### English
+You need a Linux server (Ubuntu, Debian, Fedora, etc.) with at least **4 GB RAM** (8 GB recommended). Works on both **x86_64** (AMD/Intel) and **ARM64** (Oracle Cloud free tier, Raspberry Pi 5, AWS Graviton, etc.) — CPU architecture is auto-detected.
+
+Install these dependencies before beginning:
+
+| # | Phần mềm / Dependency | Ghi chú / Notes |
 |---|-----------|-------|
-| 1 | **Git** | Pre-installed on most distros. [Install](https://git-scm.com/downloads/linux) |
-| 2 | **Docker Engine** | NOT Docker Desktop. [Install](https://docs.docker.com/engine/install/) |
-| 3 | **Docker Compose v2** | Bundled with Docker Engine via official install script |
-| 4 | **Make** | Usually pre-installed |
-| 5 | **OpenSSL** | Pre-installed on virtually all Linux distros |
-| 6 | **curl** | Pre-installed on most distros |
+| 1 | **Git** | Thường đã có sẵn / Pre-installed. [Cài đặt](https://git-scm.com/downloads/linux) |
+| 2 | **Docker Engine** | Dùng Docker Engine chính thức (không dùng Docker Desktop trên Linux). [Cài đặt](https://docs.docker.com/engine/install/) |
+| 3 | **Docker Compose v2** | Đi kèm với Docker Engine |
+| 4 | **Make** | Thường đã có sẵn / Usually pre-installed |
+| 5 | **OpenSSL** | Có sẵn trên hầu hết các distro Linux |
+| 6 | **curl** | Có sẵn trên hầu hết các distro Linux |
 
-### Quick Docker install (Ubuntu/Debian)
+---
+
+### Cài đặt nhanh Docker (Ubuntu/Debian) / Quick Docker Install
 
 ```bash
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
-# Log out and back in after this
+# Đăng xuất và đăng nhập lại sau lệnh này / Log out and back in after this
 ```
 
-### Verify Docker Compose
+---
 
+## 2. Các Bước Cài Đặt / Installation Steps
+
+### Bước 1 — Clone Repository / Step 1: Clone Repository
 ```bash
-docker compose version
+git clone https://github.com/nmhung1993/ProjectZomboid_ServerManager_Webapp.git
+cd ProjectZomboid_ServerManager_Webapp
 ```
 
-### Install Make (if missing)
-
-```bash
-# Ubuntu/Debian
-sudo apt install make
-
-# Fedora/RHEL
-sudo dnf install make
-```
-
-## Step 1 — Clone the repo
-
-```bash
-git clone https://github.com/YOUR_ORG/zomboid-manager.git
-cd zomboid-manager
-```
-
-## Step 2 — Run the setup wizard
-
+### Bước 2 — Chạy Wizard Thiết Lập / Step 2: Run Setup Wizard
 ```bash
 make init
 ```
 
-This interactive wizard will:
-- Ask you for server settings (name, password, max players, RAM)
-- Create an admin account for the web dashboard
-- Configure HTTPS (domain or self-signed certificate)
-- Auto-detect your firewall (ufw / firewalld / manual)
-- Generate all `.env` config files
-- Create the database volume
-- Build and start all Docker containers
-- Run database migrations
-- Provision your admin account
+Trình hướng dẫn cài đặt tương tác sẽ tự động:
+- Thiết lập thông số game server (tên server, mật khẩu, RAM, slot người chơi)
+- Tạo tài khoản Admin cho Web Dashboard
+- Cấu hình HTTPS (Tên miền hoặc Chứng chỉ tự ký SSL)
+- Tự động nhận diện Tường lửa (`ufw` / `firewalld` / `manual`)
+- Tạo file môi trường `.env` và các volume database
+- Khởi động toàn bộ container Docker và chạy database migrations
 
-Just follow the prompts — sensible defaults are provided for everything. Passwords are auto-generated if you press Enter.
-
-## Step 3 — Open game ports
-
-By default the game server ports are **closed**. To let players connect:
-
+### Bước 3 — Mở Cổng Game Cho Người Chơi / Step 3: Open Game Ports
+Mặc định cổng game sẽ đóng. Để mở cho người chơi kết nối vào:
 ```bash
-make expose
+make expose     # Mở UDP 16261-16262
+make hide       # Đóng cổng khi cần bảo trì
 ```
 
-This opens UDP ports 16261-16262 in your firewall. To close them again:
-
-```bash
-make hide
-```
-
-## Step 4 — Access the admin panel
-
-**Local access** (always available):
-```
-http://localhost:8000
-```
-
-**Remote/public access** via HTTPS:
+### Bước 4 — Truy Cập Bảng Điều Khiển Quản Trị / Step 4: Access Admin Panel
+- **Truy cập nội bộ / Local:** `http://localhost:8000`
+- **Mở cổng truy cập từ xa / Remote public HTTPS:**
 ```bash
 make admin-expose
 ```
 
-Log in with the admin credentials you set during setup.
+### Bước 5 — Kết Nối Vào Game / Step 5: Connect In-Game
+Trong game Project Zomboid:
+1. Chọn **Join** từ Menu chính
+2. Nhập Địa chỉ IP công khai của server và Port `16261`
+3. Nhập mật khẩu server (nếu có đặt)
 
-## Step 5 — Connect in-game
-
-In Project Zomboid:
-1. Click **Join** from the main menu
-2. Enter your server's public IP and port `16261`
-3. Enter the server password (if you set one)
-
-To find your server's public IP:
+Kiểm tra thông tin IP và trạng thái server:
 ```bash
 make info
 ```
+

@@ -1,180 +1,105 @@
-# Windows Installation
-
-> **Alpha:** Windows support is in alpha. The PowerShell scripts (`make.ps1`, `scripts/setup.ps1`) mirror the Linux Makefile but have not been extensively tested in production. Please report any issues you encounter.
-
-The PowerShell wrappers work on Windows, but this project still requires Linux containers.
-
-- Windows 10/11: Docker Desktop is the simplest option.
-- Windows Server 2022/2025: Windows-container mode is not supported for this stack. Use a Linux VM or another Linux Docker host.
-- WSL2 remains optional where it is available, but it is not the only path.
+# Hướng Dẫn Cài Đặt Trên Windows
+# Windows Installation Guide
 
 ---
 
-## Option A — Windows 10/11 with Native PowerShell
+> **Thử nghiệm / Alpha:** Hỗ trợ Windows đang trong giai đoạn Alpha. Các script PowerShell (`make.ps1`, `scripts/setup.ps1`) tương đương với Makefile trên Linux và yêu cầu chạy backend Docker Linux container. *(Windows support is in alpha. PowerShell scripts mirror the Linux Makefile and run with a Linux container backend).*
 
-PowerShell scripts (`make.ps1`, `scripts/setup.ps1`) are included as drop-in replacements for the Linux Makefile. On desktop Windows, the simplest backend is Docker Desktop with Linux containers enabled.
+- **Windows 10 / 11:** Docker Desktop với WSL 2 backend là lựa chọn đơn giản và tối ưu nhất.
+- **Windows Server 2022 / 2025:** Không hỗ trợ chế độ Windows container trực tiếp cho stack này. Khuyên dùng chạy trong Máy ảo Linux (Linux VM) trên Hyper-V.
+- **WSL 2:** Có thể sử dụng trực tiếp môi trường Ubuntu WSL2 nếu muốn dùng lệnh `make` thuần Linux.
 
-### Requirements
+---
 
-| # | Dependency | Link |
+## Lựa chọn A — Windows 10 / 11 với PowerShell Gốc (Khuyên Dùng)
+## Option A — Windows 10/11 with Native PowerShell (Recommended)
+
+Bộ script PowerShell (`make.ps1`, `easy-init.ps1`, `easy-deploy.ps1`) cho phép bạn quản trị server trực tiếp từ PowerShell mà không cần gõ lệnh bash.
+
+### 1. Yêu Cầu / Requirements
+
+| # | Phần mềm / Dependency | Link tải / Download |
 |---|-----------|------|
-| 1 | **Docker Desktop for Windows** | [Install](https://docs.docker.com/desktop/setup/install/windows-install/) |
-| 2 | **Git for Windows** (includes OpenSSL) | [Install](https://git-scm.com/downloads/win) |
+| 1 | **Docker Desktop for Windows** | [Cài đặt Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) |
+| 2 | **Git for Windows** (bao gồm OpenSSL) | [Cài đặt Git](https://git-scm.com/downloads/win) |
 
-> **Important:** In Docker Desktop Settings > General, make sure **"Use the WSL 2 based engine"** is enabled (this is the default). Docker Desktop runs Linux containers via its own WSL integration — you do NOT need to install WSL separately.
+> **Quan trọng:** Trong Docker Desktop: Settings > General, đảm bảo đã bật **"Use the WSL 2 based engine"** (mặc định đã bật).
 
-### Steps
+---
 
-**1. Clone the repo**
+### 2. Các Bước Cài Đặt / Setup Steps
 
-Open PowerShell:
+**Bước 1: Clone Repository**
 ```powershell
-git clone https://github.com/YOUR_ORG/zomboid-manager.git
-cd zomboid-manager
+git clone https://github.com/nmhung1993/ProjectZomboid_ServerManager_Webapp.git
+cd ProjectZomboid_ServerManager_Webapp
 ```
 
-**2. Run the setup wizard**
-
+**Bước 2: Chạy Wizard Cài Đặt**
 ```powershell
 .\make.ps1 init
-```
-
-Same interactive wizard as Linux — configures everything, generates secrets, creates certs, and starts all Docker containers.
-
-If you want a simpler entrypoint, use:
-
-```powershell
+# hoặc chạy nhanh:
 .\easy-init.ps1
 ```
 
-For later restarts or a first-run-or-start command, use:
-
-```powershell
-.\easy-deploy.ps1
-```
-
-**3. Open game ports**
-
+**Bước 3: Mở Cổng Game Tường Lửa (Windows Firewall)**
 ```powershell
 .\make.ps1 expose
 ```
+Lệnh này sẽ tự động tạo các quy tắc trên Windows Firewall cho cổng UDP 16261-16262.
 
-This creates Windows Firewall rules automatically.
-
-**4. Access the admin panel**
-
-- **Local:** http://localhost:8000
-- **Public:** `.\make.ps1 admin-expose`
-
-### PowerShell command reference
-
-| Command | Description |
-|---------|-------------|
-| `.\make.ps1 up` | Start all services |
-| `.\make.ps1 deploy` | Start services, or run setup if env is missing |
-| `.\make.ps1 down` | Stop all services |
-| `.\make.ps1 restart` | Restart all services |
-| `.\make.ps1 logs` | Follow live logs |
-| `.\make.ps1 ps` | Show running containers |
-| `.\make.ps1 info` | Show URLs, IP, and firewall status |
-| `.\make.ps1 test` | Run the test suite |
-| `.\make.ps1 exec "CMD"` | Run command in app container |
-| `.\make.ps1 expose` | Open game ports (UDP) |
-| `.\make.ps1 hide` | Close game ports (UDP) |
-| `.\make.ps1 admin-expose` | Open admin HTTPS ports |
-| `.\make.ps1 admin-hide` | Close admin HTTPS ports |
-| `.\make.ps1 db-backup` | Backup database |
-| `.\make.ps1 db-restore` | Restore latest backup |
-| `.\make.ps1 nuke` | Destroy ALL data (danger) |
-| `.\make.ps1 help` | Show all commands |
-
-Convenience wrappers:
-
-| Script | Description |
-|--------|-------------|
-| `.\easy-init.ps1` | Shortcut for `.\make.ps1 init` |
-| `.\easy-deploy.ps1` | Shortcut for `.\make.ps1 deploy` |
+**Bước 4: Truy Cập Bảng Điều Khiển Web**
+- **Cục bộ (Local):** `http://localhost:8000`
+- **Công khai qua HTTPS (Public HTTPS):**
+```powershell
+.\make.ps1 admin-expose
+```
 
 ---
 
-## Option B — Windows Server with a Linux VM or Linux Docker host
+### Bảng Tra Cứu Lệnh PowerShell / PowerShell Command Reference
 
-Windows Server cannot run this stack in Windows-container mode. If you want to stay off WSL, run Docker Engine inside a Linux VM on the server.
-
-Typical layout:
-
-1. Create an Ubuntu VM on the Windows Server host (for example with Hyper-V).
-2. Install Docker Engine and Docker Compose inside that VM.
-3. Clone this repo inside the VM.
-4. Follow the Linux guide there: [installation-linux.md](installation-linux.md)
-5. Open Windows Firewall and router/NAT rules on the Windows Server host as needed.
-
-Use this option when you specifically want Windows Server hosting without relying on WSL.
+| Lệnh / Command | Chức năng / Description |
+|---|---|
+| `.\make.ps1 up` | Khởi động toàn bộ các container dịch vụ / Start all services |
+| `.\make.ps1 deploy` | Khởi chạy dịch vụ (hoặc tự động cài nếu chưa có cấu hình) / Start or setup |
+| `.\make.ps1 down` | Dừng toàn bộ các container / Stop all services |
+| `.\make.ps1 restart` | Khởi động lại toàn bộ dịch vụ / Restart all services |
+| `.\make.ps1 logs` | Xem log trực tiếp thời gian thực / Follow live logs |
+| `.\make.ps1 ps` | Xem danh sách container đang chạy / List running containers |
+| `.\make.ps1 info` | Xem URL, IP công khai và trạng thái tường lửa / Show URLs and IP |
+| `.\make.ps1 test` | Chạy bộ kiểm thử tự động / Run test suite |
+| `.\make.ps1 exec "CMD"` | Thực thi lệnh bên trong container app / Execute command inside app |
+| `.\make.ps1 expose` | Mở port game (UDP 16261-16262) / Open game ports |
+| `.\make.ps1 hide` | Đóng port game / Close game ports |
+| `.\make.ps1 admin-expose` | Mở port HTTPS cho Web Admin / Open admin HTTPS ports |
+| `.\make.ps1 admin-hide` | Đóng port HTTPS Web Admin / Close admin HTTPS ports |
+| `.\make.ps1 db-backup` | Sao lưu Database PostgreSQL / Backup database |
+| `.\make.ps1 db-restore` | Khôi phục bản sao lưu DB mới nhất / Restore latest database backup |
+| `.\make.ps1 nuke` | Xóa sạch toàn bộ dữ liệu (Nguy hiểm) / Destroy ALL data |
+| `.\make.ps1 help` | Xem danh sách trợ giúp lệnh / Show command help |
 
 ---
 
-## Option C — WSL2 (use Linux commands on Windows)
+## Lựa chọn B — Windows Server với Máy Ảo Linux (Hyper-V VM)
+## Option B — Windows Server with a Linux VM
 
-If you prefer the Linux Makefile and bash scripts directly, install WSL2 and run everything inside Ubuntu.
+Trên Windows Server (2022/2025):
+1. Tạo một máy ảo Ubuntu Server trên Hyper-V.
+2. Cài đặt Docker Engine và Docker Compose trong máy ảo.
+3. Clone repository và làm theo hướng dẫn [Cài đặt Linux (installation-linux.md)](installation-linux.md).
+4. Cấu hình port forwarding từ Windows Server host vào IP của máy ảo Hyper-V.
 
-### Steps
+---
 
-**1. Enable WSL2**
+## Lựa chọn C — Môi trường WSL 2 (Chạy lệnh Linux thuần trên Windows)
+## Option C — WSL2 (Native Linux experience on Windows)
 
-Open PowerShell as Administrator:
+Nếu bạn quen thuộc với bash và Makefile trên Linux:
+1. Mở PowerShell (Run as Administrator):
 ```powershell
 wsl --install -d Ubuntu-24.04
 ```
+2. Cài đặt Docker Engine bên trong Ubuntu WSL.
+3. Clone repo và chạy lệnh `make init` tương tự như môi trường Linux chuẩn.
 
-Reboot when prompted, then open "Ubuntu" from Start Menu to finish setup (pick a username and password).
-
-**2. Install Docker Engine inside WSL** (not Docker Desktop)
-
-Inside the Ubuntu WSL terminal:
-```bash
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
-```
-
-Close and reopen the Ubuntu terminal.
-
-**3. Start Docker daemon**
-
-```bash
-sudo service docker start
-```
-
-To make Docker start automatically, add this to `~/.bashrc`:
-```bash
-[ -z "$(pgrep dockerd)" ] && sudo service docker start >/dev/null 2>&1
-```
-
-**4. Clone and run (same as Linux)**
-
-```bash
-git clone https://github.com/YOUR_ORG/zomboid-manager.git
-cd zomboid-manager
-make init
-```
-
-**5. Open ports in Windows Firewall**
-
-Back in PowerShell (as Admin):
-```powershell
-netsh advfirewall firewall add rule name="PZ Game UDP" dir=in action=allow protocol=UDP localport=16261-16262
-netsh advfirewall firewall add rule name="PZ Admin HTTPS" dir=in action=allow protocol=TCP localport=443
-```
-
-> **Note:** `make expose` / `make admin-expose` manage the Linux firewall inside WSL. You ALSO need the Windows Firewall rules above for external access.
-
-**6. WSL port forwarding (if needed)**
-
-WSL2 uses a virtual network. If external clients can't reach the server, forward ports from Windows to WSL:
-
-```powershell
-netsh interface portproxy add v4tov4 listenport=16261 listenaddress=0.0.0.0 connectport=16261 connectaddress=$(wsl hostname -I)
-```
-
-Repeat for ports 16262, 80, and 443.
-
-> **Tip:** Everything after step 2 happens inside the WSL Ubuntu terminal. Treat it like a regular Linux machine.

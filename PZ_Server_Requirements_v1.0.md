@@ -1,58 +1,64 @@
+# Project Zomboid — Máy Chủ Quản Trị Độc Lập
 # Project Zomboid — Managed Dedicated Server
 
-**Technical Requirements & Development Brief**
-Version 1.1 | February 2026
+**Đặc Tả Yêu Cầu Kỹ Thuật & Kế Hoạch Phát Triển**  
+**Technical Requirements & Development Brief**  
+Phiên bản / Version: 1.1 | Tháng 02/2026
 
 ---
 
-## 1. Project Overview
+## 1. Tổng Quan Dự Án / Project Overview
 
+### Tiếng Việt
+Xây dựng hệ thống máy chủ trò chơi Project Zomboid chuyên dụng tự lưu trữ (self-hosted) dựa trên nền tảng Docker, tích hợp REST API để quản lý máy chủ từ xa qua Web. Hệ thống hỗ trợ gói thành viên, cửa hàng vật phẩm in-game, quản lý Whitelist, tự động sao lưu/khôi phục thế giới (Backup/Rollback) và bộ công cụ quản trị server hoàn chỉnh.
+
+### English
 Build a self-hosted, Docker-based Project Zomboid dedicated game server with a custom REST API for web-based management. The system should support subscriptions, an in-game item shop, whitelist access control, world backup/rollback, and full server administration.
 
-The target audience is the Georgian gaming community. There are currently no known PZ servers in Georgia.
-
-### 1.1 Goals
-
-- Host a customizable PZ dedicated server (stable or unstable/B42 beta branch)
-- Provide a REST API for all server management operations
-- Enable monetization through subscriptions and microtransactions (future stage)
-- Automate world backups with rollback capability
-- Support Steam Workshop mods with server-side management
-- Serve a web frontend for players and administrators (future stage)
-
-### 1.2 Strategy
-
-The server launches **free and open** to build a player base and community first. The architecture must be designed from day one to support monetization, but payment features are not implemented until the community is established. Stages are structured so each one delivers a usable product.
-
-### 1.3 Target Architecture
-
-| Component | Technology | Purpose |
-|---|---|---|
-| PZ Game Server | Docker (SteamCMD-based image) | Run the actual game server, handle player connections |
-| REST API | FastAPI (Python) or Laravel | All management operations, RCON bridge, file ops, auth |
-| Database | PostgreSQL | Users, subscriptions, shop transactions, whitelist, audit logs |
-| Web Frontend | Vue.js or React SPA | Player portal, admin dashboard, shop interface |
-| Payment Gateway | Stripe and/or PayPal | Subscription billing, one-time purchases via webhooks |
-
-> **Important:** Even though payments and web frontend come in later stages, the API and database should be designed with these features in mind from the start. Don't paint yourself into a corner.
+### 1.1 Mục Tiêu / Goals
+- **Tiếng Việt:**
+  - Vận hành PZ Dedicated Server có khả năng tùy biến cao (nhánh Stable hoặc Unstable Build 42).
+  - Cung cấp REST API đầy đủ cho mọi tác vụ quản trị server.
+  - Hỗ trợ cơ chế mở rộng tính năng và cửa hàng vật phẩm.
+  - Tự động hóa sao lưu thế giới với khả năng Rollback an toàn.
+  - Quản lý Mod Steam Workshop từ xa.
+  - Giao diện Web Dashboard tiện lợi cho người chơi và Admin.
+- **English:**
+  - Host a customizable PZ dedicated server (stable or unstable/B42 beta branch).
+  - Provide a REST API for all server management operations.
+  - Support monetization through subscriptions and microtransactions.
+  - Automate world backups with rollback capability.
+  - Support Steam Workshop mods with server-side management.
+  - Serve a modern web frontend for players and administrators.
 
 ---
 
-## 2. Infrastructure & Docker Setup
+### 1.2 Kiến Trúc Mục Tiêu / Target Architecture
 
-### 2.1 Game Server Container
+| Thành phần / Component | Công nghệ / Technology | Mục đích / Purpose |
+|---|---|---|
+| **PZ Game Server** | Docker (SteamCMD-based image) | Chạy server game PZ, xử lý kết nối người chơi *(Run game server & handle connections)* |
+| **REST API & Backend** | Laravel 12 (PHP 8.3) | Cầu nối RCON, xử lý file config, xác thực, API quản trị *(RCON bridge, file ops, auth, API)* |
+| **Cơ sở dữ liệu / Database** | PostgreSQL 16 | Người dùng, vật phẩm, Whitelist, nhật ký Audit Log *(Users, shop, whitelist, audit logs)* |
+| **Web Frontend** | React 19 + Inertia.js v2 + shadcn/ui | Cổng thông tin người chơi, trang quản trị Admin *(Player portal, admin dashboard)* |
+| **Reverse Proxy** | Caddy v2 | Tự động cấp phát chứng chỉ SSL/TLS HTTPS *(Automatic TLS termination)* |
 
-Use an existing community Docker image as the base. Recommended: `meshi-team/project-zomboid-server` or `Danixu/project-zomboid-server-docker`. Both support environment variable configuration and beta branches.
+---
 
-| Requirement | Details |
+## 2. Hạ Tầng & Cấu Hình Docker / Infrastructure & Docker Setup
+
+### 2.1 Container Game Server / Game Server Container
+
+| Yêu cầu / Requirement | Chi tiết / Details |
 |---|---|
-| Base Image | SteamCMD-based, App ID 380870 |
-| Beta Branch Support | `STEAMAPPBRANCH=unstable` for Build 42 multiplayer |
-| Ports | 16261/udp (game), 16262/udp (direct connect), 27015/tcp (RCON) |
-| Volumes | Persistent: server files, Zomboid data (saves/config/db/logs), workshop mods |
-| Environment Config | SERVER_NAME, ADMIN_PASSWORD, MAX_PLAYERS, MAX_RAM, MOD_IDS, WORKSHOP_IDS |
-| Auto-Update | SteamCMD update check on container start |
-| RCON | Must be enabled with configurable password and port for API communication |
+| **Base Image** | SteamCMD-based, App ID 380870 |
+| **Hỗ trợ Nhánh Beta / Beta Branch** | `STEAMAPPBRANCH=unstable` cho Build 42 Multiplayer |
+| **Cổng mạng / Ports** | `16261/udp` (game), `16262/udp` (direct connect), `27015/tcp` (RCON nội bộ) |
+| **Dung lượng lưu trữ / Volumes** | File game server, dữ liệu Zomboid (saves/config/db/logs), workshop mods |
+| **Biến môi trường / Env Config** | SERVER_NAME, ADMIN_PASSWORD, MAX_PLAYERS, MAX_RAM, MOD_IDS, WORKSHOP_IDS |
+| **Tự động cập nhật / Auto-Update** | Kiểm tra cập nhật qua SteamCMD khi khởi động container |
+| **RCON** | Bật giao thức Source RCON với mật khẩu bảo mật để giao tiếp nội bộ với API |
+
 
 ### 2.2 Docker Compose Structure
 
