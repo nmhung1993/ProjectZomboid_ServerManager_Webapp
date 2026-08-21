@@ -205,8 +205,8 @@ export default function Status({
                                 </div>
                             </div>
 
-                            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto">
-                                <div className="rounded-xl border bg-background/60 px-5 py-3 text-center min-w-[120px]">
+                        <div className="grid w-full grid-cols-3 gap-3 lg:w-auto">
+                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
                                     <Users className="mx-auto mb-1 size-4 text-emerald-500" />
                                     <p className="text-xl font-bold tabular-nums">
                                         {playerCount}
@@ -221,7 +221,7 @@ export default function Status({
                                 <TooltipProvider delayDuration={200}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <div className="cursor-default rounded-xl border bg-background/60 px-5 py-3 text-center min-w-[120px]">
+                                            <div className="cursor-default rounded-xl border bg-background/60 px-4 py-3 text-center">
                                                 <Map className="mx-auto mb-1 size-4 text-blue-500" />
                                                 <p className="truncate text-xl font-bold">{server.map || '—'}</p>
                                                 <p className="text-[11px] text-muted-foreground">{t('status.map')}</p>
@@ -234,7 +234,7 @@ export default function Status({
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                <div className="rounded-xl border bg-background/60 px-5 py-3 text-center min-w-[120px]">
+                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
                                     <Clock className="mx-auto mb-1 size-4 text-violet-500" />
                                     <p className="truncate text-xl font-bold">{server.uptime || '—'}</p>
                                     <p className="text-[11px] text-muted-foreground">{t('status.uptime')}</p>
@@ -277,14 +277,15 @@ export default function Status({
                                                     <TableHead className="w-16 text-center">Hạng</TableHead>
                                                     <TableHead>Người chơi</TableHead>
                                                     <TableHead className="hidden sm:table-cell">Nghề nghiệp</TableHead>
-                                                    <TableHead className="hidden md:table-cell">Đặc điểm (Traits)</TableHead>
+                                                    <TableHead className="hidden lg:table-cell">Đặc điểm (Traits)</TableHead>
                                                     <TableHead className="text-right">
                                                         <span className="inline-flex items-center gap-1">
                                                             <Crosshair className="size-3.5 text-red-500" />
-                                                            Zombie hạ gục
+                                                            <span className="hidden sm:inline">Zombie hạ gục</span>
+                                                            <span className="sm:hidden">Kill</span>
                                                         </span>
                                                     </TableHead>
-                                                    <TableHead className="text-right">
+                                                    <TableHead className="hidden sm:table-cell text-right">
                                                         <span className="inline-flex items-center gap-1">
                                                             <Clock className="size-3.5 text-emerald-500" />
                                                             Giờ sống (Realtime)
@@ -327,7 +328,7 @@ export default function Status({
                                                                     {formatProfession(player.profession)}
                                                                 </Badge>
                                                             </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
+                                                            <TableCell className="hidden lg:table-cell">
                                                                 {traitsList.length > 0 ? (
                                                                     <div className="flex items-center gap-1 flex-wrap max-w-xs">
                                                                         {traitsList.slice(0, 8).map((t) => (
@@ -365,7 +366,7 @@ export default function Status({
                                                             <TableCell className="text-right font-semibold tabular-nums text-red-500/90">
                                                                 {(player.zombie_kills ?? 0).toLocaleString()}
                                                             </TableCell>
-                                                            <TableCell className="text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                                            <TableCell className="hidden sm:table-cell text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
                                                                 {formatHours(player.hours_survived ?? 0, 'real', day_length_minutes)}
                                                             </TableCell>
                                                         </TableRow>

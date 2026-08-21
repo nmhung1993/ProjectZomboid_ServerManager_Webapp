@@ -120,7 +120,7 @@ export default function PlayerProfile({ player, recent_events, is_admin, day_len
 
                     <div className="flex flex-col gap-6">
                         {/* Hero */}
-                        <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                             <div className="flex items-center gap-4">
                                 <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
                                     <Shield className="size-7 text-primary" />

@@ -103,7 +103,7 @@ export default function Dashboard({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.dashboard.title')} />
-            <div className="dashboard-page flex h-full flex-1 flex-col gap-6 overflow-x-auto bg-background p-5 md:p-8">
+            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-hidden bg-background p-4 md:p-6">
                 {/* Server Status Banner */}
                 <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between lg:p-5">
                     <div className="flex min-w-0 flex-wrap items-center gap-3">
@@ -402,7 +402,7 @@ export default function Dashboard({
                     </div>
                 }>
                     {server_totals && (
-                        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                             <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
                                 <div className="flex size-8 items-center justify-center rounded bg-blue-500/10">
                                     <Users className="size-4 text-blue-500" />

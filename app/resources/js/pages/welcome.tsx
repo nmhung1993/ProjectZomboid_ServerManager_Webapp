@@ -202,7 +202,7 @@ function StatsSection({
         <Deferred data="server_stats" fallback={
             <section className="py-8">
                 <div className="mx-auto max-w-7xl rounded-2xl border bg-muted/20 px-4 py-6">
-                    <div className="grid grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
                         {Array.from({ length: 4 }).map((_, i) => (
                             <div key={i} className="flex flex-col items-center gap-2">
                                 <Skeleton className="size-8 rounded" />
@@ -223,7 +223,7 @@ function StatsSection({
                 <section className="py-8">
                     <div className="mx-auto max-w-7xl rounded-2xl border bg-muted/20 px-4 py-6">
                         {/* Hàng 1: Stats */}
-                        <div className="grid grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
                             {/* Online Players */}
                             <div className="flex flex-col items-center gap-1">
                                 <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10">

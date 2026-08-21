@@ -564,7 +564,7 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                                 </div>
                             )}
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div className="space-y-2">
                                 <Label>{t('admin.shop.pz_quantity')}</Label>
                                 <Input
@@ -596,7 +596,7 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                                 />
                             </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             <div className="space-y-2">
                                 <Label>{t('common.category')}</Label>
                                 <Select value={itemCategoryId} onValueChange={setItemCategoryId}>

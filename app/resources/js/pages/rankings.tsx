@@ -331,36 +331,36 @@ export default function Rankings({
                             </div>
                         </div>
 
-                        <div className="relative mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                        <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
+                            <div className="rounded-xl border bg-background/60 px-3 py-3 text-center sm:px-4">
                                 <Users className="mx-auto mb-1 size-4 text-blue-500" />
                                 <p className="text-xl font-bold tabular-nums">
                                     <AnimatedCounter value={server_stats.total_players} />
                                 </p>
                                 <p className="text-[11px] text-muted-foreground">{t('rankings.total_players')}</p>
                             </div>
-                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                            <div className="rounded-xl border bg-background/60 px-3 py-3 text-center sm:px-4">
                                 <Skull className="mx-auto mb-1 size-4 text-red-500" />
                                 <p className="text-xl font-bold tabular-nums">
                                     <AnimatedCounter value={server_stats.total_zombie_kills} />
                                 </p>
                                 <p className="text-[11px] text-muted-foreground">{t('rankings.zombie_kills')}</p>
                             </div>
-                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                            <div className="rounded-xl border bg-background/60 px-3 py-3 text-center sm:px-4">
                                 <Clock className="mx-auto mb-1 size-4 text-green-500" />
                                 <p className="text-xl font-bold tabular-nums">
                                     <AnimatedCounter value={displayedHours} decimals={1} suffix="h" />
                                 </p>
                                 <p className="text-[11px] text-muted-foreground">{t('rankings.hours_played')}</p>
                             </div>
-                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                            <div className="rounded-xl border bg-background/60 px-3 py-3 text-center sm:px-4">
                                 <Skull className="mx-auto mb-1 size-4 text-orange-500" />
                                 <p className="text-xl font-bold tabular-nums">
                                     <AnimatedCounter value={server_stats.total_deaths} />
                                 </p>
                                 <p className="text-[11px] text-muted-foreground">{t('rankings.deaths')}</p>
                             </div>
-                            <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
+                            <div className="col-span-2 rounded-xl border bg-background/60 px-3 py-3 text-center sm:col-span-1 sm:px-4">
                                 <Swords className="mx-auto mb-1 size-4 text-purple-500" />
                                 <p className="text-xl font-bold tabular-nums">
                                     <AnimatedCounter value={server_stats.total_pvp_kills} />
@@ -379,7 +379,7 @@ export default function Rankings({
                                     {t('rankings.leaderboards')}
                                 </CardTitle>
                             </div>
-                            <div className="flex gap-1 overflow-x-auto border-b border-border pt-2">
+                            <div className="-mx-1 flex gap-0.5 overflow-x-auto border-b border-border pb-px pt-2 scrollbar-none">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.key}

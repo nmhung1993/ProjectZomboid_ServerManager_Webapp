@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Globe, ImageIcon, Palette, RotateCcw, Save, ShoppingBag, Trash2, Trophy, Type, Upload } from 'lucide-react';
+import { Clock, Globe, ImageIcon, Palette, RotateCcw, Save, ShoppingBag, Trash2, Trophy, Type, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { fetchAction } from '@/lib/fetch-action';
@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,6 +36,7 @@ type Settings = {
     landing_sections: LandingSection[];
     theme_colors: Record<string, string> | null;
     default_locale: string;
+    game_time_format?: 'day_year' | 'date_month_year';
     show_status: boolean;
     show_rankings: boolean;
     show_shop: boolean;
@@ -81,6 +89,9 @@ export default function SiteSettings({ settings, available_icons, available_sect
     const [showStatus, setShowStatus] = useState(settings.show_status);
     const [showRankings, setShowRankings] = useState(settings.show_rankings);
     const [showShop, setShowShop] = useState(settings.show_shop);
+    const [gameTimeFormat, setGameTimeFormat] = useState<'day_year' | 'date_month_year'>(
+        settings.game_time_format ?? 'day_year',
+    );
 
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
@@ -123,6 +134,7 @@ export default function SiteSettings({ settings, available_icons, available_sect
         JSON.stringify(features.map(({ _id, ...f }) => f)) !== JSON.stringify(settings.features.map(({ _id, ...f }) => f)) ||
         JSON.stringify(landingSections) !== JSON.stringify(settings.landing_sections) ||
         JSON.stringify(themeColors) !== JSON.stringify(settings.theme_colors ?? {}) ||
+        gameTimeFormat !== (settings.game_time_format ?? 'day_year') ||
         showStatus !== settings.show_status ||
         showRankings !== settings.show_rankings ||
         showShop !== settings.show_shop ||
@@ -142,6 +154,7 @@ export default function SiteSettings({ settings, available_icons, available_sect
         formData.append('hero_subtitle', heroSubtitle);
         formData.append('hero_description', heroDescription);
         formData.append('hero_button_text', heroButtonText);
+        formData.append('game_time_format', gameTimeFormat);
         formData.append('show_status', showStatus ? '1' : '0');
         formData.append('show_rankings', showRankings ? '1' : '0');
         formData.append('show_shop', showShop ? '1' : '0');
@@ -573,6 +586,34 @@ export default function SiteSettings({ settings, available_icons, available_sect
                                 <span className="text-sm font-medium">{t('nav.shop')}</span>
                             </div>
                             <Switch checked={showShop} onCheckedChange={setShowShop} />
+                        </div>
+
+                        <Separator className="my-2" />
+
+                        <div className="space-y-2 pt-2">
+                            <div className="flex items-center gap-2">
+                                <Clock className="size-4 text-indigo-500" />
+                                <Label htmlFor="game-time-format">{t('admin.site_settings.game_time_format')}</Label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('admin.site_settings.game_time_format_description')}
+                            </p>
+                            <Select
+                                value={gameTimeFormat}
+                                onValueChange={(val: 'day_year' | 'date_month_year') => setGameTimeFormat(val)}
+                            >
+                                <SelectTrigger id="game-time-format" className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="day_year">
+                                        {t('admin.site_settings.game_time_format_day_year')}
+                                    </SelectItem>
+                                    <SelectItem value="date_month_year">
+                                        {t('admin.site_settings.game_time_format_date_month_year')}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </CardContent>
                 </Card>

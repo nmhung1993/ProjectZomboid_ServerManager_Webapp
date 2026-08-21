@@ -160,7 +160,7 @@ export default function AdminQuestsPage({ quests, bounties, stats }: Props) {
                 </div>
 
                 {/* Stat cards */}
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">Nhiệm vụ đang mở</CardTitle>
