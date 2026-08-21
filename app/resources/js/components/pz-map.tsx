@@ -35,8 +35,28 @@ export type EventMarker = {
     label: string;
 };
 
+export type VehicleMarker = {
+    id: number;
+    sql_id: number;
+    name: string;
+    owner: string | null;
+    x: number;
+    y: number;
+};
+
+export type DeathPoint = {
+    id: number;
+    x: number;
+    y: number;
+    weight?: number;
+    cause?: string;
+    username?: string;
+};
+
 type PzMapProps = {
     markers?: PlayerMarker[];
+    vehicleMarkers?: VehicleMarker[];
+    deathHeatmapPoints?: DeathPoint[];
     mapConfig: MapConfig;
     hasTiles: boolean;
     className?: string;
@@ -309,10 +329,15 @@ const eventTypeColors: Record<string, string> = {
     death: '#9ca3af',
     connect: '#22c55e',
     disconnect: '#f59e0b',
+    airdrop: '#f59e0b',
+    heli_crash: '#ef4444',
+    zombie_invasion: '#a855f7',
 };
 
 export default function PzMap({
     markers = [],
+    vehicleMarkers = [],
+    deathHeatmapPoints = [],
     mapConfig,
     hasTiles,
     className = '',
@@ -332,6 +357,8 @@ export default function PzMap({
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
     const markersLayerRef = useRef<L.LayerGroup | null>(null);
+    const vehiclesLayerRef = useRef<L.LayerGroup | null>(null);
+    const deathsLayerRef = useRef<L.LayerGroup | null>(null);
     const zonesLayerRef = useRef<L.LayerGroup | null>(null);
     const eventsLayerRef = useRef<L.LayerGroup | null>(null);
     const drawStateRef = useRef<{
@@ -480,6 +507,12 @@ export default function PzMap({
 
         const markersLayer = L.layerGroup().addTo(map);
         markersLayerRef.current = markersLayer;
+
+        const vehiclesLayer = L.layerGroup().addTo(map);
+        vehiclesLayerRef.current = vehiclesLayer;
+
+        const deathsLayer = L.layerGroup().addTo(map);
+        deathsLayerRef.current = deathsLayer;
 
         const zonesLayer = L.layerGroup().addTo(map);
         zonesLayerRef.current = zonesLayer;
@@ -667,6 +700,56 @@ export default function PzMap({
             }
         });
     }, [markers, onMarkerClick, onMarkerAction]);
+
+    // Update vehicle markers
+    useEffect(() => {
+        const layer = vehiclesLayerRef.current;
+        if (!layer) return;
+
+        layer.clearLayers();
+        if (!vehicleMarkers) return;
+
+        vehicleMarkers.forEach((vm) => {
+            const marker = L.circleMarker([-vm.y, vm.x], {
+                radius: 7,
+                color: '#2563eb',
+                fillColor: vm.owner ? '#3b82f6' : '#94a3b8',
+                fillOpacity: 0.85,
+                weight: 2,
+            }).addTo(layer);
+
+            marker.bindTooltip(`🚗 ${vm.name} #${vm.sql_id}${vm.owner ? ` (${vm.owner})` : ' (Vô chủ)'}`, {
+                permanent: false,
+                direction: 'top',
+            });
+        });
+    }, [vehicleMarkers]);
+
+    // Update death heatmap points
+    useEffect(() => {
+        const layer = deathsLayerRef.current;
+        if (!layer) return;
+
+        layer.clearLayers();
+        if (!deathHeatmapPoints || deathHeatmapPoints.length === 0) return;
+
+        deathHeatmapPoints.forEach((dp) => {
+            const isPvp = dp.cause === 'pvp';
+            const radius = Math.min(24, Math.max(8, (dp.weight || 1) * 8));
+            const circle = L.circleMarker([-dp.y, dp.x], {
+                radius,
+                color: isPvp ? '#dc2626' : '#ea580c',
+                fillColor: isPvp ? '#ef4444' : '#f97316',
+                fillOpacity: 0.4,
+                weight: 1.5,
+            }).addTo(layer);
+
+            circle.bindTooltip(`💀 ${dp.username || 'Survivor'} (${isPvp ? 'PvP Tử Trận' : 'Tử vong'})`, {
+                permanent: false,
+                direction: 'top',
+            });
+        });
+    }, [deathHeatmapPoints]);
 
     // Update zone overlays
     useEffect(() => {

@@ -41,6 +41,35 @@ class DockerManager
         ];
     }
 
+    /**
+     * @return array{memory_used_mb: float, memory_max_mb: float, memory_percent: float}|null
+     */
+    public function getContainerStats(): ?array
+    {
+        $response = $this->request('GET', "/containers/{$this->containerName}/stats", [
+            'query' => ['stream' => 'false'],
+            'timeout' => 5,
+        ]);
+
+        if (! $response || ! is_array($response)) {
+            return null;
+        }
+
+        $memoryStats = $response['memory_stats'] ?? [];
+        $usage = (float) ($memoryStats['usage'] ?? 0);
+        $limit = (float) ($memoryStats['limit'] ?? 0);
+
+        $memoryUsedMb = round($usage / (1024 * 1024), 1);
+        $memoryMaxMb = round($limit / (1024 * 1024), 1);
+        $memoryPercent = $memoryMaxMb > 0 ? round(($memoryUsedMb / $memoryMaxMb) * 100, 1) : 0;
+
+        return [
+            'memory_used_mb' => $memoryUsedMb,
+            'memory_max_mb' => $memoryMaxMb,
+            'memory_percent' => $memoryPercent,
+        ];
+    }
+
     public function startContainer(): bool
     {
         $response = $this->request('POST', "/containers/{$this->containerName}/start");

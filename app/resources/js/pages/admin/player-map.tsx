@@ -44,6 +44,44 @@ type Props = {
     hasTiles: boolean;
     tileProgress: TileProgress | null;
     safeZones: SafeZone[];
+    factionTerritories?: Array<{
+        id: number;
+        name: string;
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        color?: string | null;
+        faction?: {
+            name: string;
+            tag: string;
+            color: string;
+        };
+    }>;
+    vehicles?: Array<{
+        id: number;
+        sql_id: number;
+        name: string;
+        owner_username: string | null;
+        x: number;
+        y: number;
+    }>;
+    worldEvents?: Array<{
+        id: number;
+        event_type: string;
+        title: string;
+        x: number;
+        y: number;
+        location_name?: string | null;
+    }>;
+    deathHeatmapPoints?: Array<{
+        id: number;
+        x: number;
+        y: number;
+        weight?: number;
+        cause?: string;
+        username?: string;
+    }>;
 };
 
 const statusDotColor: Record<PlayerMarker['status'], string> = {
@@ -69,6 +107,10 @@ export default function PlayerMap({
     hasTiles,
     tileProgress,
     safeZones,
+    factionTerritories = [],
+    vehicles = [],
+    worldEvents = [],
+    deathHeatmapPoints = [],
 }: Props) {
     const { t } = useTranslation();
     const [isMapInteracting, setIsMapInteracting] = useState(false);
@@ -86,6 +128,8 @@ export default function PlayerMap({
                     'hasTiles',
                     'tileProgress',
                     'safeZones',
+                    'factionTerritories',
+                    'vehicles',
                 ],
             });
         }, 5000);
@@ -93,14 +137,24 @@ export default function PlayerMap({
         return () => window.clearInterval(timer);
     }, [isMapInteracting]);
 
-    const zoneOverlays: ZoneOverlay[] = useMemo(
-        () =>
-            safeZones.map((zone, i) => ({
-                ...zone,
-                color: ZONE_COLORS[i % ZONE_COLORS.length],
-            })),
-        [safeZones],
-    );
+    const zoneOverlays: ZoneOverlay[] = useMemo(() => {
+        const safe = safeZones.map((zone, i) => ({
+            ...zone,
+            color: ZONE_COLORS[i % ZONE_COLORS.length],
+        }));
+
+        const factions = factionTerritories.map((t) => ({
+            id: `faction-${t.id}`,
+            name: `[${t.faction?.tag || 'FACTION'}] ${t.name}`,
+            x1: t.x1,
+            y1: t.y1,
+            x2: t.x2,
+            y2: t.y2,
+            color: t.color || t.faction?.color || '#3b82f6',
+        }));
+
+        return [...safe, ...factions];
+    }, [safeZones, factionTerritories]);
 
     const [kickTarget, setKickTarget] = useState<string | null>(null);
     const [banTarget, setBanTarget] = useState<string | null>(null);
@@ -310,6 +364,24 @@ export default function PlayerMap({
                             )}
                             <PzMap
                                 markers={markers}
+                                vehicleMarkers={vehicles.map((v) => ({
+                                    id: v.id,
+                                    sql_id: v.sql_id,
+                                    name: v.name,
+                                    owner: v.owner_username,
+                                    x: v.x,
+                                    y: v.y,
+                                }))}
+                                eventMarkers={(worldEvents || []).map((e) => ({
+                                    id: e.id,
+                                    x: e.x,
+                                    y: e.y,
+                                    type: e.event_type,
+                                    player: e.title,
+                                    target: e.location_name || null,
+                                    label: e.title,
+                                }))}
+                                deathHeatmapPoints={deathHeatmapPoints}
                                 mapConfig={mapConfig}
                                 hasTiles={hasTiles}
                                 onMarkerAction={handleMarkerAction}

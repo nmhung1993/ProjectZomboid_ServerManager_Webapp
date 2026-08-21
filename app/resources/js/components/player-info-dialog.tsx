@@ -60,124 +60,7 @@ const PROFESSION_NAMES: Record<string, string> = {
     herbalist: 'Thầy thuốc thảo dược',
 };
 
-type TraitInfo = {
-    label: string;
-    type: 'positive' | 'negative' | 'neutral';
-    desc?: string;
-};
-
-const TRAITS_DATA: Record<string, TraitInfo> = {
-    // Positive Traits
-    AdrenalineJunkie: { label: 'Nghiện Adrenaline', type: 'positive', desc: 'Chạy nhanh hơn khi cực kỳ hoảng sợ' },
-    Athletic: { label: 'Lực lưỡng', type: 'positive', desc: 'Chạy nhanh hơn, ít tiêu hao thể lực' },
-    Axeman: { label: 'Chuyên gia dùng rìu', type: 'positive', desc: 'Chặt cây & vung rìu nhanh hơn' },
-    Brave: { label: 'Dũng cảm', type: 'positive', desc: 'Ít bị hoảng sợ khi gặp zombie' },
-    Brawler: { label: 'Đấu sĩ', type: 'positive', desc: '+1 Điểm Rìu & Vũ khí cùn dài' },
-    Burglar: { label: 'Trộm xe', type: 'positive', desc: 'Có thể đấu dây điện khởi động xe ngay' },
-    CatEyes: { label: 'Mắt mèo', type: 'positive', desc: 'Nhìn rõ hơn nhiều trong đêm tối' },
-    Cook: { label: 'Đầu bếp', type: 'positive', desc: '+2 Điểm Nấu ăn' },
-    Dextrous: { label: 'Khéo tay', type: 'positive', desc: 'Chuyển đồ đạc trong túi nhanh gấp đôi' },
-    EagleEyed: { label: 'Mắt đại bàng', type: 'positive', desc: 'Tầm nhìn rộng, phát hiện mục tiêu nhanh' },
-    FastHealer: { label: 'Hồi phục nhanh', type: 'positive', desc: 'Vết thương hồi phục nhanh hơn' },
-    FastLearner: { label: 'Học nhanh', type: 'positive', desc: '+30% XP cho hầu hết kỹ năng' },
-    FastReader: { label: 'Đọc nhanh', type: 'positive', desc: 'Đọc sách truyện nhanh hơn' },
-    FirstAid: { label: 'Sơ cứu', type: 'positive', desc: '+1 Điểm Sơ cứu y tế' },
-    Fishing: { label: 'Câu cá', type: 'positive', desc: '+1 Điểm Câu cá' },
-    Fit: { label: 'Cân đối', type: 'positive', desc: '+2 Thể lực' },
-    Gardener: { label: 'Làm vườn', type: 'positive', desc: '+1 Điểm Nông nghiệp' },
-    Graceful: { label: 'Duyên dáng', type: 'positive', desc: 'Tạo ít tiếng động hơn khi di chuyển' },
-    Gymnast: { label: 'VĐV thể dục', type: 'positive', desc: '+1 Điểm Đi nhẹ & Nhanh nhẹn' },
-    Handy: { label: 'Khéo tay / Thợ sửa', type: 'positive', desc: '+1 Điểm Mộc, Bảo trì, xây dựng nhanh' },
-    Hardy: { label: 'Bền bỉ', type: 'positive', desc: 'Thể lực hồi phục nhanh hơn' },
-    Hiker: { label: 'Dã ngoại', type: 'positive', desc: '+1 Điểm Đi bẫy & Tìm kiếm' },
-    Hunter: { label: 'Thợ săn', type: 'positive', desc: '+1 Điểm Bắn súng, Dùng dao, Đi bẫy' },
-    Inconspicuous: { label: 'Kín đáo', type: 'positive', desc: 'Zombie ít phát hiện hơn 50%' },
-    IronGut: { label: 'Bao tử sắt', type: 'positive', desc: 'Ít bị ngộ độc thực phẩm' },
-    KeenHearing: { label: 'Thính tai', type: 'positive', desc: 'Tăng bán kính nhận diện zombie phía sau' },
-    LightEater: { label: 'Ăn ít', type: 'positive', desc: 'Ít bị đói hơn' },
-    LowThirst: { label: 'Ít khát', type: 'positive', desc: 'Ít bị khát nước hơn' },
-    Lucky: { label: 'May mắn', type: 'positive', desc: 'Tăng tỉ lệ tìm thấy đồ quý hiếm' },
-    Marksman: { label: 'Xạ thủ', type: 'positive', desc: '+1 Điểm Bắn súng & Nạp đạn' },
-    Mechanic: { label: 'Thợ cơ khí', type: 'positive', desc: '+1 Điểm Cơ khí ô tô' },
-    NightOwl: { label: 'Cú đêm', type: 'positive', desc: 'Cần ngủ ít hơn, luôn cảnh giác' },
-    Nutritionist: { label: 'Chuyên gia dinh dưỡng', type: 'positive', desc: 'Thấy giá trị dinh dưỡng thức ăn' },
-    Organized: { label: 'Ngăn nắp', type: 'positive', desc: '+30% sức chứa của mọi túi đồ' },
-    Outdoorsman: { label: 'Người sống ngoài trời', type: 'positive', desc: 'Kháng cảm lạnh, không sợ mưa gió' },
-    Packmule: { label: 'Người thồ hàng', type: 'positive', desc: 'Tăng trọng lượng mang vác' },
-    Resilient: { label: 'Kháng bệnh', type: 'positive', desc: 'Giảm nguy cơ nhiễm trùng vết thương' },
-    Runner: { label: 'Chạy nhanh', type: 'positive', desc: '+1 Điểm Chạy bộ' },
-    Sewer: { label: 'Thợ may', type: 'positive', desc: '+1 Điểm May vá' },
-    SpeedDemon: { label: 'Tay lái lụa', type: 'positive', desc: 'Lái xe nhanh hơn, lùi xe khỏe' },
-    Stout: { label: 'Vạm vỡ', type: 'positive', desc: '+2 Sức mạnh, đẩy lùi zombie tốt' },
-    Strong: { label: 'Khỏe như voi (Strong)', type: 'positive', desc: '+4 Sức mạnh, sát thương tối đa' },
-    Tailor: { label: 'Thợ may', type: 'positive', desc: '+1 Điểm May vá' },
-    ThickSkinned: { label: 'Da dày', type: 'positive', desc: 'Giảm tỷ lệ bị cắn/cào rách da' },
-    Wakeful: { label: 'Tỉnh táo', type: 'positive', desc: 'Cần ngủ ít hơn' },
-
-    // Negative Traits
-    Agoraphobic: { label: 'Sợ không gian rộng', type: 'negative', desc: 'Hoảng sợ khi ở ngoài trời' },
-    Allergic: { label: 'Dị ứng', type: 'negative', desc: 'Dễ bị hắt hơi' },
-    Asthmatic: { label: 'Hen suyễn', type: 'negative', desc: 'Mất thể lực nhanh hơn khi chạy/đánh' },
-    Claustophobic: { label: 'Sợ phòng kín', type: 'negative', desc: 'Hoảng sợ khi ở trong phòng kín' },
-    Clumsy: { label: 'Hậu đậu', type: 'negative', desc: 'Tạo nhiều tiếng ồn khi di chuyển' },
-    Conspicuous: { label: 'Dễ bị chú ý', type: 'negative', desc: 'Zombie dễ phát hiện gấp đôi' },
-    Cowardly: { label: 'Nhút nhát', type: 'negative', desc: 'Dễ hoảng loạn cực độ' },
-    Deaf: { label: 'Điếc', type: 'negative', desc: 'Không nghe thấy âm thanh trong game' },
-    Disorganized: { label: 'Bừa bộn', type: 'negative', desc: '-30% sức chứa của mọi túi đồ' },
-    Emaciated: { label: 'Gầy còm', type: 'negative', desc: '-4 Sức mạnh, -4 Thể lực' },
-    Feeble: { label: 'Yếu ớt', type: 'negative', desc: '-2 Sức mạnh' },
-    HardOfHearing: { label: 'Lãng tai', type: 'negative', desc: 'Giảm tầm nghe và cảnh báo sau lưng' },
-    Hemophobic: { label: 'Sợ máu (Fear of Blood)', type: 'negative', desc: 'Hoảng sợ khi người dính máu' },
-    FearOfBlood: { label: 'Sợ máu (Fear of Blood)', type: 'negative', desc: 'Hoảng sợ khi người dính máu' },
-    HighThirst: { label: 'Uống nhiều', type: 'negative', desc: 'Nhanh khát nước gấp đôi' },
-    Hypochondriac: { label: 'Ảo tưởng bệnh', type: 'negative', desc: 'Tự phát triển triệu chứng bệnh giả' },
-    Illiterate: { label: 'Mù chữ', type: 'negative', desc: 'Không thể đọc sách/tạp chí' },
-    NeedsSleep: { label: 'Ham ngủ', type: 'negative', desc: 'Nhanh mệt mỏi, cần ngủ nhiều' },
-    Sleepyhead: { label: 'Ham ngủ', type: 'negative', desc: 'Nhanh mệt mỏi, cần ngủ nhiều' },
-    Obese: { label: 'Béo phì', type: 'negative', desc: '-2 Thể lực, chạy chậm, dễ ngã' },
-    Outofshape: { label: 'Mất dáng', type: 'negative', desc: '-2 Thể lực' },
-    Overweight: { label: 'Thừa cân', type: 'negative', desc: '-1 Thể lực, chạy chậm hơn' },
-    Pacifist: { label: 'Bất bạo động', type: 'negative', desc: 'Giảm 25% XP vũ khí cận chiến/súng' },
-    ProneToIllness: { label: 'Dễ ốm', type: 'negative', desc: 'Dễ bị cảm cúm & nhiễm bệnh' },
-    RestlessSleeper: { label: 'Khó ngủ', type: 'negative', desc: 'Ngủ không sâu, thể lực hồi chậm' },
-    ShortSighted: { label: 'Cận thị', type: 'negative', desc: 'Giảm tầm nhìn và phát hiện mục tiêu' },
-    SlowHealer: { label: 'Hồi phục chậm', type: 'negative', desc: 'Vết thương lâu lành hơn' },
-    SlowLearner: { label: 'Học chậm', type: 'negative', desc: 'Giảm 30% XP nhận được' },
-    SlowReader: { label: 'Đọc chậm', type: 'negative', desc: 'Đọc sách lâu hơn' },
-    Smoker: { label: 'Nghiện thuốc lá', type: 'negative', desc: 'Căng thẳng nếu không hút thuốc' },
-    SundayDriver: { label: 'Lái xe rùa bò', type: 'negative', desc: 'Tốc độ xe chậm, tăng tốc kém' },
-    ThinSkinned: { label: 'Da mỏng', type: 'negative', desc: 'Dễ bị cào rách da & cắn' },
-    Underweight: { label: 'Thiếu cân', type: 'negative', desc: '-1 Thể lực, dễ bị xô ngã' },
-    Unfit: { label: 'Thể lực kém', type: 'negative', desc: '-4 Thể lực' },
-    Unlucky: { label: 'Xui xẻo', type: 'negative', desc: 'Giảm tỉ lệ tìm thấy đồ quý' },
-    VeryUnderweight: { label: 'Rất thiếu cân', type: 'negative', desc: '-2 Thể lực, -2 Sức mạnh' },
-    Weak: { label: 'Yếu như sên', type: 'negative', desc: '-5 Sức mạnh, mang vác ít' },
-    Inventive: { label: 'Sáng tạo (Inventive)', type: 'positive', desc: 'Có thể chế tạo các công cụ và thiết bị độc đáo' },
-    WeakStomach: { label: 'Bụng yếu', type: 'negative', desc: 'Dễ bị ngộ độc thực phẩm nặng' },
-    ShortOfBreath: { label: 'Hụt hơi (Short of Breath)', type: 'negative', desc: 'Dễ hụt hơi khi vận động mạnh' },
-};
-
-function resolveTraitInfo(traitKey: string): { key: string; label: string; type: 'positive' | 'negative' | 'neutral'; desc?: string } {
-    const cleanKey = traitKey.trim();
-    // Direct match
-    if (TRAITS_DATA[cleanKey]) {
-        return { key: cleanKey, ...TRAITS_DATA[cleanKey] };
-    }
-    // Normalized alphanumeric match
-    const norm = cleanKey.toLowerCase().replace(/[\s_-]/g, '');
-    for (const [k, val] of Object.entries(TRAITS_DATA)) {
-        if (k.toLowerCase().replace(/[\s_-]/g, '') === norm) {
-            return { key: k, ...val };
-        }
-    }
-    // Fallback: formatted name
-    const prettyName = cleanKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim();
-    return {
-        key: cleanKey,
-        label: prettyName,
-        type: 'neutral',
-    };
-}
+import { resolvePzTrait } from '@/lib/pz-traits';
 
 function formatProfession(prof?: string | null): string {
     if (!prof) return 'Thất nghiệp';
@@ -228,7 +111,7 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
     const skillEntries = Object.entries(skills);
 
     const rawTraits: string[] = stats?.traits ?? [];
-    const traitsList = rawTraits.map(resolveTraitInfo);
+    const traitsList = rawTraits.map(resolvePzTrait);
     const positiveTraits = traitsList.filter((t) => t.type === 'positive');
     const negativeTraits = traitsList.filter((t) => t.type === 'negative');
     const otherTraits = traitsList.filter((t) => t.type === 'neutral');
@@ -244,8 +127,13 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
                             <UserIcon className="size-5 text-primary" />
                         </div>
                         <div>
-                            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                            <DialogTitle className="text-lg font-bold flex items-center gap-2 flex-wrap">
                                 <span>{player.username}</span>
+                                {(player as any).active_title && (
+                                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] font-bold">
+                                        ✨ {(player as any).active_title}
+                                    </Badge>
+                                )}
                                 <Badge variant={player.isOnline ? 'default' : 'outline'} className="text-[11px] gap-1 py-0">
                                     <Circle
                                         className={`size-1.5 ${player.isOnline ? 'fill-emerald-400 text-emerald-400 animate-pulse' : 'fill-muted-foreground text-muted-foreground'}`}
@@ -280,112 +168,79 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
                         {/* Status / Health */}
                         <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between">
                             <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                {isDead ? <Skull className="size-3 text-red-500" /> : <Heart className="size-3 text-emerald-500" />}
+                                <Heart className="size-3 text-rose-500" />
                                 Trạng thái
                             </span>
-                            <span className="text-sm font-semibold mt-1">
+                            <div className="mt-1 flex items-center gap-1.5">
                                 {isDead ? (
-                                    <span className="text-red-500 flex items-center gap-1">Đã chết</span>
+                                    <span className="text-xs font-semibold text-rose-500 flex items-center gap-1">
+                                        <Skull className="size-3.5" /> Đã tử nạn
+                                    </span>
                                 ) : (
-                                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">Còn sống</span>
+                                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <Sparkles className="size-3.5" /> Còn sống
+                                    </span>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Survived Time */}
+                        <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between">
+                            <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                                <Clock className="size-3 text-amber-500" />
+                                Đã sống sót
+                            </span>
+                            <span className="text-sm font-bold text-amber-600 dark:text-amber-400 mt-1">
+                                {formatHours(stats?.hours_survived ?? 0, 'ingame', dayLengthMinutes)}
                             </span>
                         </div>
 
                         {/* Zombie Kills */}
                         <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between">
                             <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                <Crosshair className="size-3 text-red-500" />
-                                Zombie hạ gục
+                                <Crosshair className="size-3 text-purple-500" />
+                                Tiêu diệt Zombie
                             </span>
-                            <span className="text-sm font-semibold mt-1 tabular-nums">
-                                {(stats?.zombie_kills ?? 0).toLocaleString()}
-                            </span>
-                        </div>
-
-                        {/* Realtime Survival */}
-                        <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between">
-                            <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                <Clock className="size-3 text-emerald-500" />
-                                Giờ sống thực tế
-                            </span>
-                            <span className="text-sm font-semibold mt-1 tabular-nums text-emerald-600 dark:text-emerald-400">
-                                {formatHours(stats?.hours_survived ?? 0, 'real', dayLengthMinutes)}
+                            <span className="text-sm font-bold text-purple-600 dark:text-purple-400 mt-1">
+                                {(stats?.zombie_kills ?? 0).toLocaleString()} xác
                             </span>
                         </div>
 
-                        {/* Ingame Survival */}
-                        <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between">
+                        {/* Position */}
+                        <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between col-span-2 sm:col-span-2">
                             <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                <Activity className="size-3 text-amber-500" />
-                                Giờ trong game
+                                <MapPin className="size-3 text-primary" />
+                                Vị trí tọa độ
                             </span>
-                            <span className="text-sm font-semibold mt-1 tabular-nums">
-                                {((stats?.hours_survived ?? 0)).toFixed(1)}h
-                            </span>
-                        </div>
-
-                        {/* Created At */}
-                        <div className="rounded-xl border bg-muted/40 p-3 flex flex-col justify-between">
-                            <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                <Calendar className="size-3 text-violet-500" />
-                                Ngày đăng ký
-                            </span>
-                            <span className="text-sm font-semibold mt-1 truncate">
-                                {player.createdAt ? new Date(player.createdAt).toLocaleDateString() : '—'}
+                            <span className="text-xs font-mono font-medium mt-1 truncate">
+                                {live ? `X: ${Math.round(live.x)}, Y: ${Math.round(live.y)}, Z: ${live.z}` : 'Không có tín hiệu tọa độ'}
                             </span>
                         </div>
                     </div>
 
-                    {/* Live coordinates if online */}
-                    {player.isOnline && live && (
-                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                                <MapPin className="size-4 text-emerald-500 shrink-0" />
-                                <div>
-                                    <span className="font-semibold text-foreground">Tọa độ trực tiếp: </span>
-                                    <span className="font-mono text-muted-foreground">
-                                        X: {live.x ?? '—'}, Y: {live.y ?? '—'}, Z: {live.z ?? 0}
-                                    </span>
-                                    {live.is_ghost && (
-                                        <Badge variant="outline" className="ml-2 text-[10px] text-amber-500 border-amber-500/30 py-0">
-                                            <Ghost className="size-2.5 mr-0.5" /> Ghost
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-                            <Button variant="ghost" size="sm" asChild className="h-7 text-xs gap-1">
-                                <Link href="/admin/players/map">
-                                    Mở bản đồ
-                                    <ExternalLink className="size-3" />
-                                </Link>
-                            </Button>
-                        </div>
-                    )}
-
                     {/* Character Traits Breakdown */}
-                    <div className="rounded-xl border p-4 space-y-3">
-                        <div className="flex items-center justify-between">
+                    <div className="rounded-xl border bg-card p-3.5 space-y-3 shadow-xs">
+                        <div className="flex items-center justify-between border-b pb-2">
                             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                                <Tag className="size-3.5 text-indigo-500" />
+                                <Sparkles className="size-3.5 text-amber-500" />
                                 Đặc điểm nhân vật (Traits - {traitsList.length})
                             </h4>
                             <div className="flex items-center gap-2 text-[11px]">
-                                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                                     <CheckCircle2 className="size-3" /> {positiveTraits.length} Ưu điểm
                                 </span>
                                 <span className="text-muted-foreground">•</span>
-                                <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
+                                <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-medium">
                                     <AlertCircle className="size-3" /> {negativeTraits.length} Nhược điểm
                                 </span>
                             </div>
                         </div>
 
                         {traitsList.length > 0 ? (
-                            <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                            <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                                 {positiveTraits.length > 0 && (
                                     <div className="space-y-1.5">
-                                        <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                                             <CheckCircle2 className="size-3" /> Ưu điểm (Positive)
                                         </span>
                                         <div className="flex flex-wrap gap-1.5">
@@ -394,8 +249,16 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
                                                     key={t.key}
                                                     variant="outline"
                                                     title={t.desc}
-                                                    className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs py-1 px-2.5 font-medium gap-1"
+                                                    className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs py-1 px-2.5 font-medium gap-1.5 flex items-center shadow-xs"
                                                 >
+                                                    <img
+                                                        src={t.iconUrl}
+                                                        alt={t.label}
+                                                        className="size-4.5 object-contain shrink-0"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLElement).style.display = 'none';
+                                                        }}
+                                                    />
                                                     <span>{t.label}</span>
                                                     {t.desc && <span className="text-[10px] text-muted-foreground opacity-75">({t.desc})</span>}
                                                 </Badge>
@@ -406,7 +269,7 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
 
                                 {negativeTraits.length > 0 && (
                                     <div className="space-y-1.5 pt-1">
-                                        <span className="text-[11px] font-medium text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                                        <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
                                             <AlertCircle className="size-3" /> Nhược điểm (Negative)
                                         </span>
                                         <div className="flex flex-wrap gap-1.5">
@@ -415,8 +278,16 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
                                                     key={t.key}
                                                     variant="outline"
                                                     title={t.desc}
-                                                    className="border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs py-1 px-2.5 font-medium gap-1"
+                                                    className="border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs py-1 px-2.5 font-medium gap-1.5 flex items-center shadow-xs"
                                                 >
+                                                    <img
+                                                        src={t.iconUrl}
+                                                        alt={t.label}
+                                                        className="size-4.5 object-contain shrink-0"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLElement).style.display = 'none';
+                                                        }}
+                                                    />
                                                     <span>{t.label}</span>
                                                     {t.desc && <span className="text-[10px] text-muted-foreground opacity-75">({t.desc})</span>}
                                                 </Badge>
@@ -427,11 +298,19 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
 
                                 {otherTraits.length > 0 && (
                                     <div className="space-y-1.5 pt-1">
-                                        <span className="text-[11px] font-medium text-muted-foreground">Đặc điểm khác</span>
+                                        <span className="text-[11px] font-semibold text-muted-foreground">Đặc điểm khác</span>
                                         <div className="flex flex-wrap gap-1.5">
                                             {otherTraits.map((t) => (
-                                                <Badge key={t.key} variant="secondary" className="text-xs py-1 px-2.5 font-medium">
-                                                    {t.label}
+                                                <Badge key={t.key} variant="secondary" className="text-xs py-1 px-2.5 font-medium gap-1.5 flex items-center">
+                                                    <img
+                                                        src={t.iconUrl}
+                                                        alt={t.label}
+                                                        className="size-4.5 object-contain shrink-0"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLElement).style.display = 'none';
+                                                        }}
+                                                    />
+                                                    <span>{t.label}</span>
                                                 </Badge>
                                             ))}
                                         </div>

@@ -15,6 +15,12 @@ require("ZM_SafeZone")
 require("ZM_PvpTracker")
 require("ZM_MoneyDeposit")
 require("ZM_AntiCheat")
+require("ZM_Faction")
+require("ZM_Vehicles")
+require("ZM_Cleaner")
+require("ZM_Delivery")
+require("ZM_Events")
+require("ZM_Performance")
 
 print("[ZomboidManager] Initializing server-side bridge mod...")
 
@@ -111,39 +117,87 @@ local function onEveryOneMinute()
         ZM_GameState.export()
     end
 
+    -- Helper to safely run sub-module ticks
+    local function safeTick(name, mod)
+        if mod and mod.tick then
+            local ok, err = pcall(mod.tick)
+            if not ok then
+                print("[ZomboidManager-Main] Error in " .. name .. ".tick(): " .. tostring(err))
+            end
+        end
+    end
+
     -- Respawn delay: reload config, process resets, clean expired
-    ZM_RespawnDelay.tick()
+    safeTick("ZM_RespawnDelay", ZM_RespawnDelay)
 
     -- Safe zone: reload config, flush violations
-    ZM_SafeZone.tick()
+    safeTick("ZM_SafeZone", ZM_SafeZone)
 
     -- PvP tracker: scan for kills, flush to disk
-    ZM_PvpTracker.tick()
+    safeTick("ZM_PvpTracker", ZM_PvpTracker)
 
     -- AntiCheat: scan online players for godmode, noclip, and admin cheats
-    ZM_AntiCheat.tick()
+    safeTick("ZM_AntiCheat", ZM_AntiCheat)
+
+    -- Faction: reload config and cache
+    safeTick("ZM_Faction", ZM_Faction)
+
+    -- Vehicles: export vehicles and process commands
+    safeTick("ZM_Vehicles", ZM_Vehicles)
+
+    -- Cleaner: process cleanup requests
+    safeTick("ZM_Cleaner", ZM_Cleaner)
+
+    -- Delivery: process item deliveries to online players
+    safeTick("ZM_Delivery", ZM_Delivery)
+
+    -- World Events: process active airdrops, heli crashes, invasions
+    safeTick("ZM_Events", ZM_Events)
+
+    -- Performance: monitor tick time, zombies, heap memory
+    safeTick("ZM_Performance", ZM_Performance)
 end
 
 --- OnServerStarted — export game state and item catalog on server boot
 local function onServerStarted()
     -- Initialize respawn delay system
-    ZM_RespawnDelay.init()
+    if ZM_RespawnDelay and ZM_RespawnDelay.init then ZM_RespawnDelay.init() end
 
     -- Initialize safe zone system
-    ZM_SafeZone.init()
+    if ZM_SafeZone and ZM_SafeZone.init then ZM_SafeZone.init() end
 
     -- Initialize PvP tracker
-    ZM_PvpTracker.init()
+    if ZM_PvpTracker and ZM_PvpTracker.init then ZM_PvpTracker.init() end
 
     -- Initialize anticheat scanner
-    ZM_AntiCheat.init()
+    if ZM_AntiCheat and ZM_AntiCheat.init then ZM_AntiCheat.init() end
+
+    -- Initialize faction system
+    if ZM_Faction and ZM_Faction.init then ZM_Faction.init() end
+
+    -- Initialize vehicles system
+    if ZM_Vehicles and ZM_Vehicles.init then ZM_Vehicles.init() end
+
+    -- Initialize cleaner
+    if ZM_Cleaner and ZM_Cleaner.init then ZM_Cleaner.init() end
+
+    -- Initialize delivery system
+    if ZM_Delivery and ZM_Delivery.init then ZM_Delivery.init() end
+
+    -- Initialize world events system
+    if ZM_Events and ZM_Events.init then ZM_Events.init() end
+
+    -- Initialize performance monitor
+    if ZM_Performance and ZM_Performance.init then ZM_Performance.init() end
 
     -- Initialize money deposit system
-    ZM_MoneyDeposit.init()
+    if ZM_MoneyDeposit and ZM_MoneyDeposit.init then ZM_MoneyDeposit.init() end
 
     -- Export game state immediately so it's available even when server is paused
-    if ZM_GameState.export() then
-        print("[ZomboidManager] Exported initial game state")
+    if ZM_GameState and ZM_GameState.export then
+        if ZM_GameState.export() then
+            print("[ZomboidManager] Exported initial game state")
+        end
     end
 
     local ok, count = pcall(ZM_ItemCatalog.export)

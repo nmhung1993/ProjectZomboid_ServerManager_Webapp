@@ -34,7 +34,59 @@ Route::middleware(['auth'])->group(function () {
         Route::get('deposit/status', [ShopController::class, 'depositStatus'])->name('deposit.status')->middleware('throttle:30,1');
         Route::get('purchase/{purchaseId}/status', [ShopController::class, 'purchaseStatus'])->name('purchase.status')->middleware('throttle:30,1');
         Route::post('bundle/{slug}/purchase', [ShopController::class, 'purchaseBundle'])->name('bundle.purchase')->middleware('throttle:10,1');
+        Route::post('item/{slug}/purchase', [ShopController::class, 'purchaseItem'])->name('item.purchase')->middleware('throttle:10,1');
         Route::post('{slug}/purchase', [ShopController::class, 'purchaseItem'])->name('purchase')->middleware('throttle:10,1');
+    });
+
+    // Player Factions Portal
+    Route::prefix('portal/factions')->name('portal.factions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\FactionPortalController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Portal\FactionPortalController::class, 'store'])->name('store');
+        Route::get('{faction}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'show'])->name('show');
+        Route::post('{faction}/deposit', [\App\Http\Controllers\Portal\FactionPortalController::class, 'deposit'])->name('deposit');
+        Route::post('{faction}/claim', [\App\Http\Controllers\Portal\FactionPortalController::class, 'claimTerritory'])->name('claim');
+        Route::delete('{faction}/territories/{territory}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'deleteTerritory'])->name('territories.destroy');
+        Route::post('{faction}/request-join', [\App\Http\Controllers\Portal\FactionPortalController::class, 'requestJoin'])->name('request-join');
+        Route::post('{faction}/invite', [\App\Http\Controllers\Portal\FactionPortalController::class, 'invite'])->name('invite');
+        Route::post('invitations/{invitation}/respond', [\App\Http\Controllers\Portal\FactionPortalController::class, 'respondInvitation'])->name('invitations.respond');
+        Route::post('{faction}/kick/{userId}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'kick'])->name('kick');
+        Route::post('{faction}/role/{userId}', [\App\Http\Controllers\Portal\FactionPortalController::class, 'setRole'])->name('role');
+        Route::post('{faction}/leave', [\App\Http\Controllers\Portal\FactionPortalController::class, 'leave'])->name('leave');
+        Route::post('{faction}/disband', [\App\Http\Controllers\Portal\FactionPortalController::class, 'disband'])->name('disband');
+    });
+
+    // Player Quests & Bounties Portal
+    Route::prefix('portal/quests')->name('portal.quests.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\QuestPortalController::class, 'index'])->name('index');
+        Route::post('{quest}/claim', [\App\Http\Controllers\Portal\QuestPortalController::class, 'claimReward'])->name('claim');
+        Route::post('bounties', [\App\Http\Controllers\Portal\QuestPortalController::class, 'storeBounty'])->name('bounties.store');
+        Route::post('bounties/{bounty}/cancel', [\App\Http\Controllers\Portal\QuestPortalController::class, 'cancelBounty'])->name('bounties.cancel');
+    });
+
+    // Player Vehicles Portal
+    Route::prefix('portal/vehicles')->name('portal.vehicles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\VehiclePortalController::class, 'index'])->name('index');
+    });
+
+    // Player P2P Marketplace & Auctions Portal
+    Route::prefix('portal/market')->name('portal.market.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'store'])->name('store');
+        Route::post('{listing}/buy', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'buy'])->name('buy');
+        Route::post('{listing}/bid', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'bid'])->name('bid');
+        Route::post('{listing}/cancel', [\App\Http\Controllers\Portal\MarketplacePortalController::class, 'cancel'])->name('cancel');
+    });
+
+    // Player Dynamic World Events Portal
+    Route::prefix('portal/events')->name('portal.events.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\WorldEventPortalController::class, 'index'])->name('index');
+    });
+
+    // Player Achievements & Custom Titles Portal
+    Route::prefix('portal/achievements')->name('portal.achievements.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\AchievementPortalController::class, 'index'])->name('index');
+        Route::post('{achievement}/claim', [\App\Http\Controllers\Portal\AchievementPortalController::class, 'claim'])->name('claim');
+        Route::post('equip-title', [\App\Http\Controllers\Portal\AchievementPortalController::class, 'equip'])->name('equip');
     });
 });
 
@@ -50,6 +102,11 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         // Players
         Route::get('players', [Admin\PlayerController::class, 'index'])->name('players');
         Route::get('players/map', Admin\PlayerMapController::class)->name('players.map');
+        Route::get('player/map', fn () => redirect()->route('admin.players.map'));
+        Route::get('player-map', fn () => redirect()->route('admin.players.map'));
+
+        // Performance
+        Route::get('performance', [Admin\PerformanceAdminController::class, 'index'])->name('performance');
 
         // Player Inventory
         Route::get('players/{username}/inventory', [Admin\InventoryController::class, 'show'])->name('players.inventory');
@@ -104,6 +161,9 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         // Server Player Stats (charts)
         Route::get('server-player-stats', [Admin\ServerPlayerStatsController::class, 'index'])->name('server-player-stats');
 
+        // Server Performance & TPS Monitor (admin)
+        Route::get('performance', [Admin\PerformanceAdminController::class, 'index'])->name('performance');
+
         // Discord Webhook
         Route::get('discord', [Admin\DiscordWebhookController::class, 'index'])->name('discord');
         Route::patch('discord', [Admin\DiscordWebhookController::class, 'update'])->name('discord.update');
@@ -140,6 +200,45 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
         Route::post('safe-zones', [Admin\SafeZoneController::class, 'store'])->name('safe-zones.store');
         Route::delete('safe-zones/{zoneId}', [Admin\SafeZoneController::class, 'destroy'])->name('safe-zones.destroy');
         Route::post('safe-zones/violations/{id}/resolve', [Admin\SafeZoneController::class, 'resolveViolation'])->name('safe-zones.violations.resolve');
+
+        // Factions Management (admin)
+        Route::get('factions', [Admin\FactionAdminController::class, 'index'])->name('factions');
+        Route::post('factions/sync', [Admin\FactionAdminController::class, 'sync'])->name('factions.sync');
+        Route::patch('factions/{faction}/bank', [Admin\FactionAdminController::class, 'updateBank'])->name('factions.bank');
+        Route::delete('factions/{faction}', [Admin\FactionAdminController::class, 'destroy'])->name('factions.destroy');
+
+        // Quests & Bounties (admin)
+        Route::get('quests', [Admin\QuestAdminController::class, 'index'])->name('quests');
+        Route::post('quests', [Admin\QuestAdminController::class, 'storeQuest'])->name('quests.store');
+        Route::delete('quests/{quest}', [Admin\QuestAdminController::class, 'destroyQuest'])->name('quests.destroy');
+        Route::post('quests/bounties/{bounty}/cancel', [Admin\QuestAdminController::class, 'cancelBounty'])->name('quests.bounties.cancel');
+
+        // Vehicles Management (admin)
+        Route::get('vehicles', [Admin\VehicleAdminController::class, 'index'])->name('vehicles');
+        Route::post('vehicles/{vehicle}/repair', [Admin\VehicleAdminController::class, 'repair'])->name('vehicles.repair');
+        Route::post('vehicles/{vehicle}/unclaim', [Admin\VehicleAdminController::class, 'unclaim'])->name('vehicles.unclaim');
+        Route::delete('vehicles/{vehicle}', [Admin\VehicleAdminController::class, 'destroy'])->name('vehicles.destroy');
+        Route::post('vehicles/cleanup-broken', [Admin\VehicleAdminController::class, 'cleanupBroken'])->name('vehicles.cleanup-broken');
+
+        // Auto Lag Cleaner (admin)
+        Route::get('cleaner', [Admin\CleanerAdminController::class, 'index'])->name('cleaner');
+        Route::post('cleaner/bodies', [Admin\CleanerAdminController::class, 'cleanBodies'])->name('cleaner.bodies');
+        Route::post('cleaner/items', [Admin\CleanerAdminController::class, 'cleanItems'])->name('cleaner.items');
+
+        // P2P Marketplace Management (admin)
+        Route::get('market', [Admin\MarketAdminController::class, 'index'])->name('market');
+        Route::post('market/{listing}/cancel', [Admin\MarketAdminController::class, 'cancelListing'])->name('market.cancel');
+
+        // Dynamic World Events Management (admin)
+        Route::get('events', [Admin\WorldEventAdminController::class, 'index'])->name('events');
+        Route::post('events/airdrop', [Admin\WorldEventAdminController::class, 'spawnAirdrop'])->name('events.airdrop');
+        Route::post('events/heli-crash', [Admin\WorldEventAdminController::class, 'spawnHeliCrash'])->name('events.heli-crash');
+        Route::post('events/{event}/cancel', [Admin\WorldEventAdminController::class, 'cancel'])->name('events.cancel');
+
+        // Achievements Management (admin)
+        Route::get('achievements', [Admin\AchievementAdminController::class, 'index'])->name('achievements');
+        Route::post('achievements', [Admin\AchievementAdminController::class, 'store'])->name('achievements.store');
+        Route::delete('achievements/{achievement}', [Admin\AchievementAdminController::class, 'destroy'])->name('achievements.destroy');
 
         // Shop Management
         Route::get('shop', [Admin\ShopController::class, 'index'])->name('shop');

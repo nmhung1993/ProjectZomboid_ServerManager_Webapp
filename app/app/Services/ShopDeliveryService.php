@@ -27,18 +27,12 @@ class ShopDeliveryService
     {
         $user = $purchase->user;
         $whitelistEntry = $user->whitelistEntries()->where('active', true)->first();
-
-        if (! $whitelistEntry) {
-            $purchase->deliveries()->update([
-                'status' => DeliveryStatus::Failed,
-                'error_message' => 'No active whitelist entry found for user',
-            ]);
-            $purchase->update(['delivery_status' => DeliveryStatus::Failed]);
-
-            return;
+        $pzUsername = $whitelistEntry?->pz_username;
+        if (! $pzUsername) {
+            $pzUsername = \App\Models\WhitelistEntry::where('pz_username', $user->name)->value('pz_username')
+                ?? ($user->name ?: (explode('@', (string) $user->email)[0] ?: 'Survivor'));
         }
 
-        $pzUsername = $whitelistEntry->pz_username;
         $allDeliveredViaRcon = true;
 
         foreach ($purchase->deliveries as $delivery) {

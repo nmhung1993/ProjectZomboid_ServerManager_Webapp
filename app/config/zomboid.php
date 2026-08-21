@@ -112,6 +112,15 @@ return [
         'deposit_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/deposit_results.json',
         'export_requests' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/export_requests.json',
         'anticheat_violations' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/anticheat_violations.json',
+        'faction_config' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/faction_config.json',
+        'vehicles' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/vehicles.json',
+        'vehicle_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/vehicle_commands.json',
+        'cleaner_commands' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_commands.json',
+        'cleaner_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/cleaner_results.json',
+        'pending_deliveries' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/pending_deliveries.json',
+        'world_events' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/world_events.json',
+        'event_results' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/event_results.json',
+        'performance_metrics' => env('LUA_BRIDGE_PATH', '/lua-bridge').'/performance_metrics.json',
     ],
 
     /*
