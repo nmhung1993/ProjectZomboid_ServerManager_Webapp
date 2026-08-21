@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import {
     Cloud,
     CloudDrizzle,
@@ -41,6 +42,7 @@ const weatherLabelKeys: Record<string, string> = {
 
 export function GameStateWidget({ gameState }: { gameState: GameState | null }) {
     const { t } = useTranslation();
+    const { site } = usePage().props;
 
     if (!gameState) {
         return (
@@ -52,6 +54,8 @@ export function GameStateWidget({ gameState }: { gameState: GameState | null }) 
     }
 
     const { time, season, weather } = gameState;
+    const isDateMonthYear = site?.game_time_format === 'date_month_year';
+
     const SeasonIcon = seasonConfig[season]?.icon ?? Sun;
     const seasonColor = seasonConfig[season]?.color ?? 'text-muted-foreground';
     const seasonLabel = seasonConfig[season] ? t(seasonConfig[season].labelKey) : season;
@@ -72,9 +76,26 @@ export function GameStateWidget({ gameState }: { gameState: GameState | null }) 
                 )}
                 <div>
                     <span className="font-semibold tabular-nums">{time.formatted}</span>
-                    <span className="ml-1.5 text-sm text-muted-foreground">
-                        {t('game_state.day', { day: String(time.day_of_year) })}
-                    </span>
+                    {isDateMonthYear ? (
+                        <span className="ml-1.5 text-sm text-muted-foreground font-medium">
+                            {t('game_state.date_format', {
+                                day: String(time.day),
+                                month: t(`game_state.month_${time.month}`),
+                                year: String(time.year > 0 ? time.year : ''),
+                            })}
+                        </span>
+                    ) : (
+                        <>
+                            <span className="ml-1.5 text-sm text-muted-foreground">
+                                {t('game_state.day', { day: String(time.day_of_year) })}
+                            </span>
+                            {time.year > 0 && (
+                                <span className="ml-1.5 text-sm font-medium text-muted-foreground">
+                                    {t('game_state.year', { year: String(time.year) })}
+                                </span>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
 

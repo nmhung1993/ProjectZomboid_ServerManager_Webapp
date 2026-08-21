@@ -38,6 +38,7 @@ class SiteSettingController extends Controller
                 'landing_sections' => $settings->landing_sections ?? SiteSetting::defaultLandingSections(),
                 'theme_colors' => $settings->theme_colors,
                 'default_locale' => $settings->default_locale,
+                'game_time_format' => $settings->game_time_format ?? 'day_year',
                 'show_status' => $settings->show_status,
                 'show_rankings' => $settings->show_rankings,
                 'show_shop' => $settings->show_shop,
@@ -82,6 +83,7 @@ class SiteSettingController extends Controller
         $textFields = [
             'site_name', 'pwa_badge_name', 'footer_text', 'hero_badge', 'hero_title',
             'hero_subtitle', 'hero_description', 'hero_button_text', 'default_locale',
+            'game_time_format',
         ];
 
         $boolFields = ['show_status', 'show_rankings', 'show_shop'];

@@ -66,6 +66,7 @@ class HandleInertiaRequests extends Middleware
                 'footer_text' => $siteSettings->footer_text,
                 'theme_colors' => $siteSettings->theme_colors,
                 'default_locale' => $siteSettings->default_locale,
+                'game_time_format' => $siteSettings->game_time_format ?? 'day_year',
                 'show_status' => $siteSettings->show_status,
                 'show_rankings' => $siteSettings->show_rankings,
                 'show_shop' => $siteSettings->show_shop,

@@ -41,6 +41,7 @@ class UpdateSiteSettingRequest extends FormRequest
             'default_locale' => ['sometimes', 'string', 'max:10', Rule::in(
                 array_merge(['en', 'vi'], Language::query()->where('is_active', true)->pluck('code')->all()),
             )],
+            'game_time_format' => ['sometimes', 'string', Rule::in(['day_year', 'date_month_year'])],
             'show_status' => ['sometimes', 'boolean'],
             'show_rankings' => ['sometimes', 'boolean'],
             'show_shop' => ['sometimes', 'boolean'],

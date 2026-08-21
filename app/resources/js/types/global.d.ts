@@ -8,6 +8,7 @@ export type SiteSettings = {
     footer_text: string;
     theme_colors: Record<string, string> | null;
     default_locale: string;
+    game_time_format?: 'day_year' | 'date_month_year';
     show_status: boolean;
     show_rankings: boolean;
     show_shop: boolean;
