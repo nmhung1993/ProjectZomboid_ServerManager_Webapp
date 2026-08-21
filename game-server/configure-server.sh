@@ -377,6 +377,17 @@ if [ -d "${PZ_CONFIG_DIR}/Lua/inventory" ]; then
     echo "[configure-server] Lua bridge directories created"
 fi
 
+# Seed StartYear in SandboxVars.lua on first run or if SandboxVars exists
+START_YEAR_VAL="${PZ_START_YEAR:-${START_YEAR:-}}"
+if [ -n "$START_YEAR_VAL" ]; then
+    if [ -f "$SANDBOX_FILE" ]; then
+        if grep -q "StartYear = " "$SANDBOX_FILE" 2>/dev/null; then
+            sed -i "s/StartYear = [0-9]*/StartYear = ${START_YEAR_VAL}/" "$SANDBOX_FILE"
+            echo "[configure-server] Set StartYear = ${START_YEAR_VAL} in SandboxVars.lua"
+        fi
+    fi
+fi
+
 # Ensure config files are world-readable/writable so both steam (game server)
 # and www-data (app container) can access them on the shared volume.
 chmod 666 "$INI_FILE" 2>/dev/null || true

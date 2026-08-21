@@ -32,6 +32,7 @@ services:
       RCON_PORT: ${PZ_RCON_PORT:-27015}
       SERVER_NAME: ${PZ_SERVER_NAME:-ZomboidServer}
       SERVER_PASSWORD: ${PZ_SERVER_PASSWORD:-}
+      START_YEAR: ${PZ_START_YEAR:-}
       STEAM_VAC: ${PZ_STEAM_VAC:-true}
       UDP_PORT: ${PZ_DIRECT_PORT:-16262}
       # Note: Open and AutoCreateUserInWhiteList are not supported as env vars
