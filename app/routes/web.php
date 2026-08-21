@@ -301,6 +301,7 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
             Route::delete('languages/{language}', [Admin\TranslationController::class, 'destroyLanguage'])->name('languages.destroy');
 
             Route::post('backups/import', [Admin\BackupController::class, 'importWorld'])->name('backups.import');
+            Route::post('players/sync', [Admin\PlayerController::class, 'syncWebToGame'])->name('players.sync');
             Route::post('players/{name}/access', [Admin\PlayerController::class, 'setAccessLevel'])->name('players.access');
             Route::post('players/{name}/kick', [Admin\PlayerController::class, 'kick'])->name('players.kick');
             Route::post('players/{name}/ban', [Admin\PlayerController::class, 'ban'])->name('players.ban');

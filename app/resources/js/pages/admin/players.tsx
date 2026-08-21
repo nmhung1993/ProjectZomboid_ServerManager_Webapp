@@ -1,5 +1,5 @@
 import { Head, Link, usePoll } from '@inertiajs/react';
-import { Backpack, Ban, Circle, Clock, Info, KeyRound, Search, ShieldCheck, Skull, TimerReset, UserX } from 'lucide-react';
+import { Backpack, Ban, Circle, Clock, Info, KeyRound, RefreshCw, Search, ShieldCheck, Skull, TimerReset, UserX } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import PlayerActionDialogs from '@/components/player-action-dialogs';
 import PlayerInfoDialog, { type PlayerInfoData } from '@/components/player-info-dialog';
@@ -19,6 +19,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
+import { fetchAction } from '@/lib/fetch-action';
 import type { BreadcrumbItem } from '@/types';
 
 type Player = PlayerInfoData;
@@ -75,8 +76,17 @@ export default function Players({
     const [resetTimerTarget, setResetTimerTarget] = useState<string | null>(null);
     const [passwordTarget, setPasswordTarget] = useState<string | null>(null);
     const [infoTarget, setInfoTarget] = useState<Player | null>(null);
+    const [syncing, setSyncing] = useState(false);
 
     usePoll(5000, { only: ['players'] });
+
+    async function handleSync() {
+        setSyncing(true);
+        await fetchAction('/admin/players/sync', {
+            method: 'POST',
+        });
+        setSyncing(false);
+    }
 
     const onlineCount = useMemo(() => players.filter((p) => p.isOnline).length, [players]);
 
@@ -162,6 +172,17 @@ export default function Players({
                                         <SelectItem value="offline">{t('common.offline')}</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleSync}
+                                    disabled={syncing}
+                                    className="gap-1.5"
+                                    title={t('admin.players.sync_to_game_description')}
+                                >
+                                    <RefreshCw className={`size-4 ${syncing ? 'animate-spin' : ''}`} />
+                                    {syncing ? t('admin.players.syncing') : t('admin.players.sync_to_game')}
+                                </Button>
                             </div>
                         </div>
                     </CardHeader>

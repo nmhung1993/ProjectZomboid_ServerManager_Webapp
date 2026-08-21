@@ -28,11 +28,10 @@ if [ -d "$PZ_DATA/Server" ]; then
     chmod 666 "$PZ_DATA/Server/${PZ_SERVER_NAME_VAL}.ini" 2>/dev/null || true
     chmod 666 "$PZ_DATA/Server/${PZ_SERVER_NAME_VAL}_SandboxVars.lua" 2>/dev/null || true
 fi
-# Saves and db directories need to be writable for backup rollback
+# Saves and db directories need to be writable for backup rollback and whitelist/role sync
 for dir in "$PZ_DATA/Saves" "$PZ_DATA/db"; do
     if [ -d "$dir" ]; then
-        chgrp -R www-data "$dir" 2>/dev/null || true
-        chmod -R g+w "$dir" 2>/dev/null || true
+        chmod -R 777 "$dir" 2>/dev/null || true
     fi
 done
 

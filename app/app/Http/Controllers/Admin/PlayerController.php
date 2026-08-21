@@ -20,6 +20,7 @@ use App\Services\RconClient;
 use App\Services\RconSanitizer;
 use App\Services\RespawnDelayManager;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -234,5 +235,23 @@ class PlayerController extends Controller
         );
 
         return response()->json(['message' => "Password set for {$name}"]);
+    }
+
+    public function syncWebToGame(Request $request): JsonResponse
+    {
+        $result = $this->pzRoleSync->syncAllWebToGame();
+
+        $this->auditLogger->log(
+            actor: $request->user()->name ?? 'admin',
+            action: 'players.sync_to_game',
+            target: 'game_server',
+            details: $result,
+            ip: $request->ip(),
+        );
+
+        return response()->json([
+            'message' => "Synchronized {$result['total_users']} accounts to game server ({$result['created_in_pz']} created, {$result['updated_in_pz']} updated).",
+            'result' => $result,
+        ]);
     }
 }

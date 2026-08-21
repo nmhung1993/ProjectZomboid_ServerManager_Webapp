@@ -378,8 +378,13 @@ if [ -d "${PZ_CONFIG_DIR}/Lua/inventory" ]; then
 fi
 
 # Seed StartYear in SandboxVars.lua on first run or if SandboxVars exists
+# Note: In PZ B42, StartYear is an enum index: 1 = 1993, 2 = 1994, ..., 11 = 2003.
 START_YEAR_VAL="${PZ_START_YEAR:-${START_YEAR:-}}"
 if [ -n "$START_YEAR_VAL" ]; then
+    # If admin provided a 4-digit calendar year (e.g. 2003), convert to PZ 1-based index (e.g. 11)
+    if [ "$START_YEAR_VAL" -ge 1993 ] 2>/dev/null; then
+        START_YEAR_VAL=$((START_YEAR_VAL - 1992))
+    fi
     if [ -f "$SANDBOX_FILE" ]; then
         if grep -q "StartYear = " "$SANDBOX_FILE" 2>/dev/null; then
             sed -i "s/StartYear = [0-9]*/StartYear = ${START_YEAR_VAL}/" "$SANDBOX_FILE"
