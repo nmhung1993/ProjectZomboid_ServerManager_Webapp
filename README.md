@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/public/favicon.svg" alt="Zomboid Manager" width="80" />
+<img src="app/public/favicon.svg" alt="Zomboid Manager Webapp" width="80" />
 
 # Zomboid Manager
 
