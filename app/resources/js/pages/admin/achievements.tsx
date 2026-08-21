@@ -90,7 +90,7 @@ export default function AdminAchievementsPage({ achievements, stats }: Props) {
 
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('admin.achievements.store'), {
+        post('/admin/achievements', {
             onSuccess: () => {
                 reset();
                 setCreateOpen(false);
@@ -100,7 +100,7 @@ export default function AdminAchievementsPage({ achievements, stats }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Bạn có chắc muốn xóa thành tích này?')) {
-            router.delete(route('admin.achievements.destroy', id));
+            router.delete(`/admin/achievements/${id}`);
         }
     };
 

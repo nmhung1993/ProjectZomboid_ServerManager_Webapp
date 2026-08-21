@@ -66,7 +66,18 @@ Zomboid Manager wraps a Dockerized Project Zomboid dedicated server with a Larav
 | Lua Bridge Mod | Done | Server-side enforcement for safe zones + respawn |
 | Site Customization | Done | Branding, logo/favicon, hero content, feature cards, section layout |
 | Theme Colors | Done | Admin-configurable color scheme (hex to oklch) |
+| Progressive Web App (PWA) | Done | Dynamic manifest, customizable badge name, auto-updating logo icons, Service Worker |
 | i18n / Translations | Done | Dynamic languages, JSON import/export, DB overrides, language switcher |
+
+## Documentation & Reports
+
+- [Quality Audit & Test Report](docs/TEST_AUDIT_REPORT.md)
+- [Firewall: firewalld (Fedora/RHEL)](docs/firewall-firewalld.md)
+- [Firewall: ufw (Ubuntu/Debian)](docs/firewall-ufw.md)
+- [Firewall: Manual Configuration](docs/firewall-manual.md)
+- [Linux Installation Guide](docs/installation-linux.md)
+- [Windows Installation Guide](docs/installation-windows.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
 ## Features
 

@@ -8,21 +8,15 @@ import {
     Flame,
     Gift,
     Globe,
-    Layers,
-    Lock,
     Medal,
-    Shield,
     Sparkles,
     Swords,
-    Target,
     Trophy,
-    UserCheck,
-    Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
@@ -53,6 +47,14 @@ interface Props {
     wallet_balance: number;
 }
 
+const CATEGORIES = [
+    { id: 'all', label: 'Tất cả' },
+    { id: 'combat', label: 'Diệt Zombie' },
+    { id: 'pvp', label: 'PvP Sinh Tử' },
+    { id: 'survival', label: 'Sinh Tồn' },
+    { id: 'economy', label: 'Kinh Tế' },
+];
+
 export default function AchievementsPortalPage({
     achievements,
     unlocked_titles,
@@ -71,6 +73,7 @@ export default function AchievementsPortalPage({
     const [equipping, setEquipping] = useState(false);
 
     const completedCount = achievements.filter((a) => a.is_completed).length;
+    const unclaimedCount = achievements.filter((a) => a.is_completed && !a.is_reward_claimed).length;
     const totalCount = achievements.length;
     const totalPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
@@ -81,7 +84,7 @@ export default function AchievementsPortalPage({
 
     const handleClaim = (id: number) => {
         setClaimingId(id);
-        router.post(route('portal.achievements.claim', id), {}, {
+        router.post(`/portal/achievements/${id}/claim`, {}, {
             preserveScroll: true,
             onFinish: () => setClaimingId(null),
         });
@@ -89,7 +92,7 @@ export default function AchievementsPortalPage({
 
     const handleEquipTitle = (title: string | null) => {
         setEquipping(true);
-        router.post(route('portal.achievements.equip'), { title }, {
+        router.post('/portal/achievements/equip-title', { title }, {
             preserveScroll: true,
             onFinish: () => setEquipping(false),
         });
@@ -161,30 +164,28 @@ export default function AchievementsPortalPage({
                             <CardTitle className="text-sm flex items-center justify-between">
                                 <span className="flex items-center gap-1.5">
                                     <Medal className="size-4 text-amber-500" />
-                                    {t('portal.achievements.equipped_title')}
+                                    Danh hiệu đang đeo
                                 </span>
                                 {active_title && (
                                     <Button
                                         variant="ghost"
-                                        size="xs"
+                                        size="sm"
                                         onClick={() => handleEquipTitle(null)}
                                         disabled={equipping}
                                         className="h-6 text-[11px] text-muted-foreground hover:text-red-500"
                                     >
-                                        {t('portal.achievements.unequip')}
+                                        Gỡ bỏ
                                     </Button>
                                 )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             {active_title ? (
-                                <div className="flex items-center gap-2">
-                                    <Badge className="text-sm font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm border-0 py-1 px-3">
-                                        ✨ {active_title}
-                                    </Badge>
-                                </div>
+                                <Badge className="text-sm font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm border-0 py-1 px-3">
+                                    ✨ {active_title}
+                                </Badge>
                             ) : (
-                                <p className="text-xs text-muted-foreground italic">Chưa trang bị danh hiệu nào.</p>
+                                <p className="text-xs text-muted-foreground italic">Chưa trang bị danh hiệu.</p>
                             )}
 
                             {unlocked_titles.length > 0 && (
@@ -197,7 +198,7 @@ export default function AchievementsPortalPage({
                                             <Button
                                                 key={title}
                                                 variant={active_title === title ? 'default' : 'outline'}
-                                                size="xs"
+                                                size="sm"
                                                 onClick={() => handleEquipTitle(title)}
                                                 disabled={equipping || active_title === title}
                                                 className="h-6 text-[11px]"
@@ -214,14 +215,7 @@ export default function AchievementsPortalPage({
 
                 {/* Category Filters */}
                 <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-muted/60 max-w-fit">
-                    {[
-                        { id: 'all', label: 'Tất cả' },
-                        { id: 'combat', label: 'Diệt Zombie' },
-                        { id: 'pvp', label: 'PvP Sinh Tử' },
-                        { id: 'survival', label: 'Sinh Tồn' },
-                        { id: 'economy', label: 'Kinh Tế' },
-                        { id: 'exploration', label: 'Thám Hiểm' },
-                    ].map((tab) => (
+                    {CATEGORIES.map((tab) => (
                         <button
                             key={tab.id}
                             type="button"
@@ -239,95 +233,93 @@ export default function AchievementsPortalPage({
 
                 {/* Achievements List */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {filtered.map((ach) => (
-                                <Card
-                                    key={ach.id}
-                                    className={`relative overflow-hidden transition-all border ${
-                                        ach.is_completed
-                                            ? 'border-emerald-500/30 bg-emerald-500/5'
-                                            : 'border-border hover:border-primary/40'
-                                    }`}
-                                >
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="flex items-center gap-2.5">
-                                                <div
-                                                    className={`flex items-center justify-center size-10 rounded-xl border ${
-                                                        ach.is_completed
-                                                            ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30'
-                                                            : 'bg-muted text-muted-foreground'
-                                                    }`}
-                                                >
-                                                    {ach.is_completed ? (
-                                                        <CheckCircle2 className="size-5" />
-                                                    ) : (
-                                                        <Trophy className="size-5" />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <CardTitle className="text-sm font-bold flex items-center gap-1.5">
-                                                        {ach.title}
-                                                    </CardTitle>
-                                                    <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                                                        {getCategoryIcon(ach.category)}
-                                                        <span className="capitalize">{ach.category}</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {ach.is_completed && ach.is_reward_claimed ? (
-                                                <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-[11px]">
-                                                    Đã nhận
-                                                </Badge>
-                                            ) : ach.is_completed && !ach.is_reward_claimed ? (
-                                                <Button
-                                                    size="xs"
-                                                    onClick={() => handleClaim(ach.id)}
-                                                    disabled={claimingId === ach.id}
-                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold animate-bounce shadow-sm h-7 text-xs"
-                                                >
-                                                    <Gift className="size-3.5 mr-1" />
-                                                    Nhận Thưởng
-                                                </Button>
+                    {filtered.map((ach) => (
+                        <Card
+                            key={ach.id}
+                            className={`relative overflow-hidden transition-all border ${
+                                ach.is_completed
+                                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                                    : 'border-border hover:border-primary/40'
+                            }`}
+                        >
+                            <CardHeader className="pb-3">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-2.5">
+                                        <div
+                                            className={`flex items-center justify-center size-10 rounded-xl border ${
+                                                ach.is_completed
+                                                    ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30'
+                                                    : 'bg-muted text-muted-foreground'
+                                            }`}
+                                        >
+                                            {ach.is_completed ? (
+                                                <CheckCircle2 className="size-5" />
                                             ) : (
-                                                <Badge variant="secondary" className="text-[11px]">
-                                                    {ach.progress} / {ach.target_value}
-                                                </Badge>
+                                                <Trophy className="size-5" />
                                             )}
                                         </div>
-                                    </CardHeader>
-
-                                    <CardContent className="space-y-3 pt-0">
-                                        <p className="text-xs text-muted-foreground line-clamp-2">
-                                            {ach.description}
-                                        </p>
-
-                                        {/* Progress bar */}
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-[11px]">
-                                                <span className="text-muted-foreground">Tiến độ</span>
-                                                <span className="font-semibold">{ach.percent}%</span>
-                                            </div>
-                                            <Progress value={ach.percent} className="h-1.5" />
+                                        <div>
+                                            <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                                                {ach.title}
+                                            </CardTitle>
+                                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                                {getCategoryIcon(ach.category)}
+                                                <span className="capitalize">{ach.category}</span>
+                                            </span>
                                         </div>
+                                    </div>
 
-                                        {/* Rewards Footer */}
-                                        <div className="flex items-center justify-between pt-2 border-t text-xs">
-                                            <div className="flex items-center gap-1 font-bold text-yellow-600">
-                                                <Coins className="size-3.5 text-yellow-500" />
-                                                +{ach.reward_coins} Coins
-                                            </div>
+                                    {ach.is_completed && ach.is_reward_claimed ? (
+                                        <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-[11px]">
+                                            Đã nhận
+                                        </Badge>
+                                    ) : ach.is_completed && !ach.is_reward_claimed ? (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleClaim(ach.id)}
+                                            disabled={claimingId === ach.id}
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold animate-bounce shadow-sm h-7 text-xs"
+                                        >
+                                            <Gift className="size-3.5 mr-1" />
+                                            Nhận Thưởng
+                                        </Button>
+                                    ) : (
+                                        <Badge variant="secondary" className="text-[11px]">
+                                            {ach.progress} / {ach.target_value}
+                                        </Badge>
+                                    )}
+                                </div>
+                            </CardHeader>
 
-                                            {ach.reward_title && (
-                                                <Badge variant="outline" className="text-[11px] border-amber-500/30 bg-amber-500/10 text-amber-600 font-bold">
-                                                    🏷️ {ach.reward_title}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                            <CardContent className="space-y-3 pt-0">
+                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                    {ach.description}
+                                </p>
+
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[11px]">
+                                        <span className="text-muted-foreground">Tiến độ</span>
+                                        <span className="font-semibold">{ach.percent}%</span>
+                                    </div>
+                                    <Progress value={ach.percent} className="h-1.5" />
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 border-t text-xs">
+                                    <div className="flex items-center gap-1 font-bold text-yellow-600">
+                                        <Coins className="size-3.5 text-yellow-500" />
+                                        +{ach.reward_coins} Coins
+                                    </div>
+
+                                    {ach.reward_title && (
+                                        <Badge variant="outline" className="text-[11px] border-amber-500/30 bg-amber-500/10 text-amber-600 font-bold">
+                                            🏷️ {ach.reward_title}
+                                        </Badge>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </div>
         </AppLayout>
     );

@@ -116,7 +116,7 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
     const negativeTraits = traitsList.filter((t) => t.type === 'negative');
     const otherTraits = traitsList.filter((t) => t.type === 'neutral');
 
-    const isDead = live?.is_dead ?? stats?.is_dead ?? false;
+    const isDead = stats?.is_dead ?? false;
 
     return (
         <Dialog open={!!player} onOpenChange={(open) => !open && onClose()}>
@@ -213,7 +213,7 @@ export default function PlayerInfoDialog({ player, dayLengthMinutes = 60, onClos
                                 Vị trí tọa độ
                             </span>
                             <span className="text-xs font-mono font-medium mt-1 truncate">
-                                {live ? `X: ${Math.round(live.x)}, Y: ${Math.round(live.y)}, Z: ${live.z}` : 'Không có tín hiệu tọa độ'}
+                                {live && live.x !== null && live.y !== null ? `X: ${Math.round(live.x)}, Y: ${Math.round(live.y)}, Z: ${live.z ?? 0}` : 'Không có tín hiệu tọa độ'}
                             </span>
                         </div>
                     </div>

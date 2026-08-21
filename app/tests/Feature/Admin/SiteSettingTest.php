@@ -289,6 +289,15 @@ describe('Site settings validation', function () {
             ->assertJsonValidationErrors('site_name');
     });
 
+    it('rejects pwa badge name that is too long', function () {
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.site-settings.update'), [
+                'pwa_badge_name' => str_repeat('x', 51),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('pwa_badge_name');
+    });
+
     it('rejects oversized logo', function () {
         Storage::fake('public');
 

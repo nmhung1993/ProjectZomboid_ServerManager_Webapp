@@ -316,7 +316,9 @@ export default function Status({
                                                                     <Circle className="size-2 shrink-0 fill-emerald-500 text-emerald-500" />
                                                                     <span className="font-semibold">{player.username}</span>
                                                                     {player.is_dead && (
-                                                                        <Skull className="size-3.5 text-red-500" title="Dead" />
+                                                                        <span title="Dead">
+                                                                            <Skull className="size-3.5 text-red-500" />
+                                                                        </span>
                                                                     )}
                                                                 </Link>
                                                             </TableCell>

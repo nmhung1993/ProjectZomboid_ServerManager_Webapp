@@ -391,9 +391,9 @@ export default function ShopIndex({
             setBuyItem(null);
             setQuantity(1);
             setPromoCode('');
-            if (result.purchase_id) setPendingPurchaseId(result.purchase_id);
-            if (result.availableBalance !== undefined) setAvailableBalance(result.availableBalance);
-            if (result.balance !== undefined) setBalance(result.balance);
+            if (typeof result.purchase_id === 'string') setPendingPurchaseId(result.purchase_id);
+            if (typeof result.availableBalance === 'number') setAvailableBalance(result.availableBalance);
+            if (typeof result.balance === 'number') setBalance(result.balance);
         }
     }
 
@@ -409,9 +409,9 @@ export default function ShopIndex({
         if (result) {
             setBuyBundle(null);
             setPromoCode('');
-            if (result.purchase_id) setPendingPurchaseId(result.purchase_id);
-            if (result.availableBalance !== undefined) setAvailableBalance(result.availableBalance);
-            if (result.balance !== undefined) setBalance(result.balance);
+            if (typeof result.purchase_id === 'string') setPendingPurchaseId(result.purchase_id);
+            if (typeof result.availableBalance === 'number') setAvailableBalance(result.availableBalance);
+            if (typeof result.balance === 'number') setBalance(result.balance);
         }
     }
 

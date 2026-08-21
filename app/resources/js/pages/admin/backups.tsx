@@ -30,7 +30,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { fetchAction } from '@/lib/fetch-action';
-import type { BackupEntry, BreadcrumbItem, SharedData } from '@/types';
+import type { Auth, BackupEntry, BreadcrumbItem } from '@/types';
 
 type PaginatedBackups = {
     data: BackupEntry[];
@@ -58,15 +58,15 @@ const typeColors: Record<string, string> = {
     scheduled: 'bg-green-500/10 text-green-500',
     daily: 'bg-purple-500/10 text-purple-500',
     pre_rollback: 'bg-yellow-500/10 text-yellow-500',
-    pre_update: 'bg-orange-500/10 text-orange-500',
-    pre_import: 'bg-cyan-500/10 text-cyan-500',
+    mod_update_auto: 'bg-orange-500/10 text-orange-500',
+    world_import: 'bg-cyan-500/10 text-cyan-500',
 };
 
 type BackupsProps = {
     backups: PaginatedBackups;
-    current_version: string | null;
-    current_branch: string | null;
-    filters: {
+    current_version?: string | null;
+    current_branch?: string | null;
+    filters?: {
         sort: string;
         direction: string;
     };
@@ -76,7 +76,7 @@ type SortKey = 'filename' | 'type' | 'size_bytes' | 'created_at';
 
 export default function Backups({ backups, current_version, current_branch, filters }: BackupsProps) {
     const { t } = useTranslation();
-    const { auth } = usePage<SharedData>().props;
+    const { auth } = usePage<{ auth: Auth }>().props;
     const isSuperAdmin = auth?.user?.role === 'super_admin';
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('nav.dashboard'), href: '/dashboard' },
@@ -244,7 +244,7 @@ export default function Backups({ backups, current_version, current_branch, filt
     }
 
     function goToPage(page: number) {
-        const params: Record<string, unknown> = { page };
+        const params: Record<string, string | number> = { page };
         if (backups?.per_page && backups.per_page !== 15) {
             params.per_page = backups.per_page;
         }
@@ -254,7 +254,7 @@ export default function Backups({ backups, current_version, current_branch, filt
     }
 
     function changePerPage(value: string) {
-        const params: Record<string, unknown> = { per_page: value, page: 1 };
+        const params: Record<string, string | number> = { per_page: value, page: 1 };
         if (filters?.sort) params.sort = filters.sort;
         if (filters?.direction) params.direction = filters.direction;
         router.get('/admin/backups', params, { preserveState: true });
