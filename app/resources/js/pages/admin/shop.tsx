@@ -262,31 +262,32 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.shop.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('admin.shop.title')}</h1>
-                        <p className="text-muted-foreground text-sm">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.shop.title')}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             {t('admin.shop.description')}
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" onClick={openCreateCategory}>
-                            <Tag className="mr-1.5 size-4" />
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5" onClick={openCreateCategory}>
+                            <Tag className="mr-1.5 size-3.5" />
                             {t('admin.shop.add_category')}
                         </Button>
-                        <Button onClick={openCreateItem}>
-                            <Plus className="mr-1.5 size-4" />
+                        <Button size="sm" className="h-8 text-xs px-2.5" onClick={openCreateItem}>
+                            <Plus className="mr-1.5 size-3.5" />
                             {t('admin.shop.add_item')}
                         </Button>
                     </div>
                 </div>
 
                 {/* Tab toggle */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     <Button
                         variant={tab === 'items' ? 'default' : 'outline'}
                         size="sm"
+                        className="h-8 text-xs px-3"
                         onClick={() => setTab('items')}
                     >
                         {t('admin.shop.tab_items', { count: String(items.length) })}
@@ -294,6 +295,7 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                     <Button
                         variant={tab === 'categories' ? 'default' : 'outline'}
                         size="sm"
+                        className="h-8 text-xs px-3"
                         onClick={() => setTab('categories')}
                     >
                         {t('admin.shop.tab_categories', { count: String(categories.length) })}
@@ -301,20 +303,20 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                 </div>
 
                 {tab === 'items' && (
-                    <Card>
-                        <CardHeader>
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-4 pb-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <CardTitle>{t('admin.shop.shop_items')}</CardTitle>
-                                    <CardDescription>{t('admin.shop.items_count', { count: String(filteredItems.length) })}</CardDescription>
+                                    <CardTitle className="text-base">{t('admin.shop.shop_items')}</CardTitle>
+                                    <CardDescription className="text-xs">{t('admin.shop.items_count', { count: String(filteredItems.length) })}</CardDescription>
                                 </div>
-                                <div className="relative">
-                                    <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-4" />
+                                <div className="relative w-full sm:w-auto">
+                                    <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-3.5" />
                                     <Input
                                         placeholder={t('admin.shop.filter_items')}
                                         value={filter}
                                         onChange={(e) => setFilter(e.target.value)}
-                                        className="pl-9 sm:w-[250px]"
+                                        className="h-8 pl-8 text-xs sm:w-[220px]"
                                     />
                                 </div>
                             </div>

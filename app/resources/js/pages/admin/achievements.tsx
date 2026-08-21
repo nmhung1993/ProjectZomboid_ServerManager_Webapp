@@ -108,23 +108,23 @@ export default function AdminAchievementsPage({ achievements, stats }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quản lý Thành tích & Danh hiệu" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Trophy className="size-7 text-primary" />
-                            Quản lý Thành tích & Danh hiệu Máy chủ
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Trophy className="size-5 sm:size-7 text-primary" />
+                            Quản lý Thành tích & Danh hiệu (Achievements)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Cấu hình các danh hiệu và cột mốc phần thưởng cho người chơi hoàn thành thử thách.
                         </p>
                     </div>
 
                     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                         <DialogTrigger asChild>
-                            <Button className="gap-1.5 font-bold">
-                                <Plus className="size-4" />
+                            <Button size="sm" className="h-8 text-xs px-2.5 gap-1.5 font-semibold w-fit">
+                                <Plus className="size-3.5" />
                                 Tạo Thành Tích Mới
                             </Button>
                         </DialogTrigger>
@@ -253,44 +253,41 @@ export default function AdminAchievementsPage({ achievements, stats }: Props) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng Thành Tích</CardTitle>
-                            <Trophy className="size-4 text-primary" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Tổng Thành Tích</CardTitle>
+                            <Trophy className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_achievements}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Các thử thách đang mở cho người chơi</p>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_achievements}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Lượt Đã Mở Khóa</CardTitle>
-                            <Award className="size-4 text-emerald-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Đã Mở Khóa</CardTitle>
+                            <Award className="size-3.5 sm:size-4 text-emerald-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{stats.total_unlocked_count}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Lần hoàn thành từ tất cả người chơi</p>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.total_unlocked_count}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Phần Thưởng Đã Trao</CardTitle>
-                            <Coins className="size-4 text-yellow-500" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Thưởng Đã Trao</CardTitle>
+                            <Coins className="size-3.5 sm:size-4 text-yellow-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-yellow-600">{stats.total_rewards_claimed}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Lượt nhận thưởng thành công</p>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-yellow-600 tabular-nums">{stats.total_rewards_claimed}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Table */}
-                <Card>
-                    <CardHeader className="pb-3">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
                         <CardTitle className="text-base">Danh Sách Thành Tích Máy Chủ</CardTitle>
                         <CardDescription className="text-xs">
                             Quản lý tất cả danh hiệu và phần thưởng thử thách.

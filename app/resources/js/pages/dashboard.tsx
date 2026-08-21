@@ -103,32 +103,34 @@ export default function Dashboard({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.dashboard.title')} />
-            <div className="flex h-full flex-1 flex-col gap-5 overflow-x-hidden bg-background p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden bg-background p-3 sm:gap-5 sm:p-4 md:p-6">
                 {/* Server Status Banner */}
-                <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between lg:p-5">
-                    <div className="flex min-w-0 flex-wrap items-center gap-3">
-                        <Circle className={`size-4 ${statusDot}`} />
-                        <div>
-                            <span className="font-semibold">
-                                {server.status === 'online'
-                                    ? t('admin.dashboard.server_online')
-                                    : server.status === 'starting'
-                                      ? t('admin.dashboard.server_starting')
-                                      : t('admin.dashboard.server_offline')}
-                            </span>
-                            {server.status !== 'offline' && server.uptime && (
-                                <span className="ml-2 text-sm text-muted-foreground">
-                                    {t('admin.dashboard.uptime', { uptime: server.uptime })}
+                <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card p-3.5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-4 lg:p-5">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
+                        <Circle className={`size-3.5 sm:size-4 shrink-0 ${statusDot}`} />
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-semibold text-sm sm:text-base">
+                                    {server.status === 'online'
+                                        ? t('admin.dashboard.server_online')
+                                        : server.status === 'starting'
+                                          ? t('admin.dashboard.server_starting')
+                                          : t('admin.dashboard.server_offline')}
                                 </span>
-                            )}
+                                {server.status !== 'offline' && server.uptime && (
+                                    <span className="text-xs sm:text-sm text-muted-foreground">
+                                        ({server.uptime})
+                                    </span>
+                                )}
+                            </div>
                             {server.status === 'starting' && server.container_status === 'running' && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                     {t('admin.dashboard.container_waiting')}
                                 </p>
                             )}
                         </div>
                         {server.game_version && (
-                            <Badge variant="secondary" className="shrink-0">
+                            <Badge variant="secondary" className="shrink-0 text-xs px-2 py-0.5">
                                 v{server.game_version}
                                 {server.steam_branch && server.steam_branch !== 'public' && (
                                     <span className="ml-1 opacity-70">({server.steam_branch})</span>
@@ -144,7 +146,7 @@ export default function Dashboard({
                                         <Badge
                                             key={time}
                                             variant={isNext ? 'default' : 'outline'}
-                                            className="shrink-0 gap-1"
+                                            className="shrink-0 gap-1 text-[11px] px-1.5 py-0.5"
                                         >
                                             <Timer className="size-3" />
                                             {time}
@@ -154,63 +156,69 @@ export default function Dashboard({
                             </div>
                         )}
                     </div>
-                    <div className="relative flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         {server.online ? (
                             <>
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    className="h-8 px-2.5 text-xs"
                                     disabled={actionLoading !== null}
                                     onClick={() => serverAction('save')}
                                 >
-                                    <Save className="mr-1.5 size-3.5" />
+                                    <Save className="mr-1 size-3.5" />
                                     {t('admin.dashboard.save')}
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    className="h-8 px-2.5 text-xs"
                                     disabled={actionLoading !== null}
                                     onClick={() => setShowRestartDialog(true)}
                                 >
-                                    <RefreshCw className="mr-1.5 size-3.5" />
+                                    <RefreshCw className="mr-1 size-3.5" />
                                     {t('admin.dashboard.restart')}
                                 </Button>
                                 <Button
                                     variant="destructive"
                                     size="sm"
+                                    className="h-8 px-2.5 text-xs"
                                     disabled={actionLoading !== null}
                                     onClick={() => setShowStopDialog(true)}
                                 >
-                                    <Square className="mr-1.5 size-3.5" />
+                                    <Square className="mr-1 size-3.5" />
                                     {t('admin.dashboard.stop')}
                                 </Button>
                             </>
                         ) : (
                             <Button
                                 size="sm"
+                                className="h-8 px-3 text-xs"
                                 disabled={actionLoading !== null}
                                 onClick={() => serverAction('start')}
                             >
-                                <Play className="mr-1.5 size-3.5" />
+                                <Play className="mr-1 size-3.5" />
                                 {t('admin.dashboard.start')}
                             </Button>
                         )}
                         <Button
                             variant="outline"
                             size="sm"
+                            className="h-8 px-2.5 text-xs"
                             disabled={actionLoading !== null}
                             onClick={() => setShowUpdateDialog(true)}
                         >
-                            <ArrowUpCircle className="mr-1.5 size-3.5" />
+                            <ArrowUpCircle className="mr-1 size-3.5" />
                             {t('admin.dashboard.update')}
                         </Button>
                         <Button
                             variant="destructive"
                             size="sm"
+                            className="h-8 px-2.5 text-xs"
                             disabled={actionLoading !== null}
                             onClick={() => setShowWipeDialog(true)}
                         >
-                            <Trash2 className="mr-1.5 size-3.5" />
+                            <Trash2 className="mr-1 size-3.5" />
                             {t('admin.dashboard.wipe')}
                         </Button>
                     </div>
@@ -219,25 +227,25 @@ export default function Dashboard({
                 {/* Game State Widget */}
                 {server.status !== 'offline' && <GameStateWidget gameState={game_state} />}
 
-                {/* Stats Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardContent className="flex items-center gap-4">
-                            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
-                                <Users className="size-6" />
+                {/* Stats Cards - Unified Grid 2 cols on mobile, 4 on desktop */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                                <Users className="size-5 sm:size-6" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm text-muted-foreground">{t('admin.dashboard.players_online')}</p>
-                                <div className="text-2xl font-bold tabular-nums">
+                                <p className="text-xs sm:text-sm text-muted-foreground truncate">{t('admin.dashboard.players_online')}</p>
+                                <div className="text-lg sm:text-2xl font-bold tabular-nums">
                                     {server.player_count}
                                     {server.max_players !== null && (
-                                        <span className="text-base font-normal text-muted-foreground">
+                                        <span className="text-xs sm:text-sm font-normal text-muted-foreground">
                                             /{server.max_players}
                                         </span>
                                     )}
                                 </div>
                                 {server.max_players !== null && server.max_players > 0 && (
-                                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                                    <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
                                         <div
                                             className="h-full rounded-full bg-blue-500 transition-all"
                                             style={{ width: `${Math.min((server.player_count / server.max_players) * 100, 100)}%` }}
@@ -248,26 +256,26 @@ export default function Dashboard({
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardContent className="flex items-center gap-4">
-                            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
-                                <Map className="size-6" />
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                                <Map className="size-5 sm:size-6" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm text-muted-foreground">{t('admin.dashboard.map')}</p>
-                                <div className="truncate text-2xl font-bold">{server.map || t('admin.dashboard.na')}</div>
+                                <p className="text-xs sm:text-sm text-muted-foreground truncate">{t('admin.dashboard.map')}</p>
+                                <div className="truncate text-base sm:text-xl font-bold">{server.map || t('admin.dashboard.na')}</div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardContent className="flex items-center gap-4">
-                            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
-                                <Globe className="size-6" />
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
+                                <Globe className="size-5 sm:size-6" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
-                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.connection')}</p>
+                                <div className="flex items-center justify-between gap-1">
+                                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{t('admin.dashboard.connection')}</p>
                                     <Dialog open={connOpen} onOpenChange={(open) => {
                                         setConnOpen(open);
                                         if (open) {
@@ -277,7 +285,7 @@ export default function Dashboard({
                                     }}>
                                         <DialogTrigger asChild>
                                             <button className="text-muted-foreground transition-colors hover:text-foreground">
-                                                <Pencil className="size-3.5" />
+                                                <Pencil className="size-3 sm:size-3.5" />
                                             </button>
                                         </DialogTrigger>
                                         <DialogContent className="sm:max-w-md">
@@ -319,68 +327,45 @@ export default function Dashboard({
                                     </Dialog>
                                 </div>
                                 {connection.server_ip ? (
-                                    <div className="truncate font-mono text-base font-bold">
+                                    <div className="truncate font-mono text-xs sm:text-sm font-bold">
                                         {connection.server_ip}:{connection.server_port}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.not_configured')}</p>
+                                    <p className="text-xs sm:text-sm text-muted-foreground">{t('admin.dashboard.not_configured')}</p>
                                 )}
                             </div>
                         </CardContent>
                     </Card>
 
                     <Deferred data="backup_summary" fallback={
-                        <>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.backups')}</CardTitle>
-                                    <Archive className="size-4 text-purple-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <Skeleton className="h-9 w-12" />
-                                    <Skeleton className="mt-1 h-3 w-20" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin.dashboard.last_backup')}</CardTitle>
-                                    <HardDrive className="size-4 text-orange-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <Skeleton className="h-9 w-24" />
-                                </CardContent>
-                            </Card>
-                        </>
-                    }>
-                        <Card>
-                            <CardContent className="flex items-center gap-4">
-                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
-                                    <Archive className="size-6" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.backups')}</p>
-                                    <div className="text-2xl font-bold tabular-nums">{backup_summary?.total_count}</div>
-                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_size', { size: backup_summary?.total_size_human ?? '' })}</p>
+                        <Card className="shadow-sm">
+                            <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                                <Skeleton className="size-10 sm:size-11 rounded-lg" />
+                                <div className="space-y-1.5 flex-1 min-w-0">
+                                    <Skeleton className="h-3 w-16" />
+                                    <Skeleton className="h-6 w-12" />
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card>
-                            <CardContent className="flex items-center gap-4">
-                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
-                                    <HardDrive className="size-6" />
+                    }>
+                        <Card className="shadow-sm">
+                            <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                                <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                                    <Archive className="size-5 sm:size-6" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.last_backup')}</p>
-                                    <div className="truncate text-2xl font-bold">
+                                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{t('admin.dashboard.backups')}</p>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-lg sm:text-2xl font-bold tabular-nums">{backup_summary?.total_count ?? 0}</span>
+                                        <span className="text-[11px] text-muted-foreground truncate">
+                                            ({backup_summary?.total_size_human ?? '0 MB'})
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground truncate">
                                         {backup_summary?.last_backup
                                             ? formatDate(backup_summary.last_backup.created_at)
                                             : t('admin.dashboard.never')}
-                                    </div>
-                                    {backup_summary?.last_backup && (
-                                        <p className="text-xs text-muted-foreground">
-                                            {backup_summary.last_backup.size_human} ({backup_summary.last_backup.type})
-                                        </p>
-                                    )}
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -389,71 +374,71 @@ export default function Dashboard({
 
                 {/* Server Totals Ribbon */}
                 <Deferred data="server_totals" fallback={
-                    <div className="grid gap-3 sm:grid-cols-3">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
-                                <Skeleton className="size-8 rounded" />
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card p-2.5">
+                                <Skeleton className="size-7 rounded" />
                                 <div className="space-y-1">
-                                    <Skeleton className="h-3 w-16" />
-                                    <Skeleton className="h-5 w-12" />
+                                    <Skeleton className="h-2.5 w-12" />
+                                    <Skeleton className="h-4 w-10" />
                                 </div>
                             </div>
                         ))}
                     </div>
                 }>
                     {server_totals && (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                            <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
-                                <div className="flex size-8 items-center justify-center rounded bg-blue-500/10">
+                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                            <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card p-2.5 shadow-sm">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-blue-500/10">
                                     <Users className="size-4 text-blue-500" />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_players')}</p>
-                                    <p className="text-lg font-semibold tabular-nums">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] text-muted-foreground truncate">{t('admin.dashboard.total_players')}</p>
+                                    <p className="text-sm sm:text-base font-semibold tabular-nums">
                                         <AnimatedCounter value={server_totals.total_players} />
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
-                                <div className="flex size-8 items-center justify-center rounded bg-red-500/10">
+                            <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card p-2.5 shadow-sm">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-red-500/10">
                                     <Skull className="size-4 text-red-500" />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_kills')}</p>
-                                    <p className="text-lg font-semibold tabular-nums">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] text-muted-foreground truncate">{t('admin.dashboard.total_kills')}</p>
+                                    <p className="text-sm sm:text-base font-semibold tabular-nums">
                                         <AnimatedCounter value={server_totals.total_zombie_kills} />
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
-                                <div className="flex size-8 items-center justify-center rounded bg-green-500/10">
-                                    <Clock className="size-4 text-green-500" />
+                            <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card p-2.5 shadow-sm">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-emerald-500/10">
+                                    <Clock className="size-4 text-emerald-500" />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_hours')}</p>
-                                    <p className="text-lg font-semibold tabular-nums">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] text-muted-foreground truncate">{t('admin.dashboard.total_hours')}</p>
+                                    <p className="text-sm sm:text-base font-semibold tabular-nums">
                                         <AnimatedCounter value={server_totals.total_hours_survived} decimals={1} suffix="h" />
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
-                                <div className="flex size-8 items-center justify-center rounded bg-orange-500/10">
+                            <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card p-2.5 shadow-sm">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-orange-500/10">
                                     <Skull className="size-4 text-orange-500" />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.total_deaths')}</p>
-                                    <p className="text-lg font-semibold tabular-nums">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] text-muted-foreground truncate">{t('admin.dashboard.total_deaths')}</p>
+                                    <p className="text-sm sm:text-base font-semibold tabular-nums">
                                         <AnimatedCounter value={server_totals.total_deaths} />
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3">
-                                <div className="flex size-8 items-center justify-center rounded bg-purple-500/10">
+                            <div className="col-span-2 sm:col-span-1 flex items-center gap-2.5 rounded-lg border border-border/50 bg-card p-2.5 shadow-sm">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-purple-500/10">
                                     <Swords className="size-4 text-purple-500" />
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t('admin.dashboard.pvp_kills')}</p>
-                                    <p className="text-lg font-semibold tabular-nums">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] text-muted-foreground truncate">{t('admin.dashboard.pvp_kills')}</p>
+                                    <p className="text-sm sm:text-base font-semibold tabular-nums">
                                         <AnimatedCounter value={server_totals.total_pvp_kills} />
                                     </p>
                                 </div>
@@ -462,13 +447,13 @@ export default function Dashboard({
                     )}
                 </Deferred>
 
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                     {/* Online Players */}
-                    <Card>
-                        <CardHeader>
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-4 pb-2">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Users className="size-5" />
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <Users className="size-4 text-blue-500" />
                                     {t('admin.dashboard.online_players')}
                                 </CardTitle>
                                 <Link
@@ -478,37 +463,37 @@ export default function Dashboard({
                                     {t('admin.dashboard.view_rankings')}
                                 </Link>
                             </div>
-                            <CardDescription>
+                            <CardDescription className="text-xs">
                                 {t('admin.dashboard.connected', { count: String(server.player_count) })}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-1">
                             {server.players.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
                                     {server.players.map((player) => (
                                         <Link
                                             key={player.username}
                                             href={`/rankings/${player.username}`}
-                                            className="flex items-center justify-between gap-2 rounded-md border border-border/50 px-3 py-2 transition-colors hover:bg-muted/50"
+                                            className="flex items-center justify-between gap-2 rounded-md border border-border/40 p-2 text-xs transition-colors hover:bg-muted/50"
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <Circle className="size-2 fill-green-500 text-green-500" />
-                                                <span className="text-sm font-medium">{player.username}</span>
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <Circle className="size-2 shrink-0 fill-green-500 text-green-500" />
+                                                <span className="font-medium truncate">{player.username}</span>
                                                 {player.profession && (
-                                                    <Badge variant="secondary" className="text-xs">
+                                                    <Badge variant="secondary" className="text-[10px] px-1 py-0 truncate">
                                                         {player.profession}
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
                                                 {player.zombie_kills != null && (
-                                                    <span className="flex items-center gap-1" title={t('admin.dashboard.zombie_kills')}>
+                                                    <span className="flex items-center gap-0.5 text-red-500/90" title={t('admin.dashboard.zombie_kills')}>
                                                         <Skull className="size-3" />
                                                         {player.zombie_kills.toLocaleString()}
                                                     </span>
                                                 )}
                                                 {player.hours_survived != null && (
-                                                    <span className="flex items-center gap-1" title={t('admin.dashboard.hours_survived')}>
+                                                    <span className="flex items-center gap-0.5 text-emerald-500/90" title={t('admin.dashboard.hours_survived')}>
                                                         <Clock className="size-3" />
                                                         {player.hours_survived.toLocaleString(undefined, { maximumFractionDigits: 1 })}h
                                                     </span>
@@ -518,7 +503,7 @@ export default function Dashboard({
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs text-muted-foreground py-4 text-center">
                                     {server.status === 'online'
                                         ? t('admin.dashboard.no_players')
                                         : server.status === 'starting'
@@ -530,44 +515,44 @@ export default function Dashboard({
                     </Card>
 
                     {/* Recent Activity */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <ScrollText className="size-5" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-4 pb-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <ScrollText className="size-4 text-primary" />
                                 {t('admin.dashboard.recent_activity')}
                             </CardTitle>
-                            <CardDescription>{t('admin.dashboard.latest_actions')}</CardDescription>
+                            <CardDescription className="text-xs">{t('admin.dashboard.latest_actions')}</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-1">
                             <Deferred data="recent_audit" fallback={
-                                <div className="space-y-3">
-                                    {Array.from({ length: 5 }).map((_, i) => (
+                                <div className="space-y-2">
+                                    {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="flex items-start gap-2">
-                                            <Skeleton className="h-5 w-24 shrink-0" />
+                                            <Skeleton className="h-4 w-20 shrink-0" />
                                             <div className="flex-1 space-y-1">
-                                                <Skeleton className="h-4 w-32" />
-                                                <Skeleton className="h-3 w-48" />
+                                                <Skeleton className="h-3 w-28" />
+                                                <Skeleton className="h-2.5 w-40" />
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             }>
                                 {recent_audit?.length > 0 ? (
-                                    <div className="space-y-3">
+                                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
                                         {recent_audit.map((entry) => (
-                                            <div key={entry.id} className="flex items-start justify-between gap-2">
+                                            <div key={entry.id} className="flex items-start justify-between gap-2 border-b border-border/30 pb-1.5 last:border-0 last:pb-0">
                                                 <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge variant="outline" className="shrink-0 text-xs">
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0 font-mono">
                                                             {entry.action}
                                                         </Badge>
                                                         {entry.target && (
-                                                            <span className="truncate text-sm text-muted-foreground">
+                                                            <span className="truncate text-xs text-muted-foreground">
                                                                 {entry.target}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                                    <p className="mt-0.5 text-[11px] text-muted-foreground">
                                                         {entry.actor}
                                                         {entry.created_at && (
                                                             <> &middot; {formatDateTime(entry.created_at)}</>
@@ -578,7 +563,7 @@ export default function Dashboard({
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">{t('admin.dashboard.no_activity')}</p>
+                                    <p className="text-xs text-muted-foreground py-4 text-center">{t('admin.dashboard.no_activity')}</p>
                                 )}
                             </Deferred>
                         </CardContent>
@@ -586,7 +571,7 @@ export default function Dashboard({
                 </div>
 
                 {/* Leaderboard + Game Events side-by-side */}
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                     <Deferred data="leaderboard" fallback={
                         <Card>
                             <CardHeader>

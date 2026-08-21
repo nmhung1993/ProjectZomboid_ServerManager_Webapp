@@ -114,85 +114,87 @@ export default function AdminEventsPage({ events, stats }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quản lý Sự kiện Thế giới" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Radio className="size-7 text-primary animate-pulse" />
-                            Quản lý Sự kiện Thế giới Động (Dynamic World Events)
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Radio className="size-5 sm:size-7 text-primary animate-pulse" />
+                            Quản lý Sự kiện Thế giới (Events)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Kích hoạt các đợt thả thùng viện trợ quân sự Airdrop, hiện trường trực thăng rơi và đàn zombie đột kích.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <Button
                             onClick={handleSpawnAirdrop}
                             disabled={triggering}
-                            className="bg-amber-600 hover:bg-amber-700 gap-1.5 font-bold"
+                            size="sm"
+                            className="h-8 text-xs px-2.5 bg-amber-600 hover:bg-amber-700 gap-1.5 font-semibold"
                         >
-                            <Package className="size-4" />
-                            Thả Thùng Airdrop Ngay
+                            <Package className="size-3.5" />
+                            Thả Airdrop
                         </Button>
                         <Button
                             onClick={handleSpawnHeliCrash}
                             disabled={triggering}
-                            className="bg-red-600 hover:bg-red-700 gap-1.5 font-bold"
+                            size="sm"
+                            className="h-8 text-xs px-2.5 bg-red-600 hover:bg-red-700 gap-1.5 font-semibold"
                         >
-                            <Flame className="size-4" />
-                            Tạo Trực Thăng Rơi
+                            <Flame className="size-3.5" />
+                            Tạo trực thăng rơi
                         </Button>
                     </div>
                 </div>
 
                 {/* Stats */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Đang Hoạt Động</CardTitle>
-                            <Radio className="size-4 text-amber-500" />
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Đang Hoạt Động</CardTitle>
+                            <Radio className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.active_events}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.active_events}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Đã Bị Chiếm Đoạt</CardTitle>
-                            <Trophy className="size-4 text-emerald-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Đã Chiếm Đoạt</CardTitle>
+                            <Trophy className="size-3.5 sm:size-4 text-emerald-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{stats.looted_events}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.looted_events}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng Sự Kiện Đã Tổ Chức</CardTitle>
-                            <Activity className="size-4 text-primary" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Tổng Sự Kiện</CardTitle>
+                            <Activity className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_events}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_events}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tiền Thưởng Đã Phát</CardTitle>
-                            <Coins className="size-4 text-amber-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Thưởng Đã Phát</CardTitle>
+                            <Coins className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.total_rewards_paid.toLocaleString()} coins</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_rewards_paid.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Events Table */}
-                <Card>
-                    <CardHeader className="pb-3">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Radio className="size-4 text-primary" />
                             Lịch sử & Danh sách Sự kiện ({events.total})

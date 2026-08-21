@@ -86,33 +86,33 @@ export default function Audit({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.audit.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.audit.title')}</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.audit.title')}</h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                         {logs ? t('admin.audit.event_count', { count: String(logs.total) }) : t('common.loading')}
                     </p>
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                            <Filter className="size-4" />
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                            <Filter className="size-3.5 sm:size-4 text-primary" />
                             {t('admin.audit.filters_title')}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                            <div className="space-y-1.5">
-                                <Label className="text-xs">{t('admin.audit.filter_action')}</Label>
+                    <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                        <div className="grid grid-cols-2 items-end gap-2 sm:gap-3 lg:grid-cols-5">
+                            <div className="space-y-1">
+                                <Label className="text-[11px] sm:text-xs">{t('admin.audit.filter_action')}</Label>
                                 <Select
                                     value={localFilters.action || '__all__'}
                                     onValueChange={(v) =>
                                         setLocalFilters((f) => ({ ...f, action: v === '__all__' ? '' : v }))
                                     }
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-8 text-xs">
                                         <SelectValue placeholder={t('admin.audit.filter_all_actions')} />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -123,48 +123,51 @@ export default function Audit({
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-xs">{t('admin.audit.filter_actor')}</Label>
+                            <div className="space-y-1">
+                                <Label className="text-[11px] sm:text-xs">{t('admin.audit.filter_actor')}</Label>
                                 <Input
                                     value={localFilters.actor}
                                     onChange={(e) => setLocalFilters((f) => ({ ...f, actor: e.target.value }))}
                                     placeholder={t('admin.audit.filter_all_actors')}
+                                    className="h-8 text-xs"
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-xs">{t('admin.audit.filter_from')}</Label>
+                            <div className="space-y-1">
+                                <Label className="text-[11px] sm:text-xs">{t('admin.audit.filter_from')}</Label>
                                 <Input
                                     type="date"
                                     value={localFilters.from}
                                     onChange={(e) => setLocalFilters((f) => ({ ...f, from: e.target.value }))}
+                                    className="h-8 text-xs"
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-xs">{t('admin.audit.filter_to')}</Label>
+                            <div className="space-y-1">
+                                <Label className="text-[11px] sm:text-xs">{t('admin.audit.filter_to')}</Label>
                                 <Input
                                     type="date"
                                     value={localFilters.to}
                                     onChange={(e) => setLocalFilters((f) => ({ ...f, to: e.target.value }))}
+                                    className="h-8 text-xs"
                                 />
                             </div>
-                            <div className="flex gap-2">
-                                <Button size="sm" onClick={applyFilters}>{t('common.apply')}</Button>
-                                <Button size="sm" variant="outline" onClick={clearFilters}>{t('common.clear')}</Button>
+                            <div className="col-span-2 flex gap-1.5 sm:gap-2 lg:col-span-1">
+                                <Button size="sm" className="h-8 flex-1 text-xs px-2.5" onClick={applyFilters}>{t('common.apply')}</Button>
+                                <Button size="sm" variant="outline" className="h-8 flex-1 text-xs px-2.5" onClick={clearFilters}>{t('common.clear')}</Button>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Log Table */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ScrollText className="size-5" />
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <ScrollText className="size-4 text-primary" />
                             {t('admin.audit.events_title')}
                         </CardTitle>
-                        <CardDescription>{t('admin.audit.events_description')}</CardDescription>
+                        <CardDescription className="text-xs">{t('admin.audit.events_description')}</CardDescription>
                     </CardHeader>
-                    <CardContent className="overflow-x-auto">
+                    <CardContent className="overflow-x-auto p-0">
                         <Deferred data="logs" fallback={
                             <Table>
                                 <TableHeader>

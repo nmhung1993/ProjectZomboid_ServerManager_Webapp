@@ -109,54 +109,54 @@ export default function AdminFactionsPage({ factions, stats }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quản lý Bang hội (Factions)" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Flag className="size-7 text-primary" />
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Flag className="size-5 sm:size-7 text-primary" />
                             Quản lý Bang hội (Factions)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Quản lý toàn bộ danh sách liên minh bang hội và căn cứ lãnh địa trong server.
                         </p>
                     </div>
 
-                    <Button onClick={handleSync} disabled={syncing} variant="outline" className="gap-2">
-                        <RefreshCw className={`size-4 ${syncing ? 'animate-spin' : ''}`} />
+                    <Button onClick={handleSync} disabled={syncing} variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5 w-fit">
+                        <RefreshCw className={`size-3.5 ${syncing ? 'animate-spin' : ''}`} />
                         Đồng bộ Game Server
                     </Button>
                 </div>
 
                 {/* Stat cards */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng số Bang hội</CardTitle>
-                            <Flag className="size-4 text-primary" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Tổng số Bang hội</CardTitle>
+                            <Flag className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_factions}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_factions}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng số Căn cứ Lãnh địa</CardTitle>
-                            <MapPin className="size-4 text-blue-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Tổng số Căn cứ Lãnh địa</CardTitle>
+                            <MapPin className="size-3.5 sm:size-4 text-blue-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_territories}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_territories}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng quỹ Bang hội</CardTitle>
-                            <Coins className="size-4 text-amber-500" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Tổng quỹ Bang hội</CardTitle>
+                            <Coins className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.total_bank.toLocaleString()}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_bank.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                 </div>

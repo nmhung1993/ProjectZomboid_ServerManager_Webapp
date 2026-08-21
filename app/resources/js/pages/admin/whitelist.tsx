@@ -211,33 +211,33 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.whitelist.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('admin.whitelist.title')}</h1>
-                        <p className="text-muted-foreground">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.whitelist.title')}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             {t('admin.whitelist.subtitle', { whitelisted: String(whitelistedCount), total: String(players.length) })}
                         </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={syncWhitelist} disabled={syncing}>
-                            <RefreshCw className={`mr-1.5 size-4 ${syncing ? 'animate-spin' : ''}`} />
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5" onClick={syncWhitelist} disabled={syncing}>
+                            <RefreshCw className={`mr-1.5 size-3.5 ${syncing ? 'animate-spin' : ''}`} />
                             {t('common.sync')}
                         </Button>
-                        <Button onClick={() => setShowAdd(true)}>
-                            <Plus className="mr-1.5 size-4" />
+                        <Button size="sm" className="h-8 text-xs px-2.5" onClick={() => setShowAdd(true)}>
+                            <Plus className="mr-1.5 size-3.5" />
                             {t('admin.whitelist.add_dialog_title')}
                         </Button>
                     </div>
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings className="size-5" />
+                <Card className="shadow-sm">
+                    <CardHeader className="p-4 pb-2">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Settings className="size-4 text-primary" />
                             {t('admin.whitelist.settings_title')}
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                             {t('admin.whitelist.settings_description')}
                         </CardDescription>
                     </CardHeader>

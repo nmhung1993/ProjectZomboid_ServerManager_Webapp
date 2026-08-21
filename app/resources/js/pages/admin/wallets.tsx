@@ -144,39 +144,39 @@ export default function Wallets({ users }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.wallets.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.wallets.title')}</h1>
-                    <p className="text-muted-foreground text-sm">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.wallets.title')}</h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                         {t('admin.wallets.description')}
                     </p>
                 </div>
 
                 {/* Summary */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <Card>
-                        <CardContent className="flex items-center gap-3 pt-6">
-                            <Coins className="text-muted-foreground size-5" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <Coins className="text-muted-foreground size-4 sm:size-5" />
                             <div>
-                                <p className="text-2xl font-bold tabular-nums">{coin(totalBalance)}</p>
+                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{coin(totalBalance)}</p>
                                 <p className="text-muted-foreground text-xs">{t('admin.wallets.total_in_circulation')}</p>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardContent className="flex items-center gap-3 pt-6">
-                            <Coins className="text-muted-foreground size-5" />
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <Coins className="text-muted-foreground size-4 sm:size-5" />
                             <div>
-                                <p className="text-2xl font-bold">{users.length}</p>
+                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{users.length}</p>
                                 <p className="text-muted-foreground text-xs">{t('admin.wallets.total_players')}</p>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardContent className="flex items-center gap-3 pt-6">
-                            <Coins className="text-muted-foreground size-5" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <Coins className="text-muted-foreground size-4 sm:size-5" />
                             <div>
-                                <p className="text-2xl font-bold tabular-nums">
+                                <p className="text-xl sm:text-2xl font-bold tabular-nums">
                                     {users.length > 0 ? coin(totalBalance / users.length) : 0}
                                 </p>
                                 <p className="text-muted-foreground text-xs">{t('admin.wallets.average_balance')}</p>
@@ -185,20 +185,20 @@ export default function Wallets({ users }: Props) {
                     </Card>
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle>{t('admin.wallets.all_players')}</CardTitle>
-                                <CardDescription>{t('admin.wallets.players_count', { count: String(filteredUsers.length) })}</CardDescription>
+                                <CardTitle className="text-base">{t('admin.wallets.all_players')}</CardTitle>
+                                <CardDescription className="text-xs">{t('admin.wallets.players_count', { count: String(filteredUsers.length) })}</CardDescription>
                             </div>
-                            <div className="relative">
-                                <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-4" />
+                            <div className="relative w-full sm:w-auto">
+                                <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-3.5" />
                                 <Input
                                     placeholder={t('admin.wallets.search_players')}
                                     value={filter}
                                     onChange={(e) => setFilter(e.target.value)}
-                                    className="pl-9 sm:w-[250px]"
+                                    className="h-8 pl-8 text-xs sm:w-[220px]"
                                 />
                             </div>
                         </div>

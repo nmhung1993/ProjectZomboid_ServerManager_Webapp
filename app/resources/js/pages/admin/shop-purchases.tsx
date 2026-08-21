@@ -130,39 +130,39 @@ export default function ShopPurchases({ purchases, stats, filters }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.shop_purchases.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.shop_purchases.title')}</h1>
-                    <p className="text-muted-foreground text-sm">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.shop_purchases.title')}</h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                         {t('admin.shop_purchases.description')}
                     </p>
                 </div>
 
                 {/* Summary cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <Card>
-                        <CardContent className="flex items-center gap-3 pt-6">
-                            <Coins className="text-muted-foreground size-5" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <Coins className="text-muted-foreground size-4 sm:size-5" />
                             <div>
-                                <p className="text-2xl font-bold tabular-nums">{coin(stats.total_revenue)}</p>
+                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{coin(stats.total_revenue)}</p>
                                 <p className="text-muted-foreground text-xs">{t('admin.shop_purchases.total_revenue')}</p>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardContent className="flex items-center gap-3 pt-6">
-                            <ShoppingBag className="text-muted-foreground size-5" />
+                    <Card className="shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <ShoppingBag className="text-muted-foreground size-4 sm:size-5" />
                             <div>
-                                <p className="text-2xl font-bold">{stats.total_purchases}</p>
+                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_purchases}</p>
                                 <p className="text-muted-foreground text-xs">{t('admin.shop_purchases.total_purchases')}</p>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardContent className="flex items-center gap-3 pt-6">
-                            <Package className="text-muted-foreground size-5" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
+                            <Package className="text-muted-foreground size-4 sm:size-5" />
                             <div>
-                                <p className="text-2xl font-bold">{stats.items_sold}</p>
+                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{stats.items_sold}</p>
                                 <p className="text-muted-foreground text-xs">{t('admin.shop_purchases.items_sold')}</p>
                             </div>
                         </CardContent>
@@ -170,26 +170,26 @@ export default function ShopPurchases({ purchases, stats, filters }: Props) {
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle>{t('admin.shop_purchases.all_purchases')}</CardTitle>
-                                <CardDescription>{t('admin.shop_purchases.total_count', { count: String(purchases.total) })}</CardDescription>
+                                <CardTitle className="text-base">{t('admin.shop_purchases.all_purchases')}</CardTitle>
+                                <CardDescription className="text-xs">{t('admin.shop_purchases.total_count', { count: String(purchases.total) })}</CardDescription>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="relative">
-                                    <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-4" />
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                <div className="relative w-full sm:w-auto">
+                                    <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-3.5" />
                                     <Input
                                         placeholder={t('admin.shop_purchases.search_player')}
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-                                        className="pl-9 sm:w-[200px]"
+                                        className="h-8 pl-8 text-xs sm:w-[180px]"
                                     />
                                 </div>
                                 <Select value={status} onValueChange={(v) => { setStatus(v === 'all' ? '' : v); }}>
-                                    <SelectTrigger className="w-[160px]">
+                                    <SelectTrigger className="h-8 w-[130px] text-xs">
                                         <SelectValue placeholder={t('admin.shop_purchases.all_statuses')} />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -201,9 +201,9 @@ export default function ShopPurchases({ purchases, stats, filters }: Props) {
                                         <SelectItem value="failed">{t('admin.shop_purchases.failed')}</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Button size="sm" onClick={applyFilters}>{t('common.filter')}</Button>
+                                <Button size="sm" className="h-8 text-xs px-2.5" onClick={applyFilters}>{t('common.filter')}</Button>
                                 {(filters.search || filters.status) && (
-                                    <Button size="sm" variant="ghost" onClick={clearFilters}>{t('common.clear')}</Button>
+                                    <Button size="sm" variant="ghost" className="h-8 text-xs px-2.5" onClick={clearFilters}>{t('common.clear')}</Button>
                                 )}
                             </div>
                         </div>

@@ -80,80 +80,80 @@ export default function AdminCleanerPage({ logs, stats }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dọn rác tối ưu Server" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Sparkles className="size-7 text-primary" />
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Sparkles className="size-5 sm:size-7 text-primary" />
                             Dọn rác Tối ưu Server (Auto Lag Cleaner)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Loại bỏ xác Zombie và rác vật phẩm rơi vãi mặt đất để giảm tải RAM/CPU và chống tụt FPS cho máy chủ.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <Button
                             onClick={handleCleanBodies}
                             disabled={cleaningBodies}
-                            variant="default"
-                            className="bg-red-600 hover:bg-red-700 text-white gap-2"
+                            size="sm"
+                            className="h-8 text-xs px-2.5 bg-red-600 hover:bg-red-700 text-white gap-1.5"
                         >
-                            <Skull className="size-4" />
-                            {cleaningBodies ? 'Đang dọn...' : 'Dọn xác Zombie ngay'}
+                            <Skull className="size-3.5" />
+                            {cleaningBodies ? 'Đang dọn...' : 'Dọn xác Zombie'}
                         </Button>
 
                         <Button
                             onClick={handleCleanItems}
                             disabled={cleaningItems}
-                            variant="default"
-                            className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
+                            size="sm"
+                            className="h-8 text-xs px-2.5 bg-amber-600 hover:bg-amber-700 text-white gap-1.5"
                         >
-                            <Trash2 className="size-4" />
-                            {cleaningItems ? 'Đang dọn...' : 'Dọn rác Mặt đất ngay'}
+                            <Trash2 className="size-3.5" />
+                            {cleaningItems ? 'Đang dọn...' : 'Dọn rác mặt đất'}
                         </Button>
                     </div>
                 </div>
 
                 {/* Stats */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Lượt Dọn dẹp</CardTitle>
-                            <Sparkles className="size-4 text-primary" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Lượt Dọn dẹp</CardTitle>
+                            <Sparkles className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_cleanups}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_cleanups}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Xác Zombie Đã Xóa</CardTitle>
-                            <Skull className="size-4 text-red-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Xác Zombie Đã Xóa</CardTitle>
+                            <Skull className="size-3.5 sm:size-4 text-red-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-red-500">{stats.total_bodies_removed.toLocaleString()}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-red-500 tabular-nums">{stats.total_bodies_removed.toLocaleString()}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Rác Vật phẩm Đã Xóa</CardTitle>
-                            <Trash2 className="size-4 text-amber-500" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Rác Vật phẩm Đã Xóa</CardTitle>
+                            <Trash2 className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.total_items_removed.toLocaleString()}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_items_removed.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Cleaner Logs Table */}
-                <Card>
-                    <CardHeader className="pb-3">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
-                            <History className="size-5 text-primary" />
+                            <History className="size-4 text-primary" />
                             Nhật ký Dọn dẹp ({logs.total})
                         </CardTitle>
                     </CardHeader>

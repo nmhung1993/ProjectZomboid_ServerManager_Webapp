@@ -222,60 +222,60 @@ export default function AntiCheatPage({ violations, stats, filters }: AntiCheatP
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.anticheat.title')} />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <ShieldAlert className="size-7 text-destructive" />
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <ShieldAlert className="size-5 sm:size-7 text-destructive" />
                             {t('admin.anticheat.title')}
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             {t('admin.anticheat.description')}
                         </p>
                     </div>
-                    <Button onClick={handleSync} disabled={syncing} variant="outline" className="gap-2">
-                        <RefreshCw className={`size-4 ${syncing ? 'animate-spin' : ''}`} />
+                    <Button onClick={handleSync} disabled={syncing} variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5 w-fit">
+                        <RefreshCw className={`size-3.5 ${syncing ? 'animate-spin' : ''}`} />
                         {t('admin.anticheat.sync_now')}
                     </Button>
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('admin.anticheat.total_violations')}</CardTitle>
-                            <Shield className="size-4 text-muted-foreground" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">{t('admin.anticheat.total_violations')}</CardTitle>
+                            <Shield className="size-3.5 sm:size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total}</div>
                         </CardContent>
                     </Card>
 
-                    <Card className={stats.flagged > 0 ? 'border-destructive/50 bg-destructive/5' : ''}>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('admin.anticheat.flagged_violations')}</CardTitle>
-                            <ShieldAlert className="size-4 text-destructive" />
+                    <Card className={`shadow-sm ${stats.flagged > 0 ? 'border-destructive/50 bg-destructive/5' : ''}`}>
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">{t('admin.anticheat.flagged_violations')}</CardTitle>
+                            <ShieldAlert className="size-3.5 sm:size-4 text-destructive" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-destructive">{stats.flagged}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-destructive tabular-nums">{stats.flagged}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('admin.anticheat.today_violations')}</CardTitle>
-                            <Clock className="size-4 text-muted-foreground" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">{t('admin.anticheat.today_violations')}</CardTitle>
+                            <Clock className="size-3.5 sm:size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.today}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.today}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardContent className="pt-6">
+                <Card className="shadow-sm">
+                    <CardContent className="p-3.5 sm:p-4">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Filter className="size-4 text-muted-foreground" />

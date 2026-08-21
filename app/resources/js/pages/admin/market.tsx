@@ -97,84 +97,85 @@ export default function AdminMarketPage({ listings, deliveries, stats }: Props) 
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quản lý Chợ P2P" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Scale className="size-7 text-primary" />
-                            Quản lý Chợ Giao dịch P2P & Nhà Đấu giá
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Scale className="size-5 sm:size-7 text-primary" />
+                            Quản lý Chợ P2P & Đấu giá (Market)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Giám sát bài niêm yết của người chơi, tiến trình các phiên đấu giá và hàng đợi giao nhận vật phẩm.
                         </p>
                     </div>
                 </div>
 
                 {/* Stats */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Đang Niêm Yết</CardTitle>
-                            <ShoppingCart className="size-4 text-primary" />
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Đang Niêm Yết</CardTitle>
+                            <ShoppingCart className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.active_listings} / {stats.total_listings}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.active_listings} / {stats.total_listings}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Đã Giao Dịch Thành Công</CardTitle>
-                            <ShoppingBag className="size-4 text-emerald-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Đã Giao Dịch</CardTitle>
+                            <ShoppingBag className="size-3.5 sm:size-4 text-emerald-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{stats.sold_listings}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.sold_listings}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng Khối Lượng Tiền Tệ</CardTitle>
-                            <Coins className="size-4 text-amber-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Khối Lượng Tiền</CardTitle>
+                            <Coins className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.total_volume.toLocaleString()}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_volume.toLocaleString()}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Gói hàng Đang chờ Giao</CardTitle>
-                            <Inbox className="size-4 text-blue-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Chờ Giao Hàng</CardTitle>
+                            <Inbox className="size-3.5 sm:size-4 text-blue-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-blue-500">{stats.pending_deliveries}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-blue-500 tabular-nums">{stats.pending_deliveries}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Tabs */}
                 <div className="space-y-4">
-                    <div className="flex gap-2 border-b pb-2">
+                    <div className="flex flex-wrap gap-1.5 border-b pb-2 sm:gap-2">
                         <Button
                             variant={activeTab === 'listings' ? 'default' : 'ghost'}
                             size="sm"
                             onClick={() => setActiveTab('listings')}
-                            className="gap-1.5"
+                            className="h-8 text-xs px-3 gap-1.5"
                         >
-                            <Scale className="size-4" />
+                            <Scale className="size-3.5" />
                             Danh sách Niêm yết ({listings.total})
                         </Button>
                         <Button
                             variant={activeTab === 'deliveries' ? 'default' : 'ghost'}
                             size="sm"
                             onClick={() => setActiveTab('deliveries')}
-                            className="gap-1.5"
+                            className="h-8 text-xs px-3 gap-1.5"
                         >
-                            <Inbox className="size-4 text-emerald-500" />
-                            Hàng đợi Giao vật phẩm ({deliveries.total})
+                            <Inbox className="size-3.5" />
+                            Hàng Chờ Nhận ({deliveries.total})
                         </Button>
+                    </div>
                     </div>
 
                     {/* Listings Table */}

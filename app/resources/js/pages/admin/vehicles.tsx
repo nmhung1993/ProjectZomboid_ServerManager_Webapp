@@ -97,15 +97,15 @@ export default function AdminVehiclesPage({ vehicles, stats, currentFilter }: Pr
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quản lý Phương tiện" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Car className="size-7 text-primary" />
-                            Quản lý Phương tiện & Xe Claim (AVCS)
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Car className="size-5 sm:size-7 text-primary" />
+                            Quản lý Phương tiện (Vehicles)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Giám sát tình trạng xe, tọa độ thực tế trên bản đồ và can thiệp sửa chữa, gỡ claim.
                         </p>
                     </div>
@@ -114,51 +114,53 @@ export default function AdminVehiclesPage({ vehicles, stats, currentFilter }: Pr
                         <Button
                             onClick={handleCleanupBroken}
                             variant="outline"
-                            className="text-destructive hover:bg-destructive/10 gap-1.5"
+                            size="sm"
+                            className="h-8 text-xs px-2.5 text-destructive hover:bg-destructive/10 gap-1.5"
                         >
-                            <Trash2 className="size-4" />
+                            <Trash2 className="size-3.5" />
                             Dọn xe nát (0%)
                         </Button>
                     </div>
                 </div>
 
                 {/* Stats */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng Phương tiện</CardTitle>
-                            <Car className="size-4 text-primary" />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Tổng Phương tiện</CardTitle>
+                            <Car className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_vehicles}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_vehicles}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Xe đã Claim (AVCS)</CardTitle>
-                            <Shield className="size-4 text-emerald-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Xe đã Claim</CardTitle>
+                            <Shield className="size-3.5 sm:size-4 text-emerald-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{stats.claimed_vehicles}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.claimed_vehicles}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Xe hỏng nặng (&lt;30%)</CardTitle>
-                            <AlertTriangle className="size-4 text-amber-500" />
+                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Xe hỏng (&lt;30%)</CardTitle>
+                            <AlertTriangle className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.broken_vehicles}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.broken_vehicles}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Filters */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     <Button
                         size="sm"
+                        className="h-7 text-xs px-2 sm:h-8 sm:px-3"
                         variant={currentFilter === 'all' ? 'default' : 'outline'}
                         onClick={() => router.get('/admin/vehicles')}
                     >
@@ -166,6 +168,7 @@ export default function AdminVehiclesPage({ vehicles, stats, currentFilter }: Pr
                     </Button>
                     <Button
                         size="sm"
+                        className="h-7 text-xs px-2 sm:h-8 sm:px-3"
                         variant={currentFilter === 'claimed' ? 'default' : 'outline'}
                         onClick={() => router.get('/admin/vehicles?filter=claimed')}
                     >
@@ -173,6 +176,7 @@ export default function AdminVehiclesPage({ vehicles, stats, currentFilter }: Pr
                     </Button>
                     <Button
                         size="sm"
+                        className="h-7 text-xs px-2 sm:h-8 sm:px-3"
                         variant={currentFilter === 'unclaimed' ? 'default' : 'outline'}
                         onClick={() => router.get('/admin/vehicles?filter=unclaimed')}
                     >
@@ -180,15 +184,16 @@ export default function AdminVehiclesPage({ vehicles, stats, currentFilter }: Pr
                     </Button>
                     <Button
                         size="sm"
+                        className="h-7 text-xs px-2 sm:h-8 sm:px-3"
                         variant={currentFilter === 'broken' ? 'default' : 'outline'}
                         onClick={() => router.get('/admin/vehicles?filter=broken')}
                     >
-                        Xe hỏng ({stats.broken_vehicles})
+                        Xe hỏng nặng ({stats.broken_vehicles})
                     </Button>
                 </div>
 
                 {/* Vehicles Table */}
-                <Card>
+                <Card className="shadow-sm">
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>

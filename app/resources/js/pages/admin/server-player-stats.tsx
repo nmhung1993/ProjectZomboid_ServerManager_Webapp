@@ -64,18 +64,19 @@ export default function ServerPlayerStats({ stats, day_length_minutes = 60 }: Se
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.server_player_stats.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('admin.server_player_stats.title')}</h1>
-                        <p className="text-muted-foreground">{t('admin.server_player_stats.subtitle')}</p>
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.server_player_stats.title')}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{t('admin.server_player_stats.subtitle')}</p>
                     </div>
-                    <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
+                    <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-muted/40 p-1">
                         {PERIODS.map((p) => (
                             <Button
                                 key={p}
                                 variant={period === p ? 'default' : 'ghost'}
                                 size="sm"
+                                className="h-7 text-xs px-2 sm:h-8 sm:px-3"
                                 onClick={() => setPeriod(p)}
                             >
                                 {t(`admin.server_player_stats.period_${p}`)}
@@ -84,57 +85,57 @@ export default function ServerPlayerStats({ stats, day_length_minutes = 60 }: Se
                     </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="flex items-center gap-1.5">
-                                <Users className="size-4" />
-                                {t('admin.server_player_stats.current_online')}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardDescription className="flex items-center gap-1.5 text-xs">
+                                <Users className="size-3.5 sm:size-4 text-blue-500" />
+                                <span className="truncate">{t('admin.server_player_stats.current_online')}</span>
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold tabular-nums">{stats.current_online}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-3xl font-bold tabular-nums">{stats.current_online}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="flex items-center gap-1.5">
-                                <TrendingUp className="size-4" />
-                                {t('admin.server_player_stats.peak')}
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardDescription className="flex items-center gap-1.5 text-xs">
+                                <TrendingUp className="size-3.5 sm:size-4 text-emerald-500" />
+                                <span className="truncate">{t('admin.server_player_stats.peak')}</span>
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold tabular-nums">{stats.peak[period]}</div>
-                            <p className="text-xs text-muted-foreground">
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-3xl font-bold tabular-nums">{stats.peak[period]}</div>
+                            <p className="text-[11px] text-muted-foreground truncate">
                                 {t(`admin.server_player_stats.period_${period}`)}
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="flex items-center gap-1.5">
-                                <Clock className="size-4" />
-                                {t('admin.server_player_stats.total_hours')}
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardDescription className="flex items-center gap-1.5 text-xs">
+                                <Clock className="size-3.5 sm:size-4 text-purple-500" />
+                                <span className="truncate">{t('admin.server_player_stats.total_hours')}</span>
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold tabular-nums">
-                                {realTotalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-3xl font-bold tabular-nums">
+                                {realTotalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}h
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="flex items-center gap-1.5">
-                                <BarChart3 className="size-4" />
-                                {t('admin.server_player_stats.data_points')}
+                    <Card className="shadow-sm">
+                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardDescription className="flex items-center gap-1.5 text-xs">
+                                <BarChart3 className="size-3.5 sm:size-4 text-amber-500" />
+                                <span className="truncate">{t('admin.server_player_stats.data_points')}</span>
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold tabular-nums">{series.length}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-3xl font-bold tabular-nums">{series.length}</div>
                         </CardContent>
                     </Card>
                 </div>

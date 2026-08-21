@@ -762,62 +762,66 @@ export default function Mods({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.mods.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('admin.mods.title')}</h1>
-                        <p className="text-muted-foreground">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.mods.title')}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             {t('admin.mods.mods_installed', { count: String(mods.length) })}
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         <Button
                             variant="outline"
+                            size="sm"
+                            className="h-8 text-xs px-2.5"
                             onClick={handleCheckUpdates}
                             disabled={checkingUpdates}
                             data-testid="check-mod-updates-button"
                         >
-                            <RefreshCw className={`mr-1.5 size-4 ${checkingUpdates ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`mr-1.5 size-3.5 ${checkingUpdates ? 'animate-spin' : ''}`} />
                             {checkingUpdates ? t('admin.mods.checking_updates') : t('admin.mods.check_updates')}
                         </Button>
                         <Button
                             variant="outline"
+                            size="sm"
+                            className="h-8 text-xs px-2.5"
                             onClick={() => setShowUpdateSettings(true)}
                             data-testid="mod-update-settings-button"
                         >
-                            <Settings className="mr-1.5 size-4" />
+                            <Settings className="mr-1.5 size-3.5" />
                             {t('admin.mods.update_settings')}
                         </Button>
-                        <Button variant="outline" onClick={openBulk} data-testid="bulk-import-button">
-                            <FileUp className="mr-1.5 size-4" />
+                        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5" onClick={openBulk} data-testid="bulk-import-button">
+                            <FileUp className="mr-1.5 size-3.5" />
                             {t('admin.mods.bulk_import')}
                         </Button>
-                        <Button onClick={() => setShowAdd(true)} data-testid="add-mod-button">
-                            <Plus className="mr-1.5 size-4" />
+                        <Button size="sm" className="h-8 text-xs px-2.5" onClick={() => setShowAdd(true)} data-testid="add-mod-button">
+                            <Plus className="mr-1.5 size-3.5" />
                             {t('admin.mods.add_mod')}
                         </Button>
                     </div>
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-4 pb-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Package className="size-5" />
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <Package className="size-4 text-primary" />
                                     {t('admin.mods.installed_mods')}
                                 </CardTitle>
-                                <CardDescription>
+                                <CardDescription className="text-xs">
                                     {t('admin.mods.installed_mods_description', { filtered: String(filteredMods.length), total: String(mods.length) })}
                                 </CardDescription>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                            <div className="relative w-full sm:w-auto">
+                                <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
                                 <Input
                                     placeholder={t('admin.mods.search_placeholder')}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-9 sm:w-[200px]"
+                                    className="h-8 pl-8 text-xs sm:w-[220px]"
                                 />
                             </div>
                         </div>

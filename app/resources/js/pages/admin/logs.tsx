@@ -87,17 +87,17 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.logs.title')} />
-            <div className="flex min-h-0 flex-1 flex-col gap-6 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+            <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:gap-5 sm:p-4 lg:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('admin.logs.title')}</h1>
-                        <p className="text-muted-foreground">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.logs.title')}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             {t('admin.logs.description')}
                         </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <Select value={tail} onValueChange={(v) => { setTail(v); }}>
-                            <SelectTrigger className="w-[120px]">
+                            <SelectTrigger className="h-8 w-[100px] text-xs">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -110,41 +110,42 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
                         <Button
                             variant="outline"
                             size="sm"
+                            className="h-8 text-xs px-2.5"
                             onClick={() => setAutoRefresh(!autoRefresh)}
                         >
                             {autoRefresh ? (
-                                <><Pause className="mr-1.5 size-3.5" /> {t('admin.logs.pause')}</>
+                                <><Pause className="mr-1 size-3.5" /> {t('admin.logs.pause')}</>
                             ) : (
-                                <><Play className="mr-1.5 size-3.5" /> {t('admin.logs.resume')}</>
+                                <><Play className="mr-1 size-3.5" /> {t('admin.logs.resume')}</>
                             )}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={fetchLogs} disabled={refreshing}>
-                            <RefreshCw className={`mr-1.5 size-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5" onClick={fetchLogs} disabled={refreshing}>
+                            <RefreshCw className={`mr-1 size-3.5 ${refreshing ? 'animate-spin' : ''}`} />
                             {t('admin.logs.refresh')}
                         </Button>
                     </div>
                 </div>
 
-                <Card className="flex min-h-0 flex-1 flex-col">
-                    <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="flex min-h-0 flex-1 flex-col shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-2 sm:p-4 sm:pb-3">
                         <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <Activity className="size-5" />
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Activity className="size-4 text-emerald-500" />
                                 {t('admin.logs.card_title')}
                             </CardTitle>
-                            <CardDescription>{t('admin.logs.line_count', { count: String(lines.length) })}</CardDescription>
+                            <CardDescription className="text-xs">{t('admin.logs.line_count', { count: String(lines.length) })}</CardDescription>
                         </div>
                         {autoRefresh && (
-                            <Badge variant="outline" className="text-xs">
-                                <span className="mr-1.5 size-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
+                            <Badge variant="outline" className="text-[11px] px-1.5 py-0.5">
+                                <span className="mr-1.5 size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
                                 {t('admin.logs.auto_refresh_badge')}
                             </Badge>
                         )}
                     </CardHeader>
-                    <CardContent className="flex min-h-0 flex-1 flex-col px-6 pb-6">
+                    <CardContent className="flex min-h-0 flex-1 flex-col p-3 pt-0 sm:p-4 sm:pt-0">
                         <div
                             ref={outputRef}
-                            className="scrollbar-none min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-950 p-4 font-mono text-xs leading-relaxed"
+                            className="scrollbar-none min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-950 p-3 sm:p-4 font-mono text-[11px] sm:text-xs leading-relaxed"
                         >
                             {lines.length > 0 ? (
                                 lines.map((line, i) => {

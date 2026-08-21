@@ -140,73 +140,73 @@ export default function AdminQuestsPage({ quests, bounties, stats }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quản lý Nhiệm vụ & Truy nã" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Target className="size-7 text-primary" />
-                            Quản lý Nhiệm vụ & Lệnh Truy nã
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Target className="size-5 sm:size-7 text-primary" />
+                            Quản lý Nhiệm vụ & Truy nã (Quests)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                             Cấu hình nhiệm vụ sinh tồn hàng ngày, phần thưởng ví và giám sát bảng truy nã người chơi.
                         </p>
                     </div>
 
-                    <Button onClick={() => setOpenCreateQuest(true)} className="gap-2">
-                        <Plus className="size-4" />
+                    <Button onClick={() => setOpenCreateQuest(true)} size="sm" className="h-8 text-xs px-2.5 gap-1.5 w-fit">
+                        <Plus className="size-3.5" />
                         Tạo Nhiệm vụ mới
                     </Button>
                 </div>
 
                 {/* Stat cards */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Nhiệm vụ đang mở</CardTitle>
-                            <Award className="size-4 text-primary" />
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Nhiệm vụ đang mở</CardTitle>
+                            <Award className="size-3.5 sm:size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.active_quests} / {stats.total_quests}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.active_quests} / {stats.total_quests}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Lượt hoàn thành</CardTitle>
-                            <CheckCircle2 className="size-4 text-emerald-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Lượt hoàn thành</CardTitle>
+                            <CheckCircle2 className="size-3.5 sm:size-4 text-emerald-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{stats.total_completions}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.total_completions}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Lệnh Truy nã Active</CardTitle>
-                            <Crosshair className="size-4 text-red-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Lệnh Truy nã</CardTitle>
+                            <Crosshair className="size-3.5 sm:size-4 text-red-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-red-500">{stats.active_bounties}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-red-500 tabular-nums">{stats.active_bounties}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Tổng Quỹ Tiền thưởng</CardTitle>
-                            <Coins className="size-4 text-amber-500" />
+                    <Card className="shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
+                            <CardTitle className="text-xs font-medium">Quỹ Tiền thưởng</CardTitle>
+                            <Coins className="size-3.5 sm:size-4 text-amber-500" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">{stats.total_bounty_pool.toLocaleString()}</div>
+                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
+                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_bounty_pool.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Quests Table */}
-                <Card>
-                    <CardHeader className="pb-3">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
-                            <Award className="size-5 text-primary" />
+                            <Award className="size-4 text-primary" />
                             Danh sách Nhiệm vụ ({quests.length})
                         </CardTitle>
                     </CardHeader>

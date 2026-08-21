@@ -119,34 +119,34 @@ export default function AdminPerformancePage({ health, history, hotspots }: Prop
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Giám sát Hiệu năng Máy chủ" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-4 p-3 sm:space-y-6 sm:p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Cpu className="size-7 text-primary" />
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Cpu className="size-5 sm:size-7 text-primary" />
                             Giám sát Hiệu năng & TPS Máy chủ
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Đo lường thời gian thực: Tốc độ khung hình máy chủ (TPS), độ trễ khung hình, bộ nhớ RAM Java heap và các điểm nóng tử địa.
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
+                            Đo lường thời gian thực: Tốc độ khung hình (TPS), độ trễ, RAM Java heap và điểm nóng tử địa.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleRefresh}
                             disabled={refreshing}
-                            className="gap-1.5"
+                            className="h-8 text-xs px-2.5 gap-1.5"
                         >
-                            <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`size-3.5 ${refreshing ? 'animate-spin' : ''}`} />
                             Làm mới
                         </Button>
 
                         <Link href="/admin/cleaner">
-                            <Button size="sm" className="gap-1.5 bg-primary font-bold">
-                                <Sparkles className="size-4" />
+                            <Button size="sm" className="h-8 text-xs px-2.5 gap-1.5 bg-primary font-bold">
+                                <Sparkles className="size-3.5" />
                                 Mở Bộ Dọn Rác (Cleaner)
                             </Button>
                         </Link>
@@ -154,30 +154,30 @@ export default function AdminPerformancePage({ health, history, hotspots }: Prop
                 </div>
 
                 {/* Health Rating Banner */}
-                <Card className={`border-2 ${getStatusColor(health.status)}`}>
-                    <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6 p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center justify-center size-16 rounded-2xl bg-card border shadow-inner">
-                                <HeartPulse className="size-9 text-primary animate-pulse" />
+                <Card className={`border ${getStatusColor(health.status)} shadow-sm`}>
+                    <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 sm:p-5">
+                        <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
+                            <div className="flex items-center justify-center size-12 sm:size-14 rounded-xl bg-card border shadow-inner shrink-0">
+                                <HeartPulse className="size-6 sm:size-8 text-primary animate-pulse" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-3xl font-extrabold">{health.score} / 100</span>
-                                    <Badge className="text-xs uppercase font-bold">{health.status}</Badge>
+                                    <span className="text-2xl sm:text-3xl font-extrabold">{health.score} / 100</span>
+                                    <Badge className="text-[10px] uppercase font-bold">{health.status}</Badge>
                                 </div>
-                                <p className="text-sm font-semibold mt-0.5">{getStatusText(health.status)}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    Cập nhật lần cuối: {new Date(health.latest.recorded_at).toLocaleTimeString()}
+                                <p className="text-xs sm:text-sm font-semibold mt-0.5 truncate">{getStatusText(health.status)}</p>
+                                <p className="text-[11px] text-muted-foreground">
+                                    Cập nhật: {new Date(health.latest.recorded_at).toLocaleTimeString()}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full md:w-auto">
-                            <div className="rounded-xl border bg-card p-3 text-center">
-                                <span className="text-xs text-muted-foreground block">Tốc độ TPS</span>
-                                <span className="text-xl font-bold text-emerald-600">{health.latest.tps.toFixed(1)}</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full md:w-auto">
+                            <div className="rounded-lg border bg-card p-2 sm:p-2.5 text-center shadow-sm">
+                                <span className="text-[11px] text-muted-foreground block">Tốc độ TPS</span>
+                                <span className="text-base sm:text-lg font-bold text-emerald-600 tabular-nums">{health.latest.tps.toFixed(1)}</span>
                             </div>
-                            <div className="rounded-xl border bg-card p-3 text-center">
+                            <div className="rounded-lg border bg-card p-2 sm:p-2.5 text-center shadow-sm">
                                 <span className="text-xs text-muted-foreground block">Độ trễ Tick</span>
                                 <span className="text-xl font-bold text-primary">{health.latest.tick_time_ms.toFixed(1)}ms</span>
                             </div>

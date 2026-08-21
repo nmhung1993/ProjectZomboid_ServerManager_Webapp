@@ -263,50 +263,52 @@ export default function Backups({ backups, current_version, current_branch, filt
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.backups.title')} />
-            <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+            <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{t('admin.backups.title')}</h1>
-                        <p className="text-muted-foreground">{backups ? t('admin.backups.backup_count', { count: String(backups.total) }) : t('common.loading')}</p>
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.backups.title')}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{backups ? t('admin.backups.backup_count', { count: String(backups.total) }) : t('common.loading')}</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         {isSuperAdmin && selectedIds.size > 0 && (
                             <Button
                                 variant="destructive"
+                                size="sm"
+                                className="h-8 text-xs px-2.5"
                                 onClick={() => setShowBulkDelete(true)}
                             >
-                                <Trash2 className="mr-1.5 size-4" />
+                                <Trash2 className="mr-1 size-3.5" />
                                 {t('admin.backups.delete_selected', { count: String(selectedIds.size) })}
                             </Button>
                         )}
-                        <Button variant="outline" onClick={() => setShowImport(true)}>
-                            <Upload className="mr-1.5 size-4" />
+                        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5" onClick={() => setShowImport(true)}>
+                            <Upload className="mr-1 size-3.5" />
                             {t('admin.backups.import_world')}
                         </Button>
-                        <Button onClick={() => setShowCreate(true)}>
-                            <Plus className="mr-1.5 size-4" />
+                        <Button size="sm" className="h-8 text-xs px-2.5" onClick={() => setShowCreate(true)}>
+                            <Plus className="mr-1 size-3.5" />
                             {t('admin.backups.create_backup')}
                         </Button>
                     </div>
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-4 pb-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Archive className="size-5" />
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <Archive className="size-4 text-purple-500" />
                                     {t('admin.backups.card_title')}
                                 </CardTitle>
-                                <CardDescription>{t('admin.backups.card_description')}</CardDescription>
+                                <CardDescription className="text-xs">{t('admin.backups.card_description')}</CardDescription>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                            <div className="relative w-full sm:w-auto">
+                                <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
                                 <Input
                                     placeholder={t('admin.backups.search_placeholder')}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-9 sm:w-[200px]"
+                                    className="h-8 pl-8 text-xs sm:w-[220px]"
                                 />
                             </div>
                         </div>
