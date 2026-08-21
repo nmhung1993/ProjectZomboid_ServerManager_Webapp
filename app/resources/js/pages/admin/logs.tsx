@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { Activity, Pause, Play, RefreshCw } from 'lucide-react';
+import { Activity, Minus, Pause, Play, Plus, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
@@ -56,7 +56,28 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [tail, setTail] = useState('100');
     const [refreshing, setRefreshing] = useState(false);
+    const [fontSize, setFontSize] = useState<number>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('pz_logs_fontsize');
+            if (saved) {
+                const parsed = parseInt(saved, 10);
+                if (!Number.isNaN(parsed) && parsed >= 9 && parsed <= 18) {
+                    return parsed;
+                }
+            }
+            if (window.innerWidth < 768) return 10;
+        }
+        return 12;
+    });
     const outputRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('pz_logs_fontsize', String(fontSize));
+        } catch {
+            // ignore localStorage write errors
+        }
+    }, [fontSize]);
 
     function fetchLogs() {
         setRefreshing(true);
@@ -127,39 +148,70 @@ export default function Logs({ lines: initialLines }: { lines: string[] }) {
                 </div>
 
                 <Card className="flex min-h-0 flex-1 flex-col shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-2 sm:p-4 sm:pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between p-3 pb-2 sm:p-4 sm:pb-3 gap-2">
                         <div>
-                            <CardTitle className="flex items-center gap-2 text-base">
+                            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                                 <Activity className="size-4 text-emerald-500" />
                                 {t('admin.logs.card_title')}
                             </CardTitle>
                             <CardDescription className="text-xs">{t('admin.logs.line_count', { count: String(lines.length) })}</CardDescription>
                         </div>
-                        {autoRefresh && (
-                            <Badge variant="outline" className="text-[11px] px-1.5 py-0.5">
-                                <span className="mr-1.5 size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                                {t('admin.logs.auto_refresh_badge')}
-                            </Badge>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {/* Font size controller +/- */}
+                            <div className="flex items-center gap-0.5 rounded-md border border-border/70 bg-muted/40 p-0.5 shadow-xs">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-6 p-0 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setFontSize((prev) => Math.max(9, prev - 1))}
+                                    disabled={fontSize <= 9}
+                                    title="Giảm cỡ chữ (A-)"
+                                >
+                                    <Minus className="size-3" />
+                                </Button>
+                                <span className="min-w-[28px] text-center font-mono text-[10px] sm:text-[11px] font-medium text-foreground select-none">
+                                    {fontSize}px
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-6 p-0 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setFontSize((prev) => Math.min(18, prev + 1))}
+                                    disabled={fontSize >= 18}
+                                    title="Tăng cỡ chữ (A+)"
+                                >
+                                    <Plus className="size-3" />
+                                </Button>
+                            </div>
+
+                            {autoRefresh && (
+                                <Badge variant="outline" className="text-[10px] sm:text-[11px] px-1.5 py-0.5">
+                                    <span className="mr-1.5 size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                                    <span className="hidden sm:inline">{t('admin.logs.auto_refresh_badge')}</span>
+                                    <span className="sm:hidden">Live</span>
+                                </Badge>
+                            )}
+                        </div>
                     </CardHeader>
-                    <CardContent className="flex min-h-0 flex-1 flex-col p-3 pt-0 sm:p-4 sm:pt-0">
+                    <CardContent className="flex min-h-0 flex-1 flex-col p-2.5 pt-0 sm:p-4 sm:pt-0">
                         <div
                             ref={outputRef}
-                            className="scrollbar-none min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-950 p-3 sm:p-4 font-mono text-[11px] sm:text-xs leading-relaxed"
+                            style={{ fontSize: `${fontSize}px`, lineHeight: 1.55 }}
+                            className="scrollbar-none min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-950 p-2.5 sm:p-4 font-mono select-text"
                         >
                             {lines.length > 0 ? (
                                 lines.map((line, i) => {
                                     const formattedLine = formatLogLine(line);
 
                                     return (
-                                        <div key={i} className="text-zinc-300 hover:bg-zinc-900/50">
-                                            <span className="mr-3 select-none text-zinc-600">{i + 1}</span>
+                                        <div key={i} className="text-zinc-300 hover:bg-zinc-900/50 flex items-start">
+                                            <span className="mr-2 sm:mr-3 select-none text-zinc-600 shrink-0">{i + 1}</span>
                                             {formattedLine.timestamp ? (
-                                                <span className="mr-2 whitespace-nowrap text-emerald-400">
+                                                <span className="mr-1.5 sm:mr-2 whitespace-nowrap text-emerald-400 shrink-0 font-medium">
                                                     {formattedLine.timestamp}
                                                 </span>
                                             ) : null}
-                                            <span>{formattedLine.message}</span>
+                                            <span className="break-all sm:break-normal">{formattedLine.message}</span>
                                         </div>
                                     );
                                 })

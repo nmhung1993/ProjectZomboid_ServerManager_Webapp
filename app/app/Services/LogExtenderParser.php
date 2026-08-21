@@ -81,43 +81,61 @@ class LogExtenderParser
             // Death: Log Extender "Name" died at X,Y,Z  or  vanilla: user Name died at (X,Y,Z)
             if (preg_match('/(?:"([^"]+)"|user\s+(.+?))\s+died(?:\s+at\s+\(?(\d+),(\d+),\d+\)?)?/', $rest, $matches)) {
                 $player = $matches[1] !== '' ? $matches[1] : $matches[2];
-                GameEvent::query()->create([
-                    'event_type' => 'death',
-                    'player' => $player,
-                    'x' => isset($matches[3]) && $matches[3] !== '' ? (int) $matches[3] : null,
-                    'y' => isset($matches[4]) && $matches[4] !== '' ? (int) $matches[4] : null,
-                    'details' => ['raw' => trim($rest)],
-                    'game_time' => $timestamp,
-                ]);
-                $count++;
+                $event = GameEvent::query()->firstOrCreate(
+                    [
+                        'event_type' => 'death',
+                        'player' => $player,
+                        'game_time' => $timestamp,
+                    ],
+                    [
+                        'x' => isset($matches[3]) && $matches[3] !== '' ? (int) $matches[3] : null,
+                        'y' => isset($matches[4]) && $matches[4] !== '' ? (int) $matches[4] : null,
+                        'details' => ['raw' => trim($rest)],
+                    ]
+                );
+                if ($event->wasRecentlyCreated) {
+                    $count++;
+                }
 
                 continue;
             }
 
             // Connect: Log Extender: SteamID "Name" connected  or  vanilla: SteamID "Name" fully connected (X,Y,Z)
             if (preg_match('/\d+\s+"([^"]+)"\s+(?:fully\s+)?connected(?:\s+\((\d+),(\d+),\d+\))?/', $rest, $matches)) {
-                GameEvent::query()->create([
-                    'event_type' => 'connect',
-                    'player' => $matches[1],
-                    'x' => isset($matches[2]) && $matches[2] !== '' ? (int) $matches[2] : null,
-                    'y' => isset($matches[3]) && $matches[3] !== '' ? (int) $matches[3] : null,
-                    'game_time' => $timestamp,
-                ]);
-                $count++;
+                $event = GameEvent::query()->firstOrCreate(
+                    [
+                        'event_type' => 'connect',
+                        'player' => $matches[1],
+                        'game_time' => $timestamp,
+                    ],
+                    [
+                        'x' => isset($matches[2]) && $matches[2] !== '' ? (int) $matches[2] : null,
+                        'y' => isset($matches[3]) && $matches[3] !== '' ? (int) $matches[3] : null,
+                    ]
+                );
+                if ($event->wasRecentlyCreated) {
+                    $count++;
+                }
 
                 continue;
             }
 
             // Disconnect: Log Extender: SteamID "Name" disconnected  or  vanilla: SteamID "Name" disconnected player (X,Y,Z)
             if (preg_match('/\d+\s+"([^"]+)"\s+disconnected(?:\s+player)?(?:\s+\((\d+),(\d+),\d+\))?/', $rest, $matches)) {
-                GameEvent::query()->create([
-                    'event_type' => 'disconnect',
-                    'player' => $matches[1],
-                    'x' => isset($matches[2]) && $matches[2] !== '' ? (int) $matches[2] : null,
-                    'y' => isset($matches[3]) && $matches[3] !== '' ? (int) $matches[3] : null,
-                    'game_time' => $timestamp,
-                ]);
-                $count++;
+                $event = GameEvent::query()->firstOrCreate(
+                    [
+                        'event_type' => 'disconnect',
+                        'player' => $matches[1],
+                        'game_time' => $timestamp,
+                    ],
+                    [
+                        'x' => isset($matches[2]) && $matches[2] !== '' ? (int) $matches[2] : null,
+                        'y' => isset($matches[3]) && $matches[3] !== '' ? (int) $matches[3] : null,
+                    ]
+                );
+                if ($event->wasRecentlyCreated) {
+                    $count++;
+                }
             }
         }
 
@@ -151,21 +169,27 @@ class LogExtenderParser
 
             // Log Extender: user PlayerA (x,y,z) hit user PlayerB (x,y,z) with Weapon damage N
             if (preg_match('/user\s+(\S+)\s+\((\d+),(\d+),\d+\)\s+hit\s+user\s+(\S+)\s+\((\d+),(\d+),\d+\)\s+with\s+(.+?)(?:\s+damage\s+(.+))?$/i', $rest, $matches)) {
-                GameEvent::query()->create([
-                    'event_type' => 'pvp_hit',
-                    'player' => $matches[1],
-                    'target' => $matches[4],
-                    'x' => (int) $matches[2],
-                    'y' => (int) $matches[3],
-                    'details' => [
-                        'weapon' => trim($matches[7]),
-                        'damage' => $matches[8] ?? null,
-                        'victim_x' => (int) $matches[5],
-                        'victim_y' => (int) $matches[6],
+                $event = GameEvent::query()->firstOrCreate(
+                    [
+                        'event_type' => 'pvp_hit',
+                        'player' => $matches[1],
+                        'target' => $matches[4],
+                        'game_time' => $timestamp,
                     ],
-                    'game_time' => $timestamp,
-                ]);
-                $count++;
+                    [
+                        'x' => (int) $matches[2],
+                        'y' => (int) $matches[3],
+                        'details' => [
+                            'weapon' => trim($matches[7]),
+                            'damage' => $matches[8] ?? null,
+                            'victim_x' => (int) $matches[5],
+                            'victim_y' => (int) $matches[6],
+                        ],
+                    ]
+                );
+                if ($event->wasRecentlyCreated) {
+                    $count++;
+                }
 
                 continue;
             }
@@ -177,21 +201,27 @@ class LogExtenderParser
                     continue;
                 }
 
-                GameEvent::query()->create([
-                    'event_type' => 'pvp_hit',
-                    'player' => $matches[1],
-                    'target' => $matches[4],
-                    'x' => (int) $matches[2],
-                    'y' => (int) $matches[3],
-                    'details' => [
-                        'weapon' => $matches[7],
-                        'damage' => $matches[8],
-                        'victim_x' => (int) $matches[5],
-                        'victim_y' => (int) $matches[6],
+                $event = GameEvent::query()->firstOrCreate(
+                    [
+                        'event_type' => 'pvp_hit',
+                        'player' => $matches[1],
+                        'target' => $matches[4],
+                        'game_time' => $timestamp,
                     ],
-                    'game_time' => $timestamp,
-                ]);
-                $count++;
+                    [
+                        'x' => (int) $matches[2],
+                        'y' => (int) $matches[3],
+                        'details' => [
+                            'weapon' => $matches[7],
+                            'damage' => $matches[8],
+                            'victim_x' => (int) $matches[5],
+                            'victim_y' => (int) $matches[6],
+                        ],
+                    ]
+                );
+                if ($event->wasRecentlyCreated) {
+                    $count++;
+                }
             }
         }
 
@@ -224,17 +254,23 @@ class LogExtenderParser
 
             // Craft: SteamID "PlayerName" crafted quantity Base.ItemName with recipe "RecipeName"
             if (preg_match('/\d+\s+"([^"]+)"\s+crafted\s+(\d+)\s+(\S+)\s+with\s+recipe\s+"([^"]+)"/', $rest, $matches)) {
-                GameEvent::query()->create([
-                    'event_type' => 'craft',
-                    'player' => $matches[1],
-                    'details' => [
-                        'quantity' => (int) $matches[2],
-                        'item' => $matches[3],
-                        'recipe' => $matches[4],
+                $event = GameEvent::query()->firstOrCreate(
+                    [
+                        'event_type' => 'craft',
+                        'player' => $matches[1],
+                        'game_time' => $timestamp,
                     ],
-                    'game_time' => $timestamp,
-                ]);
-                $count++;
+                    [
+                        'details' => [
+                            'quantity' => (int) $matches[2],
+                            'item' => $matches[3],
+                            'recipe' => $matches[4],
+                        ],
+                    ]
+                );
+                if ($event->wasRecentlyCreated) {
+                    $count++;
+                }
             }
         }
 

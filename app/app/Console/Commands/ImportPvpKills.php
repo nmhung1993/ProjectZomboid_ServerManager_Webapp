@@ -37,25 +37,32 @@ class ImportPvpKills extends Command
             $killer = $kill['killer'] ?? 'unknown';
             $victim = $kill['victim'] ?? 'unknown';
 
-            GameEvent::query()->create([
-                'event_type' => 'pvp_kill',
-                'player' => $killer,
-                'target' => $victim,
-                'x' => $kill['killer_x'] ?? null,
-                'y' => $kill['killer_y'] ?? null,
-                'details' => [
-                    'weapon' => $kill['weapon'] ?? 'unknown',
-                    'victim_x' => $kill['victim_x'] ?? null,
-                    'victim_y' => $kill['victim_y'] ?? null,
+            $gameTime = isset($kill['occurred_at'])
+                ? Carbon::createFromTimestamp($kill['occurred_at'])
+                : now();
+
+            $event = GameEvent::query()->firstOrCreate(
+                [
+                    'event_type' => 'pvp_kill',
+                    'player' => $killer,
+                    'target' => $victim,
+                    'game_time' => $gameTime,
                 ],
-                'game_time' => isset($kill['occurred_at'])
-                    ? Carbon::createFromTimestamp($kill['occurred_at'])
-                    : now(),
-            ]);
+                [
+                    'x' => $kill['killer_x'] ?? null,
+                    'y' => $kill['killer_y'] ?? null,
+                    'details' => [
+                        'weapon' => $kill['weapon'] ?? 'unknown',
+                        'victim_x' => $kill['victim_x'] ?? null,
+                        'victim_y' => $kill['victim_y'] ?? null,
+                    ],
+                ]
+            );
 
-            $bountyManager->processPvpKill($killer, $victim);
-
-            $count++;
+            if ($event->wasRecentlyCreated) {
+                $bountyManager->processPvpKill($killer, $victim);
+                $count++;
+            }
         }
 
         // Clear the file after import

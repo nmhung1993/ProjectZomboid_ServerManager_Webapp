@@ -124,7 +124,8 @@ class DashboardController extends Controller
                 'deaths' => $this->playerStatsService->getDeathLeaderboard(5),
             ]),
             'game_events' => Inertia::defer(fn () => GameEvent::query()
-                ->orderByDesc('created_at')
+                ->orderByRaw('COALESCE(game_time, created_at) DESC')
+                ->orderByDesc('id')
                 ->limit(15)
                 ->get()
                 ->map(fn (GameEvent $event) => [

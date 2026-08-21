@@ -65,7 +65,7 @@ export function ActivityFeed({ events }: { events: GameEventEntry[] }) {
                         <div className="min-w-0 flex-1">
                             <p className="leading-tight">{formatEventDescription(event)}</p>
                             <p className="text-xs text-muted-foreground">
-                                {event.created_at ? timeAgo(event.created_at) : ''}
+                                {timeAgo(event.game_time ?? event.created_at ?? new Date().toISOString())}
                             </p>
                         </div>
                     </div>
