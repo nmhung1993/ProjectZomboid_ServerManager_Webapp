@@ -241,36 +241,36 @@ export default function AntiCheatPage({ violations, stats, filters }: AntiCheatP
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">{t('admin.anticheat.total_violations')}</CardTitle>
-                            <Shield className="size-3.5 sm:size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-3 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2.5 sm:p-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Shield className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.anticheat.total_violations')}</p>
+                            <p className="text-xs sm:text-xl font-bold tabular-nums text-foreground">{stats.total}</p>
+                        </div>
+                    </div>
 
-                    <Card className={`shadow-sm ${stats.flagged > 0 ? 'border-destructive/50 bg-destructive/5' : ''}`}>
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">{t('admin.anticheat.flagged_violations')}</CardTitle>
-                            <ShieldAlert className="size-3.5 sm:size-4 text-destructive" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-destructive tabular-nums">{stats.flagged}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className={`hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg ${stats.flagged > 0 ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground'}`}>
+                            <ShieldAlert className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.anticheat.flagged_violations')}</p>
+                            <p className="text-xs sm:text-xl font-bold text-destructive tabular-nums">{stats.flagged}</p>
+                        </div>
+                    </div>
 
-                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">{t('admin.anticheat.today_violations')}</CardTitle>
-                            <Clock className="size-3.5 sm:size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.today}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                            <Clock className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.anticheat.today_violations')}</p>
+                            <p className="text-xs sm:text-xl font-bold tabular-nums text-foreground">{stats.today}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Filters */}

@@ -112,46 +112,46 @@ export default function AdminMarketPage({ listings, deliveries, stats }: Props) 
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Đang Niêm Yết</CardTitle>
-                            <ShoppingCart className="size-3.5 sm:size-4 text-primary" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.active_listings} / {stats.total_listings}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-4 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2 sm:p-3.5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <ShoppingCart className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Đang Niêm Yết</p>
+                            <p className="text-xs sm:text-lg font-bold tabular-nums text-foreground">{stats.active_listings} / {stats.total_listings}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Đã Giao Dịch</CardTitle>
-                            <ShoppingBag className="size-3.5 sm:size-4 text-emerald-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.sold_listings}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <ShoppingBag className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Đã Giao Dịch</p>
+                            <p className="text-xs sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{stats.sold_listings}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Khối Lượng Tiền</CardTitle>
-                            <Coins className="size-3.5 sm:size-4 text-amber-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_volume.toLocaleString()}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <Coins className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Khối Lượng Tiền</p>
+                            <p className="text-xs sm:text-lg font-bold text-amber-500 tabular-nums">{stats.total_volume.toLocaleString()}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Chờ Giao Hàng</CardTitle>
-                            <Inbox className="size-3.5 sm:size-4 text-blue-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-blue-500 tabular-nums">{stats.pending_deliveries}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                            <Inbox className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Chờ Giao</p>
+                            <p className="text-xs sm:text-lg font-bold text-blue-500 tabular-nums">{stats.pending_deliveries}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Tabs */}
@@ -175,7 +175,6 @@ export default function AdminMarketPage({ listings, deliveries, stats }: Props) 
                             <Inbox className="size-3.5" />
                             Hàng Chờ Nhận ({deliveries.total})
                         </Button>
-                    </div>
                     </div>
 
                     {/* Listings Table */}

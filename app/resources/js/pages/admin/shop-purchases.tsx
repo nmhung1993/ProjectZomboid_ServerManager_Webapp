@@ -139,34 +139,36 @@ export default function ShopPurchases({ purchases, stats, filters }: Props) {
                 </div>
 
                 {/* Summary cards */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-                    <Card className="shadow-sm">
-                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
-                            <Coins className="text-muted-foreground size-4 sm:size-5" />
-                            <div>
-                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{coin(stats.total_revenue)}</p>
-                                <p className="text-muted-foreground text-xs">{t('admin.shop_purchases.total_revenue')}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="shadow-sm">
-                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
-                            <ShoppingBag className="text-muted-foreground size-4 sm:size-5" />
-                            <div>
-                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_purchases}</p>
-                                <p className="text-muted-foreground text-xs">{t('admin.shop_purchases.total_purchases')}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
-                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
-                            <Package className="text-muted-foreground size-4 sm:size-5" />
-                            <div>
-                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{stats.items_sold}</p>
-                                <p className="text-muted-foreground text-xs">{t('admin.shop_purchases.items_sold')}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-3 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2.5 sm:p-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <Coins className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.shop_purchases.total_revenue')}</p>
+                            <p className="text-xs sm:text-xl font-bold text-amber-500 tabular-nums">{coin(stats.total_revenue)}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <ShoppingBag className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.shop_purchases.total_purchases')}</p>
+                            <p className="text-xs sm:text-xl font-bold tabular-nums text-foreground">{stats.total_purchases}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <Package className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.shop_purchases.items_sold')}</p>
+                            <p className="text-xs sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{stats.items_sold}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Filters */}

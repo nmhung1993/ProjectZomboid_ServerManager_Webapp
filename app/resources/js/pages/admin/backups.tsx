@@ -391,7 +391,14 @@ export default function Backups({ backups, current_version, current_branch, filt
                                                         />
                                                     </TableCell>
                                                 )}
-                                                <TableCell className="font-medium text-sm">{backup.filename}</TableCell>
+                                                <TableCell className="font-medium text-xs sm:text-sm">
+                                                    <div className="truncate max-w-[200px] sm:max-w-none">{backup.filename}</div>
+                                                    <div className="flex sm:hidden items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
+                                                        <span className="font-mono">{backup.size_human}</span>
+                                                        <span>&middot;</span>
+                                                        <span>{formatDateTime(backup.created_at)}</span>
+                                                    </div>
+                                                </TableCell>
                                                 <TableCell className="hidden sm:table-cell">
                                                     <Badge className={`text-xs ${typeColors[backup.type] ?? ''}`}>
                                                         {backup.type}
@@ -416,6 +423,7 @@ export default function Backups({ backups, current_version, current_branch, filt
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
+                                                            className="size-7 p-0 sm:size-8"
                                                             asChild
                                                         >
                                                             <a
@@ -423,25 +431,26 @@ export default function Backups({ backups, current_version, current_branch, filt
                                                                 download
                                                                 aria-label={`Download ${backup.filename}`}
                                                             >
-                                                                <Download className="size-4" />
+                                                                <Download className="size-3.5 sm:size-4" />
                                                             </a>
                                                         </Button>
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
+                                                            className="h-7 text-xs px-2 sm:h-8 sm:px-2.5"
                                                             onClick={() => setRollbackTarget(backup)}
                                                         >
-                                                            <RotateCcw className="mr-1.5 size-3.5" />
-                                                            {t('admin.backups.rollback_button')}
+                                                            <RotateCcw className="mr-1 size-3 sm:mr-1.5 sm:size-3.5" />
+                                                            <span>{t('admin.backups.rollback_button')}</span>
                                                         </Button>
                                                         {isSuperAdmin && (
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="text-destructive hover:text-destructive"
+                                                                className="size-7 p-0 sm:size-8 text-destructive hover:text-destructive"
                                                                 onClick={() => setDeleteTarget(backup)}
                                                             >
-                                                                <Trash2 className="size-4" />
+                                                                <Trash2 className="size-3.5 sm:size-4" />
                                                             </Button>
                                                         )}
                                                     </div>

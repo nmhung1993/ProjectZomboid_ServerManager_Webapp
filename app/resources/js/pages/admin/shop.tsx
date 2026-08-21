@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Package, Plus, Search, Tag, ToggleLeft, Trash2 } from 'lucide-react';
+import { Package, Pencil, Plus, Search, Tag, ToggleLeft, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { SortableHeader } from '@/components/sortable-header';
 import { useTableSort } from '@/hooks/use-table-sort';
@@ -326,21 +326,21 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-[40px]" />
+                                            <TableHead className="w-[36px] sm:w-[40px] px-1 sm:px-4" />
                                             <TableHead>
                                                 <SortableHeader column="name" label={t('common.name')} sortKey={itemSortKey} sortDir={itemSortDir} onSort={toggleItemSort} />
                                             </TableHead>
-                                            <TableHead>
+                                            <TableHead className="hidden md:table-cell">
                                                 <SortableHeader column="item_type" label={t('admin.shop.type')} sortKey={itemSortKey} sortDir={itemSortDir} onSort={toggleItemSort} />
                                             </TableHead>
-                                            <TableHead>{t('common.category')}</TableHead>
+                                            <TableHead className="hidden sm:table-cell">{t('common.category')}</TableHead>
                                             <TableHead className="text-right">
                                                 <SortableHeader column="price" label={t('common.price')} sortKey={itemSortKey} sortDir={itemSortDir} onSort={toggleItemSort} />
                                             </TableHead>
-                                            <TableHead className="text-center">
+                                            <TableHead className="hidden sm:table-cell text-center">
                                                 <SortableHeader column="quantity" label={t('admin.shop.qty')} sortKey={itemSortKey} sortDir={itemSortDir} onSort={toggleItemSort} />
                                             </TableHead>
-                                            <TableHead className="text-center">{t('common.stock')}</TableHead>
+                                            <TableHead className="hidden sm:table-cell text-center">{t('common.stock')}</TableHead>
                                             <TableHead>
                                                 <SortableHeader column="is_active" label={t('common.status')} sortKey={itemSortKey} sortDir={itemSortDir} onSort={toggleItemSort} />
                                             </TableHead>
@@ -350,39 +350,46 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                                     <TableBody>
                                         {filteredItems.map((item) => (
                                             <TableRow key={item.id}>
-                                                <TableCell>
+                                                <TableCell className="px-1 sm:px-4">
                                                     <ItemIcon
                                                         src={item.icon || '/images/items/placeholder.svg'}
                                                         name={item.name}
                                                     />
                                                 </TableCell>
-                                                <TableCell className="font-medium">
-                                                    {item.name}
-                                                    {item.is_featured && (
-                                                        <Badge className="ml-2 bg-amber-500 text-xs">{t('common.featured')}</Badge>
-                                                    )}
+                                                <TableCell className="font-medium text-xs sm:text-sm">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="truncate max-w-[140px] sm:max-w-none">{item.name}</span>
+                                                        {item.is_featured && (
+                                                            <Badge className="bg-amber-500 text-[10px] py-0 px-1">{t('common.featured')}</Badge>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex sm:hidden items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                                                        {item.category && <span>{item.category.name}</span>}
+                                                        {item.category && <span>&middot;</span>}
+                                                        <span>x{item.quantity}</span>
+                                                    </div>
                                                 </TableCell>
-                                                <TableCell className="text-muted-foreground max-w-[200px] truncate text-xs">
+                                                <TableCell className="hidden md:table-cell text-muted-foreground max-w-[200px] truncate text-xs">
                                                     {item.item_type}
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="hidden sm:table-cell">
                                                     {item.category && (
                                                         <Badge variant="outline" className="text-xs">
                                                             {item.category.name}
                                                         </Badge>
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="text-right tabular-nums">
+                                                <TableCell className="text-right tabular-nums text-xs sm:text-sm font-semibold text-amber-500">
                                                     {coin(item.price)}
                                                 </TableCell>
-                                                <TableCell className="text-center">{item.quantity}</TableCell>
-                                                <TableCell className="text-center">
+                                                <TableCell className="hidden sm:table-cell text-center text-xs">{item.quantity}</TableCell>
+                                                <TableCell className="hidden sm:table-cell text-center text-xs">
                                                     {item.stock !== null ? item.stock : <span className="text-muted-foreground">&infin;</span>}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge
                                                         variant={item.is_active ? 'default' : 'destructive'}
-                                                        className="text-xs"
+                                                        className="text-[10px]"
                                                     >
                                                         {item.is_active ? t('common.active') : t('common.inactive')}
                                                     </Badge>
@@ -392,23 +399,29 @@ export default function ShopAdmin({ categories, items, catalog }: Props) {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
+                                                            className="size-7 p-0 sm:size-8"
                                                             onClick={() => handleToggleItem(item)}
+                                                            title={item.is_active ? t('common.inactive') : t('common.active')}
                                                         >
-                                                            <ToggleLeft className="size-4" />
+                                                            <ToggleLeft className="size-3.5 sm:size-4" />
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
+                                                            className="size-7 p-0 sm:size-8"
                                                             onClick={() => openEditItem(item)}
+                                                            title={t('common.edit')}
                                                         >
-                                                            {t('common.edit')}
+                                                            <Pencil className="size-3.5 sm:size-4" />
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
+                                                            className="size-7 p-0 sm:size-8 text-destructive hover:text-destructive"
                                                             onClick={() => handleDeleteItem(item)}
+                                                            title={t('common.delete')}
                                                         >
-                                                            <Trash2 className="size-4 text-destructive" />
+                                                            <Trash2 className="size-3.5 sm:size-4" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>

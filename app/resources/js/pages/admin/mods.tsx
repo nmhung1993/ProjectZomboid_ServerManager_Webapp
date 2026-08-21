@@ -145,23 +145,28 @@ function SortableModRow({
                     <span className="font-mono text-xs text-muted-foreground">{index + 1}</span>
                 )}
             </TableCell>
-            <TableCell className="font-medium">
+            <TableCell className="font-medium text-xs sm:text-sm">
                 <div className="flex flex-wrap items-center gap-1.5">
                     {modIdList.length > 1 ? (
                         modIdList.map((id) => (
-                            <Badge key={id} variant="secondary" className="font-mono text-xs">
+                            <Badge key={id} variant="secondary" className="font-mono text-[11px] sm:text-xs">
                                 {id}
                             </Badge>
                         ))
                     ) : (
-                        <span>{modIdList[0] || mod.mod_id}</span>
+                        <span className="truncate max-w-[180px] sm:max-w-none">{modIdList[0] || mod.mod_id}</span>
                     )}
                     {isProtected && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs">
                             {t('admin.mods.required_badge')}
                         </Badge>
                     )}
                 </div>
+                {mod.workshop_id && (
+                    <div className="block sm:hidden text-[10px] text-muted-foreground font-mono mt-0.5">
+                        WS: {mod.workshop_id}
+                    </div>
+                )}
             </TableCell>
             <TableCell className="hidden sm:table-cell">
                 {mod.workshop_id ? (
@@ -180,22 +185,23 @@ function SortableModRow({
                     <Button
                         variant="ghost"
                         size="sm"
+                        className="size-7 p-0 sm:size-8"
                         onClick={() => onEdit(mod)}
                         title={t('admin.mods.edit_mod')}
                         data-testid={`edit-mod-${mod.workshop_id || mod.mod_id}`}
                     >
-                        <Pencil className="size-4" />
+                        <Pencil className="size-3.5 sm:size-4" />
                     </Button>
                     {!isProtected && (
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="text-destructive hover:text-destructive"
+                            className="size-7 p-0 sm:size-8 text-destructive hover:text-destructive"
                             onClick={() => onDelete(mod)}
                             title={t('admin.mods.delete_dialog_title')}
                             data-testid={`delete-mod-${mod.workshop_id || mod.mod_id}`}
                         >
-                            <Trash2 className="size-4" />
+                            <Trash2 className="size-3.5 sm:size-4" />
                         </Button>
                     )}
                 </div>

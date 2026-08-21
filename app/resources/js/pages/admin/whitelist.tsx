@@ -232,8 +232,8 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                 </div>
 
                 <Card className="shadow-sm">
-                    <CardHeader className="p-4 pb-2">
-                        <CardTitle className="flex items-center gap-2 text-base">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                             <Settings className="size-4 text-primary" />
                             {t('admin.whitelist.settings_title')}
                         </CardTitle>
@@ -241,19 +241,19 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                             {t('admin.whitelist.settings_description')}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="p-3.5 pt-0 space-y-3 sm:p-4 sm:pt-0 sm:space-y-4">
                         {restartRequired && (
-                            <Alert variant="destructive">
+                            <Alert variant="destructive" className="py-2">
                                 <AlertTriangle className="size-4" />
-                                <AlertDescription>
+                                <AlertDescription className="text-xs">
                                     {t('admin.whitelist.restart_required')}
                                 </AlertDescription>
                             </Alert>
                         )}
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="enforce-whitelist">{t('admin.whitelist.enforce_label')}</Label>
-                                <p className="text-sm text-muted-foreground">
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="space-y-0.5 min-w-0 flex-1">
+                                <Label htmlFor="enforce-whitelist" className="text-xs sm:text-sm font-medium">{t('admin.whitelist.enforce_label')}</Label>
+                                <p className="text-xs text-muted-foreground truncate sm:text-wrap">
                                     {t('admin.whitelist.enforce_description')}
                                 </p>
                             </div>
@@ -264,10 +264,10 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                             />
                         </div>
                         <Separator />
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="auto-register">{t('admin.whitelist.auto_register_label')}</Label>
-                                <p className="text-sm text-muted-foreground">
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="space-y-0.5 min-w-0 flex-1">
+                                <Label htmlFor="auto-register" className="text-xs sm:text-sm font-medium">{t('admin.whitelist.auto_register_label')}</Label>
+                                <p className="text-xs text-muted-foreground truncate sm:text-wrap">
                                     {t('admin.whitelist.auto_register_description')}
                                 </p>
                             </div>
@@ -278,8 +278,8 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                             />
                         </div>
                         {settingsDirty && (
-                            <div className="flex justify-end pt-2">
-                                <Button onClick={saveSettings} disabled={savingSettings}>
+                            <div className="flex justify-end pt-1">
+                                <Button size="sm" className="h-8 text-xs px-3" onClick={saveSettings} disabled={savingSettings}>
                                     {savingSettings ? t('common.saving') : t('admin.whitelist.save_settings')}
                                 </Button>
                             </div>
@@ -287,30 +287,30 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <Card className="shadow-sm">
+                    <CardHeader className="p-3.5 pb-2 sm:p-4 sm:pb-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Shield className="size-5" />
+                                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                                    <Shield className="size-4 text-primary" />
                                     {t('admin.whitelist.all_players_title')}
                                 </CardTitle>
-                                <CardDescription>
+                                <CardDescription className="text-xs">
                                     {t('admin.whitelist.all_players_description', { filtered: String(filteredPlayers.length), total: String(players.length) })}
                                 </CardDescription>
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <div className="relative">
-                                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                                    <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
                                     <Input
                                         placeholder={t('admin.whitelist.search_placeholder')}
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        className="pl-9 sm:w-[200px]"
+                                        className="h-8 pl-8 text-xs sm:w-[180px]"
                                     />
                                 </div>
                                 <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                                    <SelectTrigger className="w-full sm:w-[160px]">
+                                    <SelectTrigger className="h-8 w-full text-xs sm:w-[150px]">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -322,7 +322,7 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         {filteredPlayers.length > 0 ? (
                             <Table>
                                 <TableHeader>
@@ -352,30 +352,31 @@ export default function Whitelist({ players, whitelist_settings }: { players: Pl
                                 <TableBody>
                                     {filteredPlayers.map((player) => (
                                         <TableRow key={player.username}>
-                                            <TableCell className="font-medium">{player.username}</TableCell>
-                                            <TableCell className="hidden text-muted-foreground sm:table-cell">
+                                            <TableCell className="font-medium text-xs sm:text-sm">{player.username}</TableCell>
+                                            <TableCell className="hidden text-muted-foreground text-xs sm:table-cell">
                                                 {player.character_name && player.character_name !== player.username
                                                     ? player.character_name
                                                     : '-'}
                                             </TableCell>
                                             <TableCell className="hidden sm:table-cell">
-                                                <Badge variant={roleBadgeVariant[player.role] ?? 'outline'}>
+                                                <Badge variant={roleBadgeVariant[player.role] ?? 'outline'} className="text-[10px]">
                                                     {player.role}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
                                                 {player.whitelisted ? (
-                                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px]">
                                                         {t('admin.whitelist.status_whitelisted')}
                                                     </Badge>
                                                 ) : (
-                                                    <Badge variant="outline">{t('admin.whitelist.status_not_whitelisted')}</Badge>
+                                                    <Badge variant="outline" className="text-[10px]">{t('admin.whitelist.status_not_whitelisted')}</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <Button
                                                     variant={player.whitelisted ? 'outline' : 'default'}
                                                     size="sm"
+                                                    className="h-7 text-xs px-2 sm:h-8 sm:px-2.5"
                                                     onClick={() => toggleWhitelist(player.username, player.whitelisted, player.has_stored_credentials)}
                                                 >
                                                     {player.whitelisted ? (

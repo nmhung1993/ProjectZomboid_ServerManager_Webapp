@@ -160,46 +160,46 @@ export default function AdminQuestsPage({ quests, bounties, stats }: Props) {
                 </div>
 
                 {/* Stat cards */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Nhiệm vụ đang mở</CardTitle>
-                            <Award className="size-3.5 sm:size-4 text-primary" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.active_quests} / {stats.total_quests}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-4 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2 sm:p-3.5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Award className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Nhiệm vụ mở</p>
+                            <p className="text-xs sm:text-lg font-bold tabular-nums text-foreground">{stats.active_quests} / {stats.total_quests}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Lượt hoàn thành</CardTitle>
-                            <CheckCircle2 className="size-3.5 sm:size-4 text-emerald-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.total_completions}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <CheckCircle2 className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Hoàn thành</p>
+                            <p className="text-xs sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{stats.total_completions}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Lệnh Truy nã</CardTitle>
-                            <Crosshair className="size-3.5 sm:size-4 text-red-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-red-500 tabular-nums">{stats.active_bounties}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
+                            <Crosshair className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Lệnh Truy nã</p>
+                            <p className="text-xs sm:text-lg font-bold text-red-500 tabular-nums">{stats.active_bounties}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Quỹ Tiền thưởng</CardTitle>
-                            <Coins className="size-3.5 sm:size-4 text-amber-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.total_bounty_pool.toLocaleString()}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <Coins className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Quỹ Tiền thưởng</p>
+                            <p className="text-xs sm:text-lg font-bold text-amber-500 tabular-nums">{stats.total_bounty_pool.toLocaleString()}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Quests Table */}

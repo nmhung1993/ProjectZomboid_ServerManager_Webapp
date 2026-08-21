@@ -155,91 +155,74 @@ export default function AdminPerformancePage({ health, history, hotspots }: Prop
 
                 {/* Health Rating Banner */}
                 <Card className={`border ${getStatusColor(health.status)} shadow-sm`}>
-                    <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 sm:p-5">
-                        <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
-                            <div className="flex items-center justify-center size-12 sm:size-14 rounded-xl bg-card border shadow-inner shrink-0">
-                                <HeartPulse className="size-6 sm:size-8 text-primary animate-pulse" />
+                    <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:p-4">
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <div className="flex items-center justify-center size-10 sm:size-12 rounded-xl bg-card border shadow-inner shrink-0">
+                                <HeartPulse className="size-5 sm:size-7 text-primary animate-pulse" />
                             </div>
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-2xl sm:text-3xl font-extrabold">{health.score} / 100</span>
+                                    <span className="text-xl sm:text-2xl font-extrabold">{health.score} / 100</span>
                                     <Badge className="text-[10px] uppercase font-bold">{health.status}</Badge>
                                 </div>
-                                <p className="text-xs sm:text-sm font-semibold mt-0.5 truncate">{getStatusText(health.status)}</p>
-                                <p className="text-[11px] text-muted-foreground">
-                                    Cập nhật: {new Date(health.latest.recorded_at).toLocaleTimeString()}
-                                </p>
+                                <p className="text-xs font-semibold mt-0.5 truncate">{getStatusText(health.status)}</p>
                             </div>
                         </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full md:w-auto">
-                            <div className="rounded-lg border bg-card p-2 sm:p-2.5 text-center shadow-sm">
-                                <span className="text-[11px] text-muted-foreground block">Tốc độ TPS</span>
-                                <span className="text-base sm:text-lg font-bold text-emerald-600 tabular-nums">{health.latest.tps.toFixed(1)}</span>
-                            </div>
-                            <div className="rounded-lg border bg-card p-2 sm:p-2.5 text-center shadow-sm">
-                                <span className="text-xs text-muted-foreground block">Độ trễ Tick</span>
-                                <span className="text-xl font-bold text-primary">{health.latest.tick_time_ms.toFixed(1)}ms</span>
-                            </div>
-                            <div className="rounded-xl border bg-card p-3 text-center">
-                                <span className="text-xs text-muted-foreground block">RAM Java</span>
-                                <span className="text-xl font-bold text-amber-500">{health.latest.memory_percent}%</span>
-                            </div>
-                            <div className="rounded-xl border bg-card p-3 text-center">
-                                <span className="text-xs text-muted-foreground block">Zombie Sống</span>
-                                <span className="text-xl font-bold text-purple-600">{health.latest.active_zombies}</span>
-                            </div>
-                        </div>
+                        <p className="text-[11px] text-muted-foreground self-start sm:self-center">
+                            Cập nhật: {new Date(health.latest.recorded_at).toLocaleTimeString()}
+                        </p>
                     </CardContent>
                 </Card>
 
-                {/* Key Metrics Grid */}
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Server TPS (Tick Rate)</CardTitle>
-                            <Gauge className="size-4 text-emerald-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">{health.latest.tps.toFixed(1)} / 10.0 TPS</div>
-                            <p className="text-xs text-muted-foreground mt-1">Chuẩn tối đa Dedicated Server: 10.0 TPS (100ms / tick)</p>
-                        </CardContent>
-                    </Card>
+                {/* Key Metrics Grid - Single row 4-column strip on mobile */}
+                <div className="grid grid-cols-4 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2 sm:p-3.5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <Gauge className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Server TPS</p>
+                            <p className="text-xs sm:text-base font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                {health.latest.tps.toFixed(1)} <span className="text-[10px] font-normal text-muted-foreground">/ 10.0</span>
+                            </p>
+                        </div>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Server Tick Time</CardTitle>
-                            <Timer className="size-4 text-primary" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-primary">{health.latest.tick_time_ms.toFixed(1)} ms</div>
-                            <p className="text-xs text-muted-foreground mt-1">Chu kỳ vòng lặp máy chủ (Tối ưu ≤ 100ms)</p>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                            <Timer className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Độ trễ Tick</p>
+                            <p className="text-xs sm:text-base font-bold text-primary tabular-nums">
+                                {health.latest.tick_time_ms.toFixed(1)}ms
+                            </p>
+                        </div>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Java Heap Memory</CardTitle>
-                            <HardDrive className="size-4 text-amber-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-amber-500">
-                                {Math.round(health.latest.memory_used_mb)} / {Math.round(health.latest.memory_max_mb)} MB
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">{health.latest.memory_percent}% bộ nhớ đã cấp</p>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <HardDrive className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">RAM Java</p>
+                            <p className="text-xs sm:text-base font-bold text-amber-500 tabular-nums">
+                                {health.latest.memory_percent}%
+                            </p>
+                        </div>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Xác Zombie Chưa Dọn</CardTitle>
-                            <Skull className="size-4 text-red-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-red-500">{health.latest.dead_bodies}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Dọn xác định kỳ để tránh lag</p>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
+                            <Skull className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Xác Chưa Dọn</p>
+                            <p className="text-xs sm:text-base font-bold text-red-500 tabular-nums">
+                                {health.latest.dead_bodies}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Hotspots Section */}

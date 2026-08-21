@@ -65,12 +65,12 @@ export default function ServerPlayerStats({ stats, day_length_minutes = 60 }: Se
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('admin.server_player_stats.title')} />
             <div className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('admin.server_player_stats.title')}</h1>
+                        <h1 className="text-lg sm:text-2xl font-bold tracking-tight">{t('admin.server_player_stats.title')}</h1>
                         <p className="text-xs sm:text-sm text-muted-foreground">{t('admin.server_player_stats.subtitle')}</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-muted/40 p-1">
+                    <div className="flex w-fit items-center gap-0.5 rounded-lg border bg-muted/40 p-0.5 sm:gap-1 sm:p-1">
                         {PERIODS.map((p) => (
                             <Button
                                 key={p}
@@ -85,59 +85,48 @@ export default function ServerPlayerStats({ stats, day_length_minutes = 60 }: Se
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                    <Card className="shadow-sm">
-                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardDescription className="flex items-center gap-1.5 text-xs">
-                                <Users className="size-3.5 sm:size-4 text-blue-500" />
-                                <span className="truncate">{t('admin.server_player_stats.current_online')}</span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-3xl font-bold tabular-nums">{stats.current_online}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-4 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2 sm:p-3.5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                            <Users className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.server_player_stats.current_online')}</p>
+                            <p className="text-xs sm:text-lg font-bold tabular-nums text-foreground">{stats.current_online}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardDescription className="flex items-center gap-1.5 text-xs">
-                                <TrendingUp className="size-3.5 sm:size-4 text-emerald-500" />
-                                <span className="truncate">{t('admin.server_player_stats.peak')}</span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-3xl font-bold tabular-nums">{stats.peak[period]}</div>
-                            <p className="text-[11px] text-muted-foreground truncate">
-                                {t(`admin.server_player_stats.period_${period}`)}
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <TrendingUp className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.server_player_stats.peak')}</p>
+                            <p className="text-xs sm:text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{stats.peak[period]}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardDescription className="flex items-center gap-1.5 text-xs">
-                                <Clock className="size-3.5 sm:size-4 text-purple-500" />
-                                <span className="truncate">{t('admin.server_player_stats.total_hours')}</span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-3xl font-bold tabular-nums">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
+                            <Clock className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.server_player_stats.total_hours')}</p>
+                            <p className="text-xs sm:text-lg font-bold tabular-nums text-purple-600 dark:text-purple-400">
                                 {realTotalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}h
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardDescription className="flex items-center gap-1.5 text-xs">
-                                <BarChart3 className="size-3.5 sm:size-4 text-amber-500" />
-                                <span className="truncate">{t('admin.server_player_stats.data_points')}</span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-3xl font-bold tabular-nums">{series.length}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-0.5 sm:px-2 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <BarChart3 className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.server_player_stats.data_points')}</p>
+                            <p className="text-xs sm:text-lg font-bold tabular-nums text-foreground">{series.length}</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">

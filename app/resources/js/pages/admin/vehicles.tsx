@@ -124,36 +124,36 @@ export default function AdminVehiclesPage({ vehicles, stats, currentFilter }: Pr
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Tổng Phương tiện</CardTitle>
-                            <Car className="size-3.5 sm:size-4 text-primary" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold tabular-nums">{stats.total_vehicles}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-3 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2.5 sm:p-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Car className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Tổng Phương tiện</p>
+                            <p className="text-xs sm:text-xl font-bold tabular-nums text-foreground">{stats.total_vehicles}</p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Xe đã Claim</CardTitle>
-                            <Shield className="size-3.5 sm:size-4 text-emerald-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums">{stats.claimed_vehicles}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <Shield className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Xe đã Claim</p>
+                            <p className="text-xs sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{stats.claimed_vehicles}</p>
+                        </div>
+                    </div>
 
-                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-3.5 pb-1 sm:p-4 sm:pb-2">
-                            <CardTitle className="text-xs font-medium">Xe hỏng (&lt;30%)</CardTitle>
-                            <AlertTriangle className="size-3.5 sm:size-4 text-amber-500" />
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-0 sm:p-4 sm:pt-0">
-                            <div className="text-xl sm:text-2xl font-bold text-amber-500 tabular-nums">{stats.broken_vehicles}</div>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <AlertTriangle className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Xe hỏng (&lt;30%)</p>
+                            <p className="text-xs sm:text-xl font-bold text-amber-500 tabular-nums">{stats.broken_vehicles}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Filters */}

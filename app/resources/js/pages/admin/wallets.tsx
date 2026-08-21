@@ -153,36 +153,38 @@ export default function Wallets({ users }: Props) {
                 </div>
 
                 {/* Summary */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-                    <Card className="shadow-sm">
-                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
-                            <Coins className="text-muted-foreground size-4 sm:size-5" />
-                            <div>
-                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{coin(totalBalance)}</p>
-                                <p className="text-muted-foreground text-xs">{t('admin.wallets.total_in_circulation')}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="shadow-sm">
-                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
-                            <Coins className="text-muted-foreground size-4 sm:size-5" />
-                            <div>
-                                <p className="text-xl sm:text-2xl font-bold tabular-nums">{users.length}</p>
-                                <p className="text-muted-foreground text-xs">{t('admin.wallets.total_players')}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="col-span-2 sm:col-span-1 shadow-sm">
-                        <CardContent className="flex items-center gap-3 p-3.5 sm:p-4">
-                            <Coins className="text-muted-foreground size-4 sm:size-5" />
-                            <div>
-                                <p className="text-xl sm:text-2xl font-bold tabular-nums">
-                                    {users.length > 0 ? coin(totalBalance / users.length) : 0}
-                                </p>
-                                <p className="text-muted-foreground text-xs">{t('admin.wallets.average_balance')}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-3 divide-x divide-border/60 rounded-xl border border-border/60 bg-card p-2.5 sm:p-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                            <Coins className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.wallets.total_in_circulation')}</p>
+                            <p className="text-xs sm:text-xl font-bold text-amber-500 tabular-nums">{coin(totalBalance)}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                            <Coins className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.wallets.total_players')}</p>
+                            <p className="text-xs sm:text-xl font-bold tabular-nums text-foreground">{users.length}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-1 text-center sm:text-left min-w-0">
+                        <div className="hidden sm:flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <Coins className="size-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('admin.wallets.average_balance')}</p>
+                            <p className="text-xs sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                {users.length > 0 ? coin(totalBalance / users.length) : 0}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <Card className="shadow-sm">

@@ -66,18 +66,18 @@ export function GameStateWidget({ gameState }: { gameState: GameState | null }) 
         : weather?.condition.replace('_', ' ') ?? '';
 
     return (
-        <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border/50 bg-card px-4 py-3">
+        <div className="flex items-center gap-3 overflow-x-auto rounded-lg border border-border/50 bg-card px-3 py-2.5 sm:px-4 sm:py-3 whitespace-nowrap">
             {/* In-game time */}
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 {time.is_night ? (
-                    <Moon className="size-4 text-indigo-400" />
+                    <Moon className="size-3.5 sm:size-4 text-indigo-400" />
                 ) : (
-                    <Sun className="size-4 text-yellow-500" />
+                    <Sun className="size-3.5 sm:size-4 text-yellow-500" />
                 )}
                 <div>
-                    <span className="font-semibold tabular-nums">{time.formatted}</span>
+                    <span className="font-semibold text-xs sm:text-sm tabular-nums">{time.formatted}</span>
                     {isDateMonthYear ? (
-                        <span className="ml-1.5 text-sm text-muted-foreground font-medium">
+                        <span className="ml-1 text-xs text-muted-foreground font-medium">
                             {t('game_state.date_format', {
                                 day: String(time.day),
                                 month: t(`game_state.month_${time.month}`),
@@ -86,11 +86,11 @@ export function GameStateWidget({ gameState }: { gameState: GameState | null }) 
                         </span>
                     ) : (
                         <>
-                            <span className="ml-1.5 text-sm text-muted-foreground">
+                            <span className="ml-1 text-xs text-muted-foreground">
                                 {t('game_state.day', { day: String(time.day_of_year) })}
                             </span>
                             {time.year > 0 && (
-                                <span className="ml-1.5 text-sm font-medium text-muted-foreground">
+                                <span className="ml-1 text-xs font-medium text-muted-foreground">
                                     {t('game_state.year', { year: String(time.year) })}
                                 </span>
                             )}
@@ -99,30 +99,30 @@ export function GameStateWidget({ gameState }: { gameState: GameState | null }) 
                 </div>
             </div>
 
-            <div className="h-5 w-px bg-border" />
+            <div className="h-4 w-px bg-border shrink-0" />
 
             {/* Season */}
-            <div className="flex items-center gap-1.5">
-                <SeasonIcon className={`size-4 ${seasonColor}`} />
-                <span className="text-sm">{seasonLabel}</span>
+            <div className="flex shrink-0 items-center gap-1.5">
+                <SeasonIcon className={`size-3.5 sm:size-4 ${seasonColor}`} />
+                <span className="text-xs sm:text-sm">{seasonLabel}</span>
             </div>
 
             {weather && (
                 <>
-                    <div className="h-5 w-px bg-border" />
+                    <div className="h-4 w-px bg-border shrink-0" />
 
                     {/* Weather condition */}
-                    <div className="flex items-center gap-1.5">
-                        <WeatherIcon className="size-4 text-muted-foreground" />
-                        <span className="text-sm">{weatherLabel}</span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                        <WeatherIcon className="size-3.5 sm:size-4 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm">{weatherLabel}</span>
                     </div>
 
-                    <div className="h-5 w-px bg-border" />
+                    <div className="h-4 w-px bg-border shrink-0" />
 
                     {/* Temperature */}
-                    <div className="flex items-center gap-1">
-                        <Thermometer className="size-4 text-muted-foreground" />
-                        <span className="text-sm font-medium tabular-nums">
+                    <div className="flex shrink-0 items-center gap-1">
+                        <Thermometer className="size-3.5 sm:size-4 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm font-medium tabular-nums">
                             {weather.temperature}°C
                         </span>
                     </div>

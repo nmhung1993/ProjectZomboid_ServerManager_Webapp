@@ -177,26 +177,26 @@ export default function Status({
         <>
             <Head title={`${server_name} — ${t('status.page_title')}`} />
             <PublicLayout>
-                <div className="mx-auto max-w-7xl px-4 py-8">
+                <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-8">
                     {/* Hero */}
-                    <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-emerald-500/10 p-6 shadow-sm lg:p-8">
+                    <section className="relative overflow-hidden rounded-xl sm:rounded-2xl border bg-gradient-to-br from-card via-card to-emerald-500/10 p-4 sm:p-6 shadow-sm lg:p-8">
                         <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-emerald-500/10 blur-3xl" />
-                        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex items-start gap-4">
-                                <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10">
-                                    <Server className="size-6 text-emerald-500" />
+                        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex items-start gap-3 sm:gap-4">
+                                <div className="flex size-10 sm:size-12 shrink-0 items-center justify-center rounded-lg sm:rounded-xl border border-emerald-500/20 bg-emerald-500/10">
+                                    <Server className="size-5 sm:size-6 text-emerald-500" />
                                 </div>
-                                <div>
-                                    <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
+                                <div className="min-w-0">
+                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight lg:text-3xl truncate">
                                         {server_name}
                                     </h1>
-                                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                                        <Badge variant="outline" className={`gap-1.5 ${tone.badge}`}>
+                                    <div className="mt-1 flex items-center gap-1.5 flex-nowrap overflow-hidden">
+                                        <Badge variant="outline" className={`gap-1.5 text-xs whitespace-nowrap shrink-0 ${tone.badge}`}>
                                             <span className={`size-1.5 rounded-full ${tone.dot}`} />
                                             {t(tone.labelKey)}
                                         </Badge>
                                         {ping !== null && server.status === 'online' && (
-                                            <Badge variant="secondary" className="gap-1.5 tabular-nums">
+                                            <Badge variant="secondary" className="gap-1.5 text-xs tabular-nums whitespace-nowrap shrink-0">
                                                 <Signal className="size-3" />
                                                 {ping}ms
                                             </Badge>
@@ -205,26 +205,26 @@ export default function Status({
                                 </div>
                             </div>
 
-                        <div className="grid w-full grid-cols-3 gap-3 lg:w-auto">
-                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
-                                    <Users className="mx-auto mb-1 size-4 text-emerald-500" />
-                                    <p className="text-xl font-bold tabular-nums">
+                            <div className="grid w-full grid-cols-3 gap-2 sm:gap-3 lg:w-auto">
+                                <div className="rounded-lg sm:rounded-xl border bg-background/60 p-2.5 sm:px-4 sm:py-3 text-center shadow-sm">
+                                    <Users className="mx-auto mb-1 size-3.5 sm:size-4 text-emerald-500" />
+                                    <p className="text-base sm:text-xl font-bold tabular-nums">
                                         {playerCount}
                                         {maxPlayers !== null && (
-                                            <span className="text-sm font-normal text-muted-foreground">
+                                            <span className="text-xs sm:text-sm font-normal text-muted-foreground">
                                                 /{maxPlayers}
                                             </span>
                                         )}
                                     </p>
-                                    <p className="text-[11px] text-muted-foreground">{t('status.players_online')}</p>
+                                    <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{t('status.players_online')}</p>
                                 </div>
                                 <TooltipProvider delayDuration={200}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <div className="cursor-default rounded-xl border bg-background/60 px-4 py-3 text-center">
-                                                <Map className="mx-auto mb-1 size-4 text-blue-500" />
-                                                <p className="truncate text-xl font-bold">{server.map || '—'}</p>
-                                                <p className="text-[11px] text-muted-foreground">{t('status.map')}</p>
+                                            <div className="cursor-default rounded-lg sm:rounded-xl border bg-background/60 p-2.5 sm:px-4 sm:py-3 text-center shadow-sm">
+                                                <Map className="mx-auto mb-1 size-3.5 sm:size-4 text-blue-500" />
+                                                <p className="truncate text-base sm:text-xl font-bold">{server.map || '—'}</p>
+                                                <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{t('status.map')}</p>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -234,10 +234,10 @@ export default function Status({
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                <div className="rounded-xl border bg-background/60 px-4 py-3 text-center">
-                                    <Clock className="mx-auto mb-1 size-4 text-violet-500" />
-                                    <p className="truncate text-xl font-bold">{server.uptime || '—'}</p>
-                                    <p className="text-[11px] text-muted-foreground">{t('status.uptime')}</p>
+                                <div className="rounded-lg sm:rounded-xl border bg-background/60 p-2.5 sm:px-4 sm:py-3 text-center shadow-sm">
+                                    <Clock className="mx-auto mb-1 size-3.5 sm:size-4 text-violet-500" />
+                                    <p className="truncate text-base sm:text-xl font-bold">{server.uptime || '—'}</p>
+                                    <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{t('status.uptime')}</p>
                                 </div>
                             </div>
                         </div>
